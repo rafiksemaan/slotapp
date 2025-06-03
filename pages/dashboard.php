@@ -141,7 +141,34 @@ $type_breakdown = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
             </div>
         </div>
-              
+        
+        <!-- Transaction Type Breakdown -->
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Transaction Type</h3>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <?php if (empty($type_breakdown)): ?>
+                            <div class="no-transactions">
+                                <p>No transactions recorded today</p>
+                            </div>
+                        <?php else: ?>
+                            <ul class="list-unstyled">
+                                <?php foreach ($type_breakdown as $item): ?>
+                                    <li>
+                                        <strong><?php echo htmlspecialchars($item['name']); ?></strong>: 
+                                        <?php echo format_currency($item['total']); ?>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <div class="col">
             <div class="card">
                 <div class="card-header">
