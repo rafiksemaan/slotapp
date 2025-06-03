@@ -25,27 +25,29 @@ try {
     $type_stats = $stmt->fetchAll();
     
     // Get total amounts for today (OUT)
-    $today_start = cairo_time('Y-m-d') . ' 00:00:00';
-    $today_end = cairo_time('Y-m-d') . ' 23:59:59';
-    
     $stmt = $conn->prepare("
-        SELECT SUM(t.amount) as total 
+        SELECT tt.name, SUM(t.amount) as total 
         FROM transactions t 
         JOIN transaction_types tt ON t.transaction_type_id = tt.id 
         WHERE tt.category = 'OUT' AND t.timestamp BETWEEN ? AND ?
+        GROUP BY tt.name
     ");
     $stmt->execute([$today_start, $today_end]);
-    $total_out = $stmt->fetch()['total'] ?? 0;
+    $out_transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     // Get total amounts for today (DROP)
     $stmt = $conn->prepare("
-        SELECT SUM(t.amount) as total 
+        SELECT tt.name, SUM(t.amount) as total 
         FROM transactions t 
         JOIN transaction_types tt ON t.transaction_type_id = tt.id 
         WHERE tt.category = 'DROP' AND t.timestamp BETWEEN ? AND ?
+        GROUP BY tt.name
     ");
     $stmt->execute([$today_start, $today_end]);
-    $total_drop = $stmt->fetch()['total'] ?? 0;
+    $drop_transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    $total_out = array_sum(array_column($out_transactions, 'total')) ?? 0;
+    $total_drop = array_sum(array_column($drop_transactions, 'total')) ?? 0;
     
     // Calculate result
     $result = $total_drop - $total_out;
@@ -84,7 +86,6 @@ $type_breakdown = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <div class="dashboard fade-in">
     <!-- Stats Overview -->
     <div class="stats-container">
-	
         <div class="stat-card">
             <div class="stat-title">Total Machines</div>
             <div class="stat-value"><?php 
@@ -96,33 +97,31 @@ $type_breakdown = $stmt->fetchAll(PDO::FETCH_ASSOC);
             ?></div>
             <div class="stat-info">Registered Slot Machines</div>
         </div>
-	
-		<!-- Machines by Type -->
-		<div class="stat-card">
-			<div class="stat-title">Machines by Type</div>
-			<div class="stat-value"><?php
-				foreach ($type_stats as $type) {
-					echo "{$type['type']}: {$type['count']}<br>";
-				}
-			?></div>
-		</div>
-		
-		<div class="stat-card in">
-            <div class="stat-title">Last Day's DROP</div>
+        
+        <!-- Machines by Type -->
+        <div class="stat-card">
+            <div class="stat-title">Machines by Type</div>
+            <div class="stat-value"><?php
+                foreach ($type_stats as $type) {
+                    echo "{$type['type']}: {$type['count']}<br>";
+                }
+            ?></div>
+        </div>
+        
+        <div class="stat-card in">
+            <div class="stat-title">Today's DROP</div>
             <div class="stat-value"><?php echo format_currency($total_drop); ?></div>
             <div class="stat-info">Total Coins & Cash drops</div>
         </div>
-		
-		<div class="stat-card out">
-            <div class="stat-title">Last Day's OUT</div>
+        
+        <div class="stat-card out">
+            <div class="stat-title">Today's OUT</div>
             <div class="stat-value"><?php echo format_currency($total_out); ?></div>
             <div class="stat-info">Total Handpays, Tickets, Refills</div>
         </div>
         
-        
-        
         <div class="stat-card <?php echo $result >= 0 ? 'in' : 'out'; ?>">
-            <div class="stat-title">Last Day's Result</div>
+            <div class="stat-title">Today's Result</div>
             <div class="stat-value"><?php echo format_currency($result); ?></div>
             <div class="stat-info">DROP - OUT</div>
         </div>
@@ -131,7 +130,7 @@ $type_breakdown = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <!-- Charts Row -->
     <div class="row">
         <div class="col">
-			<div class="card">
+            <div class="card">
                 <div class="card-header">
                     <h3>Machine Distribution</h3>
                 </div>
@@ -142,34 +141,7 @@ $type_breakdown = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
             </div>
         </div>
-        
-		<!-- Transaction Type Breakdown -->
-		<div class="col">
-<div class="card">
-    <div class="card-header">
-        <h3>Transaction Type</h3>
-    </div>
-    <div class="card-body">
-        <div class="chart-container">
-		<?php if (empty($type_breakdown)): ?>
-            <div class="no-transactions">
-        <p>No transactions recorded today</p>
-    </div>
-        <?php else: ?>
-            <ul class="list-unstyled">
-                <?php foreach ($type_breakdown as $item): ?>
-                    <li>
-                        <strong><?php echo htmlspecialchars($item['name']); ?></strong>: 
-                        <?php echo format_currency($item['total']); ?>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
-        <?php endif; ?>
-		</div>
-    </div>
-</div>
-</div>
-		
+              
         <div class="col">
             <div class="card">
                 <div class="card-header">
@@ -177,15 +149,14 @@ $type_breakdown = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
                 <div class="card-body">
                     <?php if ($total_out == 0 && $total_drop == 0): ?>
-    <div class="no-transactions">
-        <p>No transactions recorded today</p>
-    </div>
-<?php else: ?>
-    <!-- Chart container -->
-    <div class="chart-container">
-        <canvas id="transactions-chart" style="max-height: 300px;"></canvas>
-    </div>
-<?php endif; ?>
+                        <div class="no-transactions">
+                            <p>No transactions recorded today</p>
+                        </div>
+                    <?php else: ?>
+                        <div class="chart-container">
+                            <canvas id="transactions-chart"></canvas>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -239,106 +210,109 @@ $type_breakdown = $stmt->fetchAll(PDO::FETCH_ASSOC);
 document.addEventListener('DOMContentLoaded', function() {
     // Machine distribution chart
     const machinesCtx = document.getElementById('machines-chart');
-    new Chart(machinesCtx, {
-        type: 'pie',
-        data: {
-            labels: [
-                <?php foreach ($machine_stats as $stat): ?>
-                    '<?php echo $stat['status']; ?>',
-                <?php endforeach; ?>
-            ],
-            datasets: [{
-                data: [
+    if (machinesCtx) {
+        new Chart(machinesCtx, {
+            type: 'pie',
+            data: {
+                labels: [
                     <?php foreach ($machine_stats as $stat): ?>
-                        <?php echo $stat['count']; ?>,
+                        '<?php echo $stat['status']; ?>',
                     <?php endforeach; ?>
                 ],
-                backgroundColor: [
-                    'rgba(46, 204, 113, 0.7)',
-                    'rgba(231, 76, 60, 0.7)',
-                    'rgba(243, 156, 18, 0.7)',
-                    'rgba(52, 152, 219, 0.7)'
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
+                datasets: [{
+                    data: [
+                        <?php foreach ($machine_stats as $stat): ?>
+                            <?php echo $stat['count']; ?>,
+                        <?php endforeach; ?>
+                    ],
+                    backgroundColor: [
+                        'rgba(46, 204, 113, 0.7)',
+                        'rgba(231, 76, 60, 0.7)',
+                        'rgba(243, 156, 18, 0.7)',
+                        'rgba(52, 152, 219, 0.7)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#ffffff'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Machines by Status',
                         color: '#ffffff'
                     }
-                },
-                title: {
-                    display: true,
-                    text: 'Machines by Status',
-                    color: '#ffffff'
                 }
             }
-        }
-    });
+        });
+    }
     
     // Today's transactions chart
     const transactionsCtx = document.getElementById('transactions-chart');
-    new Chart(transactionsCtx, {
-        type: 'bar',
-        data: {
-            labels: ['OUT', 'DROP', 'Result'],
-            datasets: [{
-                label: 'Amount',
-                data: [
-                    <?php echo $total_out; ?>,
-                    <?php echo $total_drop; ?>,
-                    <?php echo $result; ?>
-                ],
-                backgroundColor: [
-                    'rgba(231, 76, 60, 0.7)',
-                    'rgba(46, 204, 113, 0.7)',
-                    <?php echo $result >= 0 ? 'rgba(46, 204, 113, 0.7)' : 'rgba(231, 76, 60, 0.7)'; ?>
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
+    if (transactionsCtx) {
+        const outData = <?php echo json_encode(array_column($out_transactions, 'total')); ?>;
+        const outLabels = <?php echo json_encode(array_column($out_transactions, 'name')); ?>;
+        const dropData = <?php echo json_encode(array_column($drop_transactions, 'total')); ?>;
+        const dropLabels = <?php echo json_encode(array_column($drop_transactions, 'name')); ?>;
+
+        new Chart(transactionsCtx, {
+            type: 'bar',
+            data: {
+                labels: [...outLabels, ...dropLabels],
+                datasets: [{
+                    label: 'Amount',
+                    data: [...outData, ...dropData],
+                    backgroundColor: [
+                        ...Array(outLabels.length).fill('rgba(231, 76, 60, 0.7)'),
+                        ...Array(dropLabels.length).fill('rgba(46, 204, 113, 0.7)')
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#a0a0a0',
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
+                        }
                     },
-                    ticks: {
-                        color: '#a0a0a0',
-                        callback: function(value) {
-                            return '$' + value.toLocaleString();
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#a0a0a0'
                         }
                     }
                 },
-                x: {
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
+                plugins: {
+                    legend: {
+                        display: false
                     },
-                    ticks: {
-                        color: '#a0a0a0'
+                    title: {
+                        display: true,
+                        text: 'Today\'s Transactions',
+                        color: '#ffffff'
                     }
                 }
-            },
-            plugins: {
-                legend: {
-                    display: false
-                },
-                title: {
-                    display: true,
-                    text: 'Today\'s Transactions',
-                    color: '#ffffff'
-                }
             }
-        }
-    });
+        });
+    }
 });
-
 </script>
