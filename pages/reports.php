@@ -1,0 +1,384 @@
+<?php
+/**
+ * Reports page
+ * Shows comprehensive reports with filtering options
+ */
+ 
+$page = $_GET['page'] ?? 'reports';
+
+// Get filter values from URL
+$machine_id = $_GET['machine_id'] ?? 'all';
+$brand_id = $_GET['brand_id'] ?? 'all';
+$date_range_type = $_GET['date_range_type'] ?? 'month';
+$date_from = $_GET['date_from'] ?? date('Y-m-01');
+$date_to = $_GET['date_to'] ?? date('Y-m-t');
+$month = $_GET['month'] ?? date('Y-m');
+
+// Calculate start and end dates
+if ($date_range_type === 'range') {
+    $start_date = $date_from;
+    $end_date = $date_to;
+} else {
+    list($year, $month_num) = explode('-', $month);
+    $start_date = "$year-$month_num-01";
+    $end_date = date("Y-m-t", strtotime($start_date));
+}
+
+$params = ["{$start_date} 00:00:00", "{$end_date} 23:59:59"];
+
+// Initialize variables
+$report_data = [];
+$filtered_data = [];
+$grand_total_out = 0;
+$grand_total_drop = 0;
+$grand_total_result = 0;
+$machines = [];
+
+// Get brands for filter dropdown
+try {
+    $brands_stmt = $conn->query("SELECT id, name FROM brands ORDER BY name");
+    $brands = $brands_stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $brands = [];
+}
+
+// Build query for report data
+$query = "
+    SELECT 
+        m.id AS machine_id,
+        m.machine_number,
+        m.type AS machine_type,
+        tt.id AS transaction_type_id,
+        tt.name AS transaction_type,
+        tt.category,
+        COALESCE(SUM(t.amount), 0) AS total_amount
+    FROM 
+        machines m
+    LEFT JOIN 
+        transactions t ON m.id = t.machine_id AND t.timestamp BETWEEN ? AND ?
+    LEFT JOIN 
+        transaction_types tt ON t.transaction_type_id = tt.id
+";
+
+if ($machine_id != 'all') {
+    $query .= " WHERE m.id = ?";
+    $params[] = $machine_id;
+}
+
+$query .= "
+    GROUP BY 
+        m.id, tt.id
+    ORDER BY 
+        m.machine_number
+";
+
+try {
+    // Execute query
+    $stmt = $conn->prepare($query);
+    $stmt->execute($params);
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Get machines for filter dropdown
+$query = "SELECT id, machine_number, type FROM machines";
+$params = [];
+
+if ($brand_id !== 'all') {
+    $query .= " WHERE brand_id = ?";
+    $params[] = $brand_id;
+}
+
+$query .= " ORDER BY machine_number";
+
+$machines_stmt = $conn->prepare($query);
+$machines_stmt->execute($params);
+$machines = $machines_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Initialize report_data with default values for all machines
+    foreach ($machines as $machine) {
+        $report_data[$machine['id']] = [
+            'machine_id' => $machine['id'],
+            'machine_number' => $machine['machine_number'],
+            'type' => $machine['type'] ?? 'N/A',
+            'transactions' => [],
+            'total_out' => 0,
+            'total_drop' => 0,
+            'result' => 0
+        ];
+    }
+
+    // Fill in transaction data where it exists
+    foreach ($results as $row) {
+        if (!isset($report_data[$row['machine_id']])) {
+            continue; // Skip unknown machines
+        }
+
+        if (!is_null($row['transaction_type_id'])) {
+            $amount = floatval($row['total_amount']);
+            $report_data[$row['machine_id']]['transactions'][] = [
+                'type' => $row['transaction_type'],
+                'category' => $row['category'],
+                'amount' => $amount
+            ];
+
+            if ($row['category'] == 'OUT') {
+                $report_data[$row['machine_id']]['total_out'] += $amount;
+            } elseif ($row['category'] == 'DROP') {
+                $report_data[$row['machine_id']]['total_drop'] += $amount;
+            }
+        }
+    }
+
+    // Calculate result for each machine
+    foreach ($report_data as &$machine) {
+        $machine['result'] = $machine['total_drop'] - $machine['total_out'];
+    }
+    unset($machine); // Break the reference
+
+    // Set filtered data based on machine selection
+    if ($machine_id !== 'all') {
+        $filtered_data = isset($report_data[$machine_id]) ? [$report_data[$machine_id]] : [];
+    } else {
+        $filtered_data = array_values($report_data);
+    }
+
+    // Calculate grand totals
+    $grand_total_out = array_sum(array_column($filtered_data, 'total_out'));
+    $grand_total_drop = array_sum(array_column($filtered_data, 'total_drop'));
+    $grand_total_result = $grand_total_drop - $grand_total_out;
+
+} catch (PDOException $e) {
+    echo "<div class='alert alert-danger'>Database error: " . htmlspecialchars($e->getMessage()) . "</div>";
+    $filtered_data = [];
+    $grand_total_out = 0;
+    $grand_total_drop = 0;
+    $grand_total_result = 0;
+}
+?>
+
+<div class="reports-page fade-in">
+    <!-- Filters -->
+    <div class="filters-container card mb-6">
+        <form id="report-filters" action="index.php" method="GET" class="filters-form">
+            <input type="hidden" name="page" value="reports">
+
+<!-- Brand Filter -->
+<div class="filter-group">
+    <label for="brand_id">Brand</label>
+    <select name="brand_id" id="brand_id" class="form-control">
+        <option value="all" <?php echo ($brand_id === 'all') ? 'selected' : ''; ?>>All Brands</option>
+        <?php foreach ($brands as $brand): ?>
+            <option value="<?php echo $brand['id']; ?>" <?php echo ($brand_id == $brand['id']) ? 'selected' : ''; ?>>
+                <?php echo htmlspecialchars($brand['name']); ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+</div>
+
+            <!-- Machine Filter -->
+            <div class="filter-group">
+                <label for="machine_id">Machine</label>
+                <select name="machine_id" id="machine_id" class="form-control">
+                    <option value="all" <?php echo ($machine_id === 'all') ? 'selected' : ''; ?>>All Machines</option>
+                    <?php foreach ($machines as $machine): ?>
+                        <option value="<?php echo $machine['id']; ?>" <?php echo ($machine_id == $machine['id']) ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars($machine['machine_number']); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <!-- Date Range Type -->
+            <div class="filter-group">
+                <label for="date_range_type">Date Range</label>
+                <select name="date_range_type" id="date_range_type" class="form-control">
+                    <option value="month" <?php echo ($date_range_type === 'month') ? 'selected' : ''; ?>>Full Month</option>
+                    <option value="range" <?php echo ($date_range_type === 'range') ? 'selected' : ''; ?>>Custom Range</option>
+                </select>
+            </div>
+
+            <!-- From Date -->
+            <div class="filter-group">
+                <label for="date_from">From</label>
+                <input type="date" id="date_from" name="date_from" class="form-control"
+                       value="<?php echo $date_from; ?>"
+                       <?php echo ($date_range_type !== 'range') ? 'disabled' : ''; ?>>
+            </div>
+
+            <!-- To Date -->
+            <div class="filter-group">
+                <label for="date_to">To</label>
+                <input type="date" id="date_to" name="date_to" class="form-control"
+                       value="<?php echo $date_to; ?>"
+                       <?php echo ($date_range_type !== 'range') ? 'disabled' : ''; ?>>
+            </div>
+
+            <!-- Month Picker -->
+            <div class="filter-group">
+                <label for="month">Select Month</label>
+                <input type="month" id="month" name="month" class="form-control"
+                       value="<?php echo $month; ?>"
+                       <?php echo ($date_range_type !== 'month') ? 'disabled' : ''; ?>>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="filter-group">
+                <button type="submit" class="btn btn-primary w-full">Generate Report</button>
+				<a href="index.php?page=reports" class="btn btn-danger">Reset</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Report Header -->
+    <div class="report-header">
+        <h3 class="text-2xl font-bold text-secondary-color">Report for:</h3>
+
+        <!-- Main Title Line -->
+        <p class="date-range">
+            <?php
+            // Show Machine Number if selected
+            if ($machine_id !== 'all') {
+                $selected_machine = null;
+                foreach ($machines as $m) {
+                    if ($m['id'] == $machine_id) {
+                        $selected_machine = $m;
+                        break;
+                    }
+                }
+                echo "Machine #" . htmlspecialchars($selected_machine['machine_number'] ?? 'N/A');
+            } else {
+                echo "All Machines";
+            }
+            ?>
+            |
+            <?php
+            // Show Date Range or Month
+            if ($date_range_type === 'range') {
+                echo htmlspecialchars(date('d M Y', strtotime($date_from)) . ' – ' . date('d M Y', strtotime($date_to)));
+            } else {
+                echo htmlspecialchars(date('F Y', strtotime($month)));
+            }
+            ?>
+        </p>
+
+        <!-- Generated Timestamp -->
+        <p class="generated-at">
+            Generated at: <?php echo cairo_time('d M Y - H:i:s'); ?>
+        </p>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="stats-container grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div class="stat-card in p-4 rounded bg-opacity-10 bg-success-color text-center">
+            <div class="stat-title uppercase text-sm text-muted">Total DROP</div>
+            <div class="stat-value text-lg font-bold"><?php echo format_currency($grand_total_drop); ?></div>
+        </div>
+        <div class="stat-card out p-4 rounded bg-opacity-10 bg-danger-color text-center">
+            <div class="stat-title uppercase text-sm text-muted">Total OUT</div>
+            <div class="stat-value text-lg font-bold"><?php echo format_currency($grand_total_out); ?></div>
+        </div>
+        <div class="stat-card <?php echo $grand_total_result >= 0 ? 'in' : 'out'; ?> p-4 rounded text-center bg-opacity-10 <?php echo $grand_total_result >= 0 ? 'bg-success-color' : 'bg-danger-color'; ?>">
+            <div class="stat-title uppercase text-sm text-muted">Result</div>
+            <div class="stat-value text-lg font-bold"><?php echo format_currency($grand_total_result); ?></div>
+        </div>
+    </div>
+
+    <!-- Detailed Report Table -->
+    <div class="card overflow-hidden">
+        <div class="card-header bg-gray-800 text-white px-6 py-3 border-b border-gray-700">
+            <h3 class="text-lg font-semibold">Detailed Report</h3>
+        </div>
+        <div class="card-body p-6">
+            <div class="table-container overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-700">
+                    <thead>
+                        <tr class="bg-gray-800 text-white">
+                            <th class="px-4 py-2 text-left">Machine #</th>
+                            <th class="px-4 py-2 text-left">Type</th>
+                            <th class="px-4 py-2 text-right">Coins Drop</th>
+                            <th class="px-4 py-2 text-right">Cash Drop</th>
+                            <th class="highlight-drop px-4 py-2 text-right">Total DROP</th>
+                            <th class="px-4 py-2 text-right">Handpay</th>
+                            <th class="px-4 py-2 text-right">Ticket</th>
+                            <th class="px-4 py-2 text-right">Refill</th>
+                            <th class="highlight-out px-4 py-2 text-right">Total OUT</th>
+							<th class="highlight-result px-4 py-2 text-right">Result</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-700">
+                        <?php if (empty($filtered_data)): ?>
+                            <tr>
+                                <td colspan="10" class="text-center px-4 py-6">No matching data found</td>
+                            </tr>
+                        <?php else: ?>
+                            <?php foreach ($filtered_data as $data): ?>
+                                <tr class="hover:bg-gray-800 transition duration-150">
+                                    <td class="px-4 py-2"><?php echo htmlspecialchars($data['machine_number']); ?></td>
+                                    <td class="px-4 py-2"><?php echo htmlspecialchars($data['type']); ?></td>
+
+                                    <?php
+                                    $handpay = $ticket = $refill = $coins_drop = $cash_drop = 0;
+
+                                    if (!empty($data['transactions']) && is_array($data['transactions'])) {
+                                        foreach ($data['transactions'] as $t) {
+                                            switch ($t['type']) {
+                                                case 'Handpay': $handpay = $t['amount']; break;
+                                                case 'Ticket': $ticket = $t['amount']; break;
+                                                case 'Refill': $refill = $t['amount']; break;
+                                                case 'Coins Drop': $coins_drop = $t['amount']; break;
+                                                case 'Cash Drop': $cash_drop = $t['amount']; break;
+                                            }
+                                        }
+                                    }
+                                    ?>
+
+                                    <td class="px-4 py-2 text-right"><?php echo format_currency($coins_drop); ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo format_currency($cash_drop); ?></td>
+                                    <td class="highlight-drop px-4 py-2 text-right"><strong><?php echo format_currency($data['total_drop']); ?></strong></td>
+									<td class="px-4 py-2 text-right"><?php echo format_currency($handpay); ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo format_currency($ticket); ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo format_currency($refill); ?></td>
+                                    <td class="highlight-out px-4 py-2 text-right"><strong><?php echo format_currency($data['total_out']); ?></strong></td>
+                                    <td class="highlight-result px-4 py-2 text-right <?php echo $data['result'] >= 0 ? 'positive' : 'negative'; ?>">
+                                        <strong><?php echo format_currency($data['result']); ?></strong>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+
+                            <!-- Totals Row -->
+                            <tr class="totals-row bg-gray-800 text-white">
+                                <td colspan="4" class="px-4 py-2 font-bold">TOTALS</td>
+                                <td class="highlight-drop px-4 py-2 text-right"><strong><?php echo format_currency($grand_total_drop); ?></strong></td>
+                                <td colspan="3"></td>
+                                <td class="highlight-out px-4 py-2 text-right"><strong><?php echo format_currency($grand_total_out); ?></strong></td>
+                                <td class="highlight-result px-4 py-2 text-right <?php echo $grand_total_result >= 0 ? 'positive' : 'negative'; ?>">
+                                    <strong><?php echo format_currency($grand_total_result); ?></strong>
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript: Enable/Disable Fields Based on Date Range Selection -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const rangeType = document.getElementById('date_range_type');
+    const fromDate = document.getElementById('date_from');
+    const toDate = document.getElementById('date_to');
+    const monthInput = document.getElementById('month');
+
+    function toggleInputs() {
+        const isRange = rangeType.value === 'range';
+
+        fromDate.disabled = !isRange;
+        toDate.disabled = !isRange;
+        monthInput.disabled = isRange;
+    }
+
+    rangeType.addEventListener('change', toggleInputs);
+    toggleInputs(); // Initial call
+});
+</script>
