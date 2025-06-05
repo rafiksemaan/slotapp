@@ -1,3 +1,11 @@
+<?php
+// header.php
+
+date_default_timezone_set('Africa/Cairo');
+$page = $_GET['page'] ?? 'dashboard';
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,14 +17,6 @@
     <script src="assets/js/jquery-3.6.0.min.js"></script>
     <script src="assets/js/main.js"></script>
 </head>
-
-<?php
-// header.php
-
-date_default_timezone_set('Africa/Cairo');
-$page = $_GET['page'] ?? 'dashboard';
-
-?>
 
 <body>
     <div class="app-container">
@@ -42,7 +42,7 @@ $page = $_GET['page'] ?? 'dashboard';
 
             <!-- Admin Only: Settings Section -->
             <?php if ($_SESSION['user_role'] == 'admin'): ?>
-                <li class="settings-menu <?= in_array($page, ['machines', 'brands', 'users']) ? 'open active' : '' ?>">
+                <li class="settings-menu <?= in_array($page, ['machines', 'brands', 'machine_types', 'users']) ? 'open active' : '' ?>">
     <a href="#" class="settings-toggle">
         <span class="menu-icon">⚙️</span>
         Settings <span class="submenu-arrow">▾</span>
@@ -52,6 +52,8 @@ $page = $_GET['page'] ?? 'dashboard';
             <span class="submenu-icon">🧪</span> Machines</a></li>
         <li><a href="index.php?page=brands" class="<?= $page == 'brands' ? 'active' : '' ?>">
             <span class="submenu-icon">🏷️</span> Brands</a></li>
+        <li><a href="index.php?page=machine_types" class="<?= $page == 'machine_types' ? 'active' : '' ?>">
+            <span class="submenu-icon">🎰</span> Machine Types</a></li>
         <li><a href="index.php?page=users" class="<?= $page == 'users' ? 'active' : '' ?>">
             <span class="submenu-icon">👥</span> Users</a></li>
     </ul>
@@ -103,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const targetPage = url.searchParams.get('page');
 
                 // Collapse if not a settings subpage
-                if (!['machines', 'brands', 'users'].includes(targetPage)) {
+                if (!['machines', 'brands', 'machine_types', 'users'].includes(targetPage)) {
                     if (settingsMenu) {
                         settingsMenu.classList.remove('open');
                         localStorage.setItem('settingsMenuOpen', 'false');
