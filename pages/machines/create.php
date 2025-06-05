@@ -10,7 +10,7 @@ $machine = [
     'machine_number' => '',
     'brand_id' => '',
     'model' => '',
-    'type' => '',
+    'type_id' => '',
     'credit_value' => '',
     'manufacturing_year' => '',
     'ip_address' => '',
@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $machine['machine_number'] = sanitize_input($_POST['machine_number'] ?? '');
     $machine['brand_id'] = sanitize_input($_POST['brand_id'] ?? '');
     $machine['model'] = sanitize_input($_POST['model'] ?? '');
-    $machine['type'] = sanitize_input($_POST['type'] ?? '');
+    $machine['type_id'] = sanitize_input($_POST['type_id'] ?? '');
     $machine['credit_value'] = sanitize_input($_POST['credit_value'] ?? '');
     $machine['manufacturing_year'] = sanitize_input($_POST['manufacturing_year'] ?? '');
     $machine['ip_address'] = sanitize_input($_POST['ip_address'] ?? '');
@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     // Validate required fields
     if (empty($machine['machine_number']) || empty($machine['model']) || 
-        empty($machine['type']) || empty($machine['credit_value'])) {
+        empty($machine['type_id']) || empty($machine['credit_value'])) {
         $error = "Please fill out all required fields.";
     }
     // Validate IP address format if provided
@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 if (empty($error)) {
                     // Insert new machine
                     $stmt = $conn->prepare("
-                        INSERT INTO machines (machine_number, brand_id, model, type, credit_value, 
+                        INSERT INTO machines (machine_number, brand_id, model, type_id, credit_value, 
                         manufacturing_year, ip_address, mac_address, serial_number, status)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ");
@@ -81,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         $machine['machine_number'], 
                         $machine['brand_id'], 
                         $machine['model'], 
-                        $machine['type'], 
+                        $machine['type_id'], 
                         $machine['credit_value'], 
                         $machine['manufacturing_year'] ?: null, 
                         $machine['ip_address'] ?: null, 
@@ -111,6 +111,15 @@ try {
 } catch (PDOException $e) {
     $error = "Database error: " . $e->getMessage();
     $brands = [];
+}
+
+// Get machine types for dropdown
+try {
+    $stmt = $conn->query("SELECT id, name FROM machine_types ORDER BY name");
+    $machine_types = $stmt->fetchAll();
+} catch (PDOException $e) {
+    $error = "Database error: " . $e->getMessage();
+    $machine_types = [];
 }
 ?>
 
@@ -162,12 +171,12 @@ try {
                     
                     <div class="col">
                         <div class="form-group">
-                            <label for="type">Type *</label>
-                            <select id="type" name="type" class="form-control" required>
+                            <label for="type_id">Type *</label>
+                            <select id="type_id" name="type_id" class="form-control" required>
                                 <option value="">Select Type</option>
                                 <?php foreach ($machine_types as $type): ?>
-                                    <option value="<?php echo $type; ?>" <?php echo $machine['type'] == $type ? 'selected' : ''; ?>>
-                                        <?php echo $type; ?>
+                                    <option value="<?php echo $type['id']; ?>" <?php echo $machine['type_id'] == $type['id'] ? 'selected' : ''; ?>>
+                                        <?php echo htmlspecialchars($type['name']); ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>

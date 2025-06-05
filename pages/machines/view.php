@@ -18,9 +18,10 @@ $machine = null;
 // Get machine data
 try {
     $stmt = $conn->prepare("
-        SELECT m.*, b.name AS brand_name 
+        SELECT m.*, b.name AS brand_name, mt.name AS type_name
         FROM machines m
         LEFT JOIN brands b ON m.brand_id = b.id
+        LEFT JOIN machine_types mt ON m.type_id = mt.id
         WHERE m.id = ?
     ");
     $stmt->execute([$machine_id]);
@@ -69,7 +70,7 @@ try {
                         <div class="col-6">
                             <div class="detail-group">
                                 <strong>Type:</strong>
-                                <span><?php echo htmlspecialchars($machine['type']); ?></span>
+                                <span><?php echo htmlspecialchars($machine['type_name']); ?></span>
                             </div>
                         </div>
                     </div>

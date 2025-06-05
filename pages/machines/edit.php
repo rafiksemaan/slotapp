@@ -39,13 +39,22 @@ try {
     $brands = [];
 }
 
+// Get machine types for dropdown
+try {
+    $types_stmt = $conn->query("SELECT id, name FROM machine_types ORDER BY name");
+    $machine_types = $types_stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $error = "Database error: " . $e->getMessage();
+    $machine_types = [];
+}
+
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Sanitize inputs
     $machine_number = sanitize_input($_POST['machine_number'] ?? '');
     $brand_id = sanitize_input($_POST['brand_id'] ?? '');
     $model = sanitize_input($_POST['model'] ?? '');
-    $type = sanitize_input($_POST['type'] ?? '');
+    $type_id = sanitize_input($_POST['type_id'] ?? '');
     $credit_value = sanitize_input($_POST['credit_value'] ?? '');
     $manufacturing_year = sanitize_input($_POST['manufacturing_year'] ?? '');
     $ip_address = sanitize_input($_POST['ip_address'] ?? '');
@@ -54,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $status = sanitize_input($_POST['status'] ?? 'Active');
 
     // Validate required fields
-    if (empty($machine_number) || empty($model) || empty($type) || empty($credit_value)) {
+    if (empty($machine_number) || empty($model) || empty($type_id) || empty($credit_value)) {
         $error = "Please fill out all required fields.";
     } 
     else if (!empty($ip_address) && !is_valid_ip($ip_address)) {
@@ -88,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         machine_number = ?,
                         brand_id = ?,
                         model = ?,
-                        type = ?,
+                        type_id = ?,
                         credit_value = ?,
                         manufacturing_year = ?,
                         ip_address = ?,
@@ -101,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $machine_number,
                     $brand_id ?: null,
                     $model,
-                    $type,
+                    $type_id,
                     $credit_value,
                     $manufacturing_year ?: null,
                     $ip_address ?: null,
@@ -170,12 +179,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                     <div class="col">
                         <div class="form-group">
-                            <label for="type">Type *</label>
-                            <select id="type" name="type" class="form-control" required>
+                            <label for="type_id">Type *</label>
+                            <select id="type_id" name="type_id" class="form-control" required>
                                 <option value="">Select Type</option>
-                                <?php foreach ($machine_types as $type_opt): ?>
-                                    <option value="<?php echo $type_opt; ?>" <?php echo $machine['type'] == $type_opt ? 'selected' : ''; ?>>
-                                        <?php echo $type_opt; ?>
+                                <?php foreach ($machine_types as $type): ?>
+                                    <option value="<?php echo $type['id']; ?>" <?php echo $machine['type_id'] == $type['id'] ? 'selected' : ''; ?>>
+                                        <?php echo htmlspecialchars($type['name']); ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>

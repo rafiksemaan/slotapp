@@ -3,13 +3,12 @@
  * List all slot machines
  */
 
-
 // Get sorting parameters
 $sort_column = isset($_GET['sort']) ? $_GET['sort'] : 'machine_number';
 $sort_order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
 
 // Validate sort column
-$allowed_columns = ['machine_number', 'brand_id', 'type', 'credit_value', 'status'];
+$allowed_columns = ['machine_number', 'brand_id', 'type_id', 'credit_value', 'status'];
 if (!in_array($sort_column, $allowed_columns)) {
     $sort_column = 'machine_number';
 }
@@ -29,9 +28,10 @@ $filter_status = isset($_GET['status']) ? $_GET['status'] : '';
 
 // Build query
 $query = "
-    SELECT m.*, b.name as brand_name 
+    SELECT m.*, b.name as brand_name, mt.name as type_name 
     FROM machines m
     LEFT JOIN brands b ON m.brand_id = b.id
+    LEFT JOIN machine_types mt ON m.type_id = mt.id
     WHERE 1=1
 ";
 
@@ -44,7 +44,7 @@ if (!empty($filter_brand)) {
 }
 
 if (!empty($filter_type)) {
-    $query .= " AND m.type = ?";
+    $query .= " AND m.type_id = ?";
     $params[] = $filter_type;
 }
 
@@ -65,10 +65,15 @@ try {
     // Get brands for filter dropdown
     $brands_stmt = $conn->query("SELECT id, name FROM brands ORDER BY name");
     $brands = $brands_stmt->fetchAll();
+
+    // Get machine types for filter dropdown
+    $types_stmt = $conn->query("SELECT id, name FROM machine_types ORDER BY name");
+    $types = $types_stmt->fetchAll();
 } catch (PDOException $e) {
     echo "Database error: " . $e->getMessage();
     $machines = [];
     $brands = [];
+    $types = [];
 }
 ?>
 
@@ -96,9 +101,9 @@ try {
                 <label for="type">Type</label>
                 <select name="type" id="type" class="form-control">
                     <option value="">All Types</option>
-                    <?php foreach ($machine_types as $type): ?>
-                        <option value="<?php echo $type; ?>" <?php echo $filter_type == $type ? 'selected' : ''; ?>>
-                            <?php echo $type; ?>
+                    <?php foreach ($types as $type): ?>
+                        <option value="<?php echo $type['id']; ?>" <?php echo $filter_type == $type['id'] ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars($type['name']); ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
@@ -158,15 +163,16 @@ try {
                             </th>
                             <th>Model</th>
                             <th>
-                                <a href="index.php?page=machines&sort=type&order=<?php echo $sort_column == 'type' ? $toggle_order : 'ASC'; ?><?php echo !empty($filter_brand) ? '&brand=' . $filter_brand : ''; ?><?php echo !empty($filter_type) ? '&type=' . $filter_type : ''; ?><?php echo !empty($filter_status) ? '&status=' . $filter_status : ''; ?>">
+                                <a href="index.php?page=machines&sort=type_id&order=<?php echo $sort_column == 'type_id' ? $toggle_order : 'ASC'; ?><?php echo !empty($filter_brand) ? '&brand=' . $filter_brand : ''; ?><?php echo !empty($filter_type) ? '&type=' . $filter_type : ''; ?><?php echo !empty($filter_status) ? '&status=' . $filter_status : ''; ?>">
                                     Type
-                                    <?php if ($sort_column == 'type'): ?>
+                                    <?php if ($sort_column == 'type_id'): ?>
                                         <span class="sort-indicator"><?php echo $sort_order == 'ASC' ? '▲' : '▼'; ?></span>
                                     <?php endif; ?>
                                 </a>
                             </th>
                             <th>
-                                <a href="index.php?page=machines&sort=credit_value&order=<?php echo $sort_column == 'credit_value' ? $toggle_order : 'ASC'; ?><?php echo !empty($filter_brand) ? '&brand=' . $filter_brand : ''; ?><?php echo !empty($filter_type) ? '&type=' . $filter_type : ''; ?><?php echo !empty($filter_status) ? '&status=' . $filter_status : ''; ?>">
+                                <a href="index.php?page=machines&sort=credit_value&order=<?php echo $sort_column == 'credit_value' ? $toggle_order : 'ASC'; ?><?php echo !empty($filter_brand) ? '&brand=' . $filter_bran
+d : ''; ?><?php echo !empty($filter_type) ? '&type=' . $filter_type : ''; ?><?php echo !empty($filter_status) ? '&status=' . $filter_status : ''; ?>">
                                     Credit Value
                                     <?php if ($sort_column == 'credit_value'): ?>
                                         <span class="sort-indicator"><?php echo $sort_order == 'ASC' ? '▲' : '▼'; ?></span>
@@ -195,7 +201,7 @@ try {
                                     <td><?php echo htmlspecialchars($machine['machine_number']); ?></td>
                                     <td><?php echo htmlspecialchars($machine['brand_name'] ?? 'N/A'); ?></td>
                                     <td><?php echo htmlspecialchars($machine['model']); ?></td>
-                                    <td><?php echo htmlspecialchars($machine['type']); ?></td>
+                                    <td><?php echo htmlspecialchars($machine['type_name']); ?></td>
                                     <td><?php echo format_currency($machine['credit_value']); ?></td>
                                     <td>
                                         <span class="status status-<?php echo strtolower($machine['status']); ?>">
