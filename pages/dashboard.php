@@ -14,26 +14,69 @@ $cairo_now = new DateTime('now', new DateTimeZone('Africa/Cairo'));
 $today_start = $cairo_now->format('Y-m-d') . ' 00:00:00';
 $today_end = $cairo_now->format('Y-m-d') . ' 23:59:59';
 
+// Get today's transaction breakdown
+try {
+    // OUT transactions (type category = 'OUT')
+    $out_query = "
+        SELECT tt.name, SUM(t.amount) as total 
+        FROM transactions t
+        JOIN transaction_types tt ON t.transaction_type_id = tt.id
+        JOIN machines m ON t.machine_id = m.id
+        WHERE tt.category = 'OUT'
+        AND DATE(t.timestamp) = ?
+        GROUP BY tt.name
+    ";
+    $out_stmt = $conn->prepare($out_query);
+    $out_stmt->execute([$cairo_now->format('Y-m-d')]);
+    $out_transactions = $out_stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+    // DROP transactions (category = 'DROP')
+    $drop_query = "
+        SELECT tt.name, SUM(t.amount) as total 
+        FROM transactions t
+        JOIN transaction_types tt ON t.transaction_type_id = tt.id
+        JOIN machines m ON t.machine_id = m.id
+        WHERE tt.category = 'DROP'
+        AND DATE(t.timestamp) = ?
+        GROUP BY tt.name
+    ";
+    $drop_stmt = $conn->prepare($drop_query);
+    $drop_stmt->execute([$cairo_now->format('Y-m-d')]);
+    $drop_transactions = $drop_stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+} catch (PDOException $e) {
+    $out_transactions = [];
+    $drop_transactions = [];
+}
+
 // Get total counts
 try {
     // Count machines by status
-    $stmt = $conn->query("SELECT status, COUNT(*) as count FROM machines GROUP BY status");
-    $machine_stats = $stmt->fetchAll();
+$stmt = $conn->query("SELECT status, COUNT(*) as count FROM machines GROUP BY status");
+$machine_stats = $stmt->fetchAll();
+
+// Count machines by machine type
+$stmt = $conn->query("
+    SELECT mt.name AS machine_type, COUNT(*) AS count 
+    FROM machines m
+    JOIN machine_types mt ON m.type_id = mt.id
+    GROUP BY mt.id
+");
+$type_stats = $stmt->fetchAll();
     
-    // Count machines by type
-    $stmt = $conn->query("SELECT type, COUNT(*) as count FROM machines GROUP BY type");
-    $type_stats = $stmt->fetchAll();
-    
-    // Get total amounts for today (OUT)
-    $stmt = $conn->prepare("
-        SELECT tt.name, SUM(t.amount) as total 
-        FROM transactions t 
-        JOIN transaction_types tt ON t.transaction_type_id = tt.id 
-        WHERE tt.category = 'OUT' AND t.timestamp BETWEEN ? AND ?
-        GROUP BY tt.name
-    ");
-    $stmt->execute([$today_start, $today_end]);
-    $out_transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Get recent transactions with machine type
+$stmt = $conn->prepare("
+    SELECT t.id, m.machine_number, mt.name AS machine_type, tt.name as transaction_type, tt.category,
+           t.amount, t.timestamp, u.username 
+    FROM transactions t 
+    JOIN machines m ON t.machine_id = m.id 
+    JOIN machine_types mt ON m.type_id = mt.id 
+    JOIN transaction_types tt ON t.transaction_type_id = tt.id 
+    JOIN users u ON t.user_id = u.id 
+    ORDER BY t.timestamp DESC 
+    LIMIT 10
+");
+$stmt->execute();
+$recent_transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     // Get total amounts for today (DROP)
     $stmt = $conn->prepare("
@@ -103,7 +146,7 @@ $type_breakdown = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <div class="stat-title">Machines by Type</div>
             <div class="stat-value"><?php
                 foreach ($type_stats as $type) {
-                    echo "{$type['type']}: {$type['count']}<br>";
+                    echo "{$type['machine_type']}: {$type['count']}<br>";
                 }
             ?></div>
         </div>
