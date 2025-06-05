@@ -171,8 +171,7 @@ try {
                                 </a>
                             </th>
                             <th>
-                                <a href="index.php?page=machines&sort=credit_value&order=<?php echo $sort_column == 'credit_value' ? $toggle_order : 'ASC'; ?><?php echo !empty($filter_brand) ? '&brand=' . $filter_bran
-d : ''; ?><?php echo !empty($filter_type) ? '&type=' . $filter_type : ''; ?><?php echo !empty($filter_status) ? '&status=' . $filter_status : ''; ?>">
+                                <a href="index.php?page=machines&sort=credit_value&order=<?php echo $sort_column == 'credit_value' ? $toggle_order : 'ASC'; ?><?php echo !empty($filter_brand) ? '&brand=' . $filter_brand : ''; ?><?php echo !empty($filter_type) ? '&type=' . $filter_type : ''; ?><?php echo !empty($filter_status) ? '&status=' . $filter_status : ''; ?>">
                                     Credit Value
                                     <?php if ($sort_column == 'credit_value'): ?>
                                         <span class="sort-indicator"><?php echo $sort_order == 'ASC' ? '▲' : '▼'; ?></span>
