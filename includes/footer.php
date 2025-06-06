@@ -1,3 +1,7 @@
+<?php
+// Flush output buffer
+ob_end_flush();
+?>
 </div><!-- .page-content -->
             </main>
         </div><!-- .main-container -->

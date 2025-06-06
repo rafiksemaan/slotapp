@@ -4,6 +4,8 @@
 date_default_timezone_set('Africa/Cairo');
 $page = $_GET['page'] ?? 'dashboard';
 
+// Buffer output to prevent headers sent error
+ob_start();
 ?>
 
 <!DOCTYPE html>
