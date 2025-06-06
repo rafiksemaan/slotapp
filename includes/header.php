@@ -41,6 +41,7 @@ ob_start();
             <li><a href="index.php?page=dashboard" class="<?= $page == 'dashboard' ? 'active' : '' ?>"><span class="menu-icon">🏠</span> Dashboard</a></li>
             <li><a href="index.php?page=transactions" class="<?= $page == 'transactions' ? 'active' : '' ?>"><span class="menu-icon">💰</span> Transactions</a></li>
             <li><a href="index.php?page=reports" class="<?= $page == 'reports' ? 'active' : '' ?>"><span class="menu-icon">📊</span> Reports</a></li>
+			<li><a href="index.php?page=custom_report" class="<?= $page == 'custom_report' ? 'active' : '' ?>">📋 Custom Report</a></li>
 
             <!-- Admin Only: Settings Section -->
             <?php if ($_SESSION['user_role'] == 'admin'): ?>
