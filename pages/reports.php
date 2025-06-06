@@ -47,13 +47,15 @@ $query = "
     SELECT 
         m.id AS machine_id,
         m.machine_number,
-        m.type AS machine_type,
+        mt.name AS machine_type,
         tt.id AS transaction_type_id,
         tt.name AS transaction_type,
         tt.category,
         COALESCE(SUM(t.amount), 0) AS total_amount
     FROM 
         machines m
+    LEFT JOIN 
+        machine_types mt ON m.type_id = mt.id
     LEFT JOIN 
         transactions t ON m.id = t.machine_id AND t.timestamp BETWEEN ? AND ?
     LEFT JOIN 
@@ -79,19 +81,19 @@ try {
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Get machines for filter dropdown
-$query = "SELECT id, machine_number, type FROM machines";
-$params = [];
+    $query = "SELECT m.id, m.machine_number, mt.name as type FROM machines m LEFT JOIN machine_types mt ON m.type_id = mt.id";
+    $params = [];
 
-if ($brand_id !== 'all') {
-    $query .= " WHERE brand_id = ?";
-    $params[] = $brand_id;
-}
+    if ($brand_id !== 'all') {
+        $query .= " WHERE m.brand_id = ?";
+        $params[] = $brand_id;
+    }
 
-$query .= " ORDER BY machine_number";
+    $query .= " ORDER BY m.machine_number";
 
-$machines_stmt = $conn->prepare($query);
-$machines_stmt->execute($params);
-$machines = $machines_stmt->fetchAll(PDO::FETCH_ASSOC);
+    $machines_stmt = $conn->prepare($query);
+    $machines_stmt->execute($params);
+    $machines = $machines_stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Initialize report_data with default values for all machines
     foreach ($machines as $machine) {
@@ -223,7 +225,7 @@ $machines = $machines_stmt->fetchAll(PDO::FETCH_ASSOC);
             <!-- Submit Button -->
             <div class="filter-group">
                 <button type="submit" class="btn btn-primary w-full">Generate Report</button>
-				<a href="index.php?page=reports" class="btn btn-danger">Reset</a>
+                <a href="index.php?page=reports" class="btn btn-danger">Reset</a>
             </div>
         </form>
     </div>
@@ -301,7 +303,7 @@ $machines = $machines_stmt->fetchAll(PDO::FETCH_ASSOC);
                             <th class="px-4 py-2 text-right">Ticket</th>
                             <th class="px-4 py-2 text-right">Refill</th>
                             <th class="highlight-out px-4 py-2 text-right">Total OUT</th>
-							<th class="highlight-result px-4 py-2 text-right">Result</th>
+                            <th class="highlight-result px-4 py-2 text-right">Result</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-700">
@@ -334,7 +336,7 @@ $machines = $machines_stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <td class="px-4 py-2 text-right"><?php echo format_currency($coins_drop); ?></td>
                                     <td class="px-4 py-2 text-right"><?php echo format_currency($cash_drop); ?></td>
                                     <td class="highlight-drop px-4 py-2 text-right"><strong><?php echo format_currency($data['total_drop']); ?></strong></td>
-									<td class="px-4 py-2 text-right"><?php echo format_currency($handpay); ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo format_currency($handpay); ?></td>
                                     <td class="px-4 py-2 text-right"><?php echo format_currency($ticket); ?></td>
                                     <td class="px-4 py-2 text-right"><?php echo format_currency($refill); ?></td>
                                     <td class="highlight-out px-4 py-2 text-right"><strong><?php echo format_currency($data['total_out']); ?></strong></td>

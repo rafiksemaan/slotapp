@@ -15,12 +15,14 @@ try {
     // Get transaction details with related information
     $stmt = $conn->prepare("
         SELECT t.*, 
-               m.machine_number, m.model, m.type as machine_type,
+               m.machine_number, m.model,
+               mt.name as machine_type,
                b.name as brand_name,
                tt.name as transaction_type, tt.category,
                u.username, u.name as user_name
         FROM transactions t
         JOIN machines m ON t.machine_id = m.id
+        LEFT JOIN machine_types mt ON m.type_id = mt.id
         LEFT JOIN brands b ON m.brand_id = b.id
         JOIN transaction_types tt ON t.transaction_type_id = tt.id
         JOIN users u ON t.user_id = u.id
@@ -63,7 +65,7 @@ try {
                         <dd><?php echo format_currency($transaction['amount']); ?></dd>
 
                         <dt>Date & Time</dt>
-						<dd><?php echo htmlspecialchars(format_datetime($transaction['timestamp'], 'd M Y H:i:s')); ?></dd>
+                        <dd><?php echo htmlspecialchars(format_datetime($transaction['timestamp'], 'd M Y H:i:s')); ?></dd>
 
                         <dt>Notes</dt>
                         <dd><?php echo nl2br(htmlspecialchars($transaction['notes'] ?? 'No notes')); ?></dd>
