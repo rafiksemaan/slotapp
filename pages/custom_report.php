@@ -4,6 +4,28 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Handle export requests
+if (isset($_GET['export'])) {
+    $export_type = $_GET['export']; // 'pdf' or 'excel'
+    
+    // Get all the same parameters as the main report
+    $date_range_type = $_GET['date_range_type'] ?? 'month';
+    $date_from = $_GET['date_from'] ?? date('Y-m-01');
+    $date_to = $_GET['date_to'] ?? date('Y-m-t');
+    $month = $_GET['month'] ?? date('Y-m');
+    $machine_id = $_GET['machine_id'] ?? 'all';
+    $brand_id = $_GET['brand_id'] ?? 'all';
+    $selected_columns = $_GET['columns'] ?? [];
+    
+    if (!is_array($selected_columns)) {
+        $selected_columns = [];
+    }
+    
+    // Include the export handler
+    include 'custom_report/export.php';
+    exit;
+}
+
 // Get sorting parameters
 $sort_column = $_GET['sort'] ?? 'machine_number';
 $sort_order = $_GET['order'] ?? 'ASC';
@@ -247,6 +269,14 @@ foreach ($selected_columns as $col) {
 }
 
 $query_string = http_build_query($filter_params);
+
+// Build export URLs
+$export_base_params = $filter_params;
+$export_base_params['sort'] = $sort_column;
+$export_base_params['order'] = $sort_order;
+
+$pdf_export_url = $base_url . '&' . http_build_query($export_base_params) . '&export=pdf';
+$excel_export_url = $base_url . '&' . http_build_query($export_base_params) . '&export=excel';
 ?>
 
 <div class="custom-report-page fade-in">
@@ -448,6 +478,30 @@ $query_string = http_build_query($filter_params);
             </p>
         </div>
 
+        <!-- Export Buttons -->
+        <?php if (!empty($results) && !empty($error) === false): ?>
+            <div class="export-actions">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Export Options</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="export-buttons">
+                            <a href="<?= htmlspecialchars($pdf_export_url) ?>" class="btn btn-secondary" target="_blank">
+                                📄 Export to PDF
+                            </a>
+                            <a href="<?= htmlspecialchars($excel_export_url) ?>" class="btn btn-secondary">
+                                📊 Export to Excel
+                            </a>
+                        </div>
+                        <p class="export-note">
+                            <small>PDF will open in a new tab. Excel file will be downloaded automatically.</small>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
+
         <!-- Results Table -->
         <?php if (!empty($error)): ?>
             <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
@@ -586,12 +640,28 @@ document.addEventListener('DOMContentLoaded', function () {
     gap: 1rem;
 }
 
+.export-actions {
+    margin-bottom: 2rem;
+}
+
+.export-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.export-note {
+    margin: 0;
+    color: var(--text-muted);
+}
+
 @media (max-width: 768px) {
     .checkbox-grid {
         grid-template-columns: 1fr;
     }
     
-    .form-actions {
+    .form-actions,
+    .export-buttons {
         flex-direction: column;
     }
 }

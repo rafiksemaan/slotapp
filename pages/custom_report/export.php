@@ -1,0 +1,230 @@
+<?php
+/**
+ * Export handler for custom reports
+ * Handles both PDF and Excel exports
+ */
+
+// Prevent direct access
+if (!defined('EXPORT_HANDLER')) {
+    define('EXPORT_HANDLER', true);
+}
+
+// Get the same data as the main report
+$available_columns = [
+    'machine_number' => 'Machine #',
+    'brand_name' => 'Brand',
+    'model' => 'Model',
+    'machine_type' => 'Machine Type',
+    'credit_value' => 'Credit Value',
+    'serial_number' => 'Serial Number',
+    'manufacturing_year' => 'Manufacturing Year',
+    'total_handpay' => 'Total Handpay',
+    'total_ticket' => 'Total Ticket',
+    'total_refill' => 'Total Refill',
+    'total_coins_drop' => 'Total Coins Drop',
+    'total_cash_drop' => 'Total Cash Drop',
+    'total_out' => 'Total OUT',
+    'total_drop' => 'Total DROP',
+    'result' => 'Result'
+];
+
+// Calculate start/end dates
+if ($date_range_type === 'range') {
+    $start_date = $date_from;
+    $end_date = $date_to;
+} else {
+    list($year, $month_num) = explode('-', $month);
+    $start_date = "$year-$month_num-01";
+    $end_date = date("Y-m-t", strtotime($start_date));
+}
+
+// Get machines and brands for display
+try {
+    $machines_query = "SELECT m.id, m.machine_number, b.name AS brand_name 
+                       FROM machines m
+                       LEFT JOIN brands b ON m.brand_id = b.id
+                       ORDER BY m.machine_number";
+    $machines_stmt = $conn->query($machines_query);
+    $machines = $machines_stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    $brands_stmt = $conn->query("SELECT id, name FROM brands ORDER BY name");
+    $brands = $brands_stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $machines = [];
+    $brands = [];
+}
+
+// Build the same query as the main report
+try {
+    $select_parts = [];
+    $join_parts = [];
+    $group_by_parts = ['m.id'];
+    
+    // Always include machine ID and number
+    $select_parts[] = "m.id AS machine_id";
+    $select_parts[] = "m.machine_number";
+    
+    // Add selected columns
+    if (in_array('brand_name', $selected_columns)) {
+        $select_parts[] = "b.name AS brand_name";
+        $join_parts[] = "LEFT JOIN brands b ON m.brand_id = b.id";
+    }
+    
+    if (in_array('model', $selected_columns)) {
+        $select_parts[] = "m.model";
+    }
+    
+    if (in_array('machine_type', $selected_columns)) {
+        $select_parts[] = "mt.name AS machine_type";
+        $join_parts[] = "LEFT JOIN machine_types mt ON m.type_id = mt.id";
+    }
+    
+    if (in_array('credit_value', $selected_columns)) {
+        $select_parts[] = "m.credit_value";
+    }
+    
+    if (in_array('serial_number', $selected_columns)) {
+        $select_parts[] = "m.serial_number";
+    }
+    
+    if (in_array('manufacturing_year', $selected_columns)) {
+        $select_parts[] = "m.manufacturing_year";
+    }
+    
+    // Add transaction-related columns
+    $has_transactions = false;
+    
+    if (in_array('total_handpay', $selected_columns)) {
+        $select_parts[] = "COALESCE(SUM(CASE WHEN tt.name = 'Handpay' THEN t.amount ELSE 0 END), 0) AS total_handpay";
+        $has_transactions = true;
+    }
+    
+    if (in_array('total_ticket', $selected_columns)) {
+        $select_parts[] = "COALESCE(SUM(CASE WHEN tt.name = 'Ticket' THEN t.amount ELSE 0 END), 0) AS total_ticket";
+        $has_transactions = true;
+    }
+    
+    if (in_array('total_refill', $selected_columns)) {
+        $select_parts[] = "COALESCE(SUM(CASE WHEN tt.name = 'Refill' THEN t.amount ELSE 0 END), 0) AS total_refill";
+        $has_transactions = true;
+    }
+    
+    if (in_array('total_coins_drop', $selected_columns)) {
+        $select_parts[] = "COALESCE(SUM(CASE WHEN tt.name = 'Coins Drop' THEN t.amount ELSE 0 END), 0) AS total_coins_drop";
+        $has_transactions = true;
+    }
+    
+    if (in_array('total_cash_drop', $selected_columns)) {
+        $select_parts[] = "COALESCE(SUM(CASE WHEN tt.name = 'Cash Drop' THEN t.amount ELSE 0 END), 0) AS total_cash_drop";
+        $has_transactions = true;
+    }
+    
+    if (in_array('total_out', $selected_columns)) {
+        $select_parts[] = "COALESCE(SUM(CASE WHEN tt.category = 'OUT' THEN t.amount ELSE 0 END), 0) AS total_out";
+        $has_transactions = true;
+    }
+    
+    if (in_array('total_drop', $selected_columns)) {
+        $select_parts[] = "COALESCE(SUM(CASE WHEN tt.category = 'DROP' THEN t.amount ELSE 0 END), 0) AS total_drop";
+        $has_transactions = true;
+    }
+    
+    if (in_array('result', $selected_columns)) {
+        $select_parts[] = "COALESCE(SUM(CASE WHEN tt.category = 'DROP' THEN t.amount ELSE 0 END), 0) - COALESCE(SUM(CASE WHEN tt.category = 'OUT' THEN t.amount ELSE 0 END), 0) AS result";
+        $has_transactions = true;
+    }
+    
+    // Add transaction joins if needed
+    if ($has_transactions) {
+        $join_parts[] = "LEFT JOIN transactions t ON m.id = t.machine_id AND t.timestamp BETWEEN ? AND ?";
+        $join_parts[] = "LEFT JOIN transaction_types tt ON t.transaction_type_id = tt.id";
+    }
+    
+    // Build the complete query
+    $query = "SELECT " . implode(", ", $select_parts);
+    $query .= " FROM machines m";
+    $query .= " " . implode(" ", array_unique($join_parts));
+    $query .= " WHERE 1=1";
+    
+    // Initialize params array
+    $params = [];
+    
+    // Add date filter if transactions are involved
+    if ($has_transactions) {
+        $params[] = "{$start_date} 00:00:00";
+        $params[] = "{$end_date} 23:59:59";
+    }
+    
+    // Apply machine filter
+    if ($machine_id !== 'all') {
+        $query .= " AND m.id = ?";
+        $params[] = $machine_id;
+    }
+    
+    // Apply brand filter
+    if ($brand_id !== 'all') {
+        $query .= " AND m.brand_id = ?";
+        $params[] = $brand_id;
+    }
+    
+    // Add GROUP BY
+    $query .= " GROUP BY " . implode(", ", $group_by_parts);
+    
+    // Add ORDER BY
+    $sort_column = $_GET['sort'] ?? 'machine_number';
+    $sort_order = $_GET['order'] ?? 'ASC';
+    $query .= " ORDER BY `$sort_column` $sort_order";
+    
+    // Execute query
+    $stmt = $conn->prepare($query);
+    $stmt->execute($params);
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+} catch (PDOException $e) {
+    $results = [];
+    $error = "Database error: " . $e->getMessage();
+}
+
+// Generate report title
+$report_title = "Custom Report";
+if ($machine_id !== 'all') {
+    $selected_machine = null;
+    foreach ($machines as $m) {
+        if ($m['id'] == $machine_id) {
+            $selected_machine = $m;
+            break;
+        }
+    }
+    $report_subtitle = "Machine #" . ($selected_machine['machine_number'] ?? 'N/A');
+} elseif ($brand_id !== 'all') {
+    $selected_brand = null;
+    foreach ($brands as $b) {
+        if ($b['id'] == $brand_id) {
+            $selected_brand = $b;
+            break;
+        }
+    }
+    $report_subtitle = "Brand: " . ($selected_brand['name'] ?? 'N/A');
+} else {
+    $report_subtitle = "All Machines";
+}
+
+if ($date_range_type === 'range') {
+    $date_subtitle = date('d M Y', strtotime($date_from)) . ' – ' . date('d M Y', strtotime($date_to));
+} else {
+    $date_subtitle = date('F Y', strtotime($month));
+}
+
+// Handle export based on type
+if ($export_type === 'pdf') {
+    // PDF Export
+    include 'export_pdf.php';
+} elseif ($export_type === 'excel') {
+    // Excel Export
+    include 'export_excel.php';
+} else {
+    // Invalid export type
+    header("Location: index.php?page=custom_report&error=Invalid export type");
+    exit;
+}
+?>
