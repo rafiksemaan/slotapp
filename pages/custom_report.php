@@ -409,7 +409,7 @@ $excel_export_url = $base_url . '&' . http_build_query($export_base_params) . '&
                         <div class="checkbox-section">
                             <h5>Summary Totals</h5>
                             <?php 
-                            $summary_columns = ['total_out', 'total_drop', 'result'];
+                            $summary_columns = ['total_drop', 'total_out', 'result'];
                             foreach ($summary_columns as $key): 
                                 if (isset($available_columns[$key])):
                             ?>
@@ -538,7 +538,7 @@ $excel_export_url = $base_url . '&' . http_build_query($export_base_params) . '&
                                                 $value = $row[$column] ?? 'N/A';
                                                 
                                                 // Format specific columns
-                                                if (in_array($column, ['credit_value', 'total_handpay', 'total_ticket', 'total_refill', 'total_coins_drop', 'total_cash_drop', 'total_out', 'total_drop', 'result'])) {
+                                                if (in_array($column, ['credit_value', 'total_coins_drop', 'total_cash_drop', 'total_handpay', 'total_ticket', 'total_refill', 'total_drop', 'total_out', 'result'])) {
                                                     echo format_currency($value);
                                                 } else {
                                                     echo htmlspecialchars($value);
