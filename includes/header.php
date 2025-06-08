@@ -52,13 +52,13 @@ ob_start();
     </a>
     <ul class="submenu">
         <li><a href="index.php?page=machines" class="<?= $page == 'machines' ? 'active' : '' ?>">
-            <span class="submenu-icon">🧪</span> Machines</a></li>
+            <span class="submenu-icon">🎰</span> Machines</a></li>
         <li><a href="index.php?page=brands" class="<?= $page == 'brands' ? 'active' : '' ?>">
             <span class="submenu-icon">🏷️</span> Brands</a></li>
         <li><a href="index.php?page=machine_types" class="<?= $page == 'machine_types' ? 'active' : '' ?>">
-            <span class="submenu-icon">🎰</span> Machine Types</a></li>
+            <span class="submenu-icon">💰</span> Machine Types</a></li>
         <li><a href="index.php?page=machine_groups" class="<?= $page == 'machine_groups' ? 'active' : '' ?>">
-            <span class="submenu-icon">👥</span> Machine Groups</a></li>
+            <span class="submenu-icon">🎲</span> Machine Groups</a></li>
         <li><a href="index.php?page=users" class="<?= $page == 'users' ? 'active' : '' ?>">
             <span class="submenu-icon">👥</span> Users</a></li>
     </ul>
