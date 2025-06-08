@@ -45,7 +45,7 @@ ob_start();
 
             <!-- Admin Only: Settings Section -->
             <?php if ($_SESSION['user_role'] == 'admin'): ?>
-                <li class="settings-menu <?= in_array($page, ['machines', 'brands', 'machine_types', 'users']) ? 'open active' : '' ?>">
+                <li class="settings-menu <?= in_array($page, ['machines', 'brands', 'machine_types', 'machine_groups', 'users']) ? 'open active' : '' ?>">
     <a href="#" class="settings-toggle">
         <span class="menu-icon">⚙️</span>
         Settings <span class="submenu-arrow">▾</span>
@@ -57,6 +57,8 @@ ob_start();
             <span class="submenu-icon">🏷️</span> Brands</a></li>
         <li><a href="index.php?page=machine_types" class="<?= $page == 'machine_types' ? 'active' : '' ?>">
             <span class="submenu-icon">🎰</span> Machine Types</a></li>
+        <li><a href="index.php?page=machine_groups" class="<?= $page == 'machine_groups' ? 'active' : '' ?>">
+            <span class="submenu-icon">👥</span> Machine Groups</a></li>
         <li><a href="index.php?page=users" class="<?= $page == 'users' ? 'active' : '' ?>">
             <span class="submenu-icon">👥</span> Users</a></li>
     </ul>
@@ -108,7 +110,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const targetPage = url.searchParams.get('page');
 
                 // Collapse if not a settings subpage
-                if (!['machines', 'brands', 'machine_types', 'users'].includes(targetPage)) {
+                if (!['machines', 'brands', 'machine_types', 'machine_groups', 'users'].includes(targetPage)) {
                     if (settingsMenu) {
                         settingsMenu.classList.remove('open');
                         localStorage.setItem('settingsMenuOpen', 'false');
