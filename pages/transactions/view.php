@@ -15,14 +15,12 @@ try {
     // Get transaction details with related information
     $stmt = $conn->prepare("
         SELECT t.*, 
-               m.machine_number, m.model,
-               mt.name as machine_type,
+               m.machine_number, m.model, m.type as machine_type,
                b.name as brand_name,
                tt.name as transaction_type, tt.category,
                u.username, u.name as user_name
         FROM transactions t
         JOIN machines m ON t.machine_id = m.id
-        LEFT JOIN machine_types mt ON m.type_id = mt.id
         LEFT JOIN brands b ON m.brand_id = b.id
         JOIN transaction_types tt ON t.transaction_type_id = tt.id
         JOIN users u ON t.user_id = u.id
@@ -56,7 +54,7 @@ try {
                     <dl class="detail-list">
                         <dt>Transaction Type</dt>
                         <dd>
-                            <span <?php echo strtolower($transaction['category']); ?>">
+                            <span class="status status-<?php echo strtolower($transaction['category']); ?>">
                                 <?php echo htmlspecialchars($transaction['transaction_type']); ?>
                             </span>
                         </dd>
@@ -97,7 +95,7 @@ try {
                         <dt>User</dt>
                         <dd><?php echo htmlspecialchars($transaction['username']); ?></dd>
 
-                        <dt>Role</dt>
+                        <dt>Full Name</dt>
                         <dd><?php echo htmlspecialchars($transaction['user_name']); ?></dd>
 
                         <dt>Created At</dt>

@@ -22,18 +22,18 @@ $success = false;
 // Get current transaction data
 try {
     $stmt = $conn->prepare("
-    SELECT t.*, 
-           m.machine_number, m.model, m.type as machine_type,
-           b.name as brand_name,
-           tt.name as transaction_type, tt.category,
-           u.username, u.name as user_name
-    FROM transactions t
-    JOIN machines m ON t.machine_id = m.id
-    LEFT JOIN brands b ON m.brand_id = b.id
-    JOIN transaction_types tt ON t.transaction_type_id = tt.id
-    JOIN users u ON t.user_id = u.id
-    WHERE t.id = ?
-");
+        SELECT t.*, 
+               m.machine_number, m.model, m.type as machine_type,
+               b.name as brand_name,
+               tt.name as transaction_type, tt.category,
+               u.username, u.name as user_name
+        FROM transactions t
+        JOIN machines m ON t.machine_id = m.id
+        LEFT JOIN brands b ON m.brand_id = b.id
+        JOIN transaction_types tt ON t.transaction_type_id = tt.id
+        JOIN users u ON t.user_id = u.id
+        WHERE t.id = ?
+    ");
     $stmt->execute([$transaction_id]);
     $transaction = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -42,11 +42,9 @@ try {
         exit;
     }
 } catch (PDOException $e) {
-    header("Location: index.php?page=transactions&error=Database error");
+    header("Location: index.php?page=transactions&error=Database error: " . urlencode($e->getMessage()));
     exit;
 }
-
-
 
 // Get all transaction types
 try {
@@ -77,6 +75,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validate required fields
     if (empty($machine_id) || empty($transaction_type_id) || empty($amount) || empty($timestamp)) {
         $error = "Please fill out all required fields.";
+    } elseif (!is_numeric($amount) || $amount <= 0) {
+        $error = "Amount must be a positive number.";
     } else {
         try {
             // Update transaction
@@ -101,13 +101,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($result) {
                 log_action('update_transaction', "Updated transaction ID: {$transaction_id}");
-                $success = true;
-
-                // Redirect after successful update
-                if (!headers_sent()) {
-                    header("Location: index.php?page=transactions&message=Transaction updated successfully");
-                    exit;
-                }
+                header("Location: index.php?page=transactions&message=Transaction updated successfully");
+                exit;
             } else {
                 $error = "Failed to update transaction.";
             }
@@ -124,9 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <h3>Edit Transaction</h3>
         </div>
         <div class="card-body">
-            <?php if ($success): ?>
-                <div class="alert alert-success">Transaction updated successfully!</div>
-            <?php elseif ($error): ?>
+            <?php if ($error): ?>
                 <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
             <?php endif; ?>
 
@@ -134,10 +127,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="row">
                     <div class="col">
                         <div class="form-group">
-							<label for="timestamp">Date & Time *</label>
-							<input type="datetime-local" id="timestamp" name="timestamp" class="form-control"
-    value="<?php echo date('Y-m-d\TH:i', strtotime($transaction['timestamp'])); ?>" required>
-						</div>
+                            <label for="timestamp">Date & Time *</label>
+                            <input type="datetime-local" id="timestamp" name="timestamp" class="form-control"
+                                   value="<?php echo date('Y-m-d\TH:i', strtotime($transaction['timestamp'])); ?>" required>
+                        </div>
                     </div>
                     <div class="col">
                         <div class="form-group">
@@ -160,19 +153,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <label for="transaction_type_id">Transaction Type *</label>
                             <select id="transaction_type_id" name="transaction_type_id" class="form-control" required>
                                 <option value="">Select Type</option>
-                                <?php foreach ($transaction_types as $type): ?>
-                                    <option value="<?php echo $type['id']; ?>" <?php echo $type['id'] == $transaction['transaction_type_id'] ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($type['name']); ?> (<?php echo $type['category']; ?>)
-                                    </option>
-                                <?php endforeach; ?>
+                                <optgroup label="OUT">
+                                    <?php foreach ($transaction_types as $type): ?>
+                                        <?php if ($type['category'] == 'OUT'): ?>
+                                            <option value="<?php echo $type['id']; ?>" <?php echo $type['id'] == $transaction['transaction_type_id'] ? 'selected' : ''; ?>>
+                                                <?php echo htmlspecialchars($type['name']); ?>
+                                            </option>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                </optgroup>
+                                <optgroup label="DROP">
+                                    <?php foreach ($transaction_types as $type): ?>
+                                        <?php if ($type['category'] == 'DROP'): ?>
+                                            <option value="<?php echo $type['id']; ?>" <?php echo $type['id'] == $transaction['transaction_type_id'] ? 'selected' : ''; ?>>
+                                                <?php echo htmlspecialchars($type['name']); ?>
+                                            </option>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                </optgroup>
                             </select>
                         </div>
                     </div>
                     <div class="col">
                         <div class="form-group">
-							<label for="amount">Amount *</label>
-							<input type="number" id="amount" name="amount" step="0.01" min="0" class="form-control" value="<?php echo number_format((float)$transaction['amount'], 2, '.', ''); ?>" required>
-</div>
+                            <label for="amount">Amount *</label>
+                            <input type="number" id="amount" name="amount" step="0.01" min="0.01" class="form-control" 
+                                   value="<?php echo number_format((float)$transaction['amount'], 2, '.', ''); ?>" required>
+                        </div>
                     </div>
                 </div>
 
