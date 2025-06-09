@@ -254,7 +254,7 @@
 	// Calculate totals for selected columns
 	$totals = [];
 	if (!empty($results) && !empty($selected_columns)) {
-		$monetary_columns = ['credit_value', 'total_handpay', 'total_ticket', 'total_refill', 'total_coins_drop', 'total_cash_drop', 'total_out', 'total_drop', 'result'];
+		$monetary_columns = ['total_handpay', 'total_ticket', 'total_refill', 'total_coins_drop', 'total_cash_drop', 'total_out', 'total_drop', 'result'];
 		
 		foreach ($selected_columns as $column) {
 			if (in_array($column, $monetary_columns)) {
