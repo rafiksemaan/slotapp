@@ -929,7 +929,8 @@ option:focus {
 
 .submenu-arrow {
     float: right;
-    font-size: 0.875rem;
+    font-size: 1rem;
+	margin-left: 2px;
 }
 
 /* Submenu styling */

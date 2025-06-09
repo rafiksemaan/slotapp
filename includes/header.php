@@ -50,7 +50,7 @@ define('ICON_PATH', 'assets/icons'); // Make sure this matches your actual folde
 
             <!-- Admin Only: Settings Section -->
             <?php if ($_SESSION['user_role'] == 'admin'): ?>
-			<li class="settings-menu <?= in_array($page, ['machines', 'brands', 'machine_types', 'machine_groups', 'users']) ? 'open active' : '' ?>"><a href="#" class="settings-toggle"><span class="menu-icon"><img src="<?= icon('settings') ?>"</span> Settings <span class="submenu-arrow"> ▾</span>
+			<li class="settings-menu <?= in_array($page, ['machines', 'brands', 'machine_types', 'machine_groups', 'users']) ? 'open active' : '' ?>"><a href="#" class="settings-toggle"><span class="menu-icon"><img src="<?= icon('settings') ?>"</span> Settings <span class="submenu-arrow"> ▾ </span>
     </a>
     <ul class="submenu">
         <li><a href="index.php?page=machines" class="<?= $page == 'machines' ? 'active' : '' ?>">
