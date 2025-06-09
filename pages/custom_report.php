@@ -1,4 +1,4 @@
-	<?php
+<?php
 	// Start session early
 	if (session_status() === PHP_SESSION_NONE) {
 		session_start();
@@ -16,6 +16,8 @@
 		$machine_id = $_GET['machine_id'] ?? 'all';
 		$brand_id = $_GET['brand_id'] ?? 'all';
 		$selected_columns = $_GET['columns'] ?? [];
+		$sort_column = $_GET['sort'] ?? 'machine_number';
+		$sort_order = $_GET['order'] ?? 'ASC';
 		
 		if (!is_array($selected_columns)) {
 			$selected_columns = [];
@@ -31,7 +33,7 @@
 	$sort_order = $_GET['order'] ?? 'ASC';
 
 	// Validate sort column
-	$allowed_columns = ['machine_number', 'brand_name', 'model', 'machine_type', 'credit_value', 'serial_number', 'manufacturing_year', 'total_out', 'total_drop', 'result'];
+	$allowed_columns = ['machine_number', 'brand_name', 'model', 'machine_type', 'credit_value', 'serial_number', 'manufacturing_year', 'total_handpay', 'total_ticket', 'total_refill', 'total_coins_drop', 'total_cash_drop', 'total_out', 'total_drop', 'result'];
 	if (!in_array($sort_column, $allowed_columns)) {
 		$sort_column = 'machine_number';
 	}
@@ -247,6 +249,22 @@
 	} catch (PDOException $e) {
 		$results = [];
 		$error = "Database error: " . $e->getMessage();
+	}
+
+	// Calculate totals for selected columns
+	$totals = [];
+	if (!empty($results) && !empty($selected_columns)) {
+		$monetary_columns = ['credit_value', 'total_handpay', 'total_ticket', 'total_refill', 'total_coins_drop', 'total_cash_drop', 'total_out', 'total_drop', 'result'];
+		
+		foreach ($selected_columns as $column) {
+			if (in_array($column, $monetary_columns)) {
+				$total = 0;
+				foreach ($results as $row) {
+					$total += (float)($row[$column] ?? 0);
+				}
+				$totals[$column] = $total;
+			}
+		}
 	}
 
 	// Build base URL with current filters
@@ -548,6 +566,23 @@
 											<?php endforeach; ?>
 										</tr>
 									<?php endforeach; ?>
+									
+									<!-- Totals Row -->
+									<?php if (!empty($totals)): ?>
+										<tr class="totals-row bg-gray-800 text-white font-bold">
+											<?php foreach ($selected_columns as $column): ?>
+												<td>
+													<?php if ($column === 'machine_number'): ?>
+														<strong>TOTALS</strong>
+													<?php elseif (isset($totals[$column])): ?>
+														<strong><?= format_currency($totals[$column]) ?></strong>
+													<?php else: ?>
+														<!-- Empty cell for non-monetary columns -->
+													<?php endif; ?>
+												</td>
+											<?php endforeach; ?>
+										</tr>
+									<?php endif; ?>
 								</tbody>
 							</table>
 						</div>
@@ -667,24 +702,36 @@
 	}
 	
 	/* Add column separator */
-.separated-columns td,
-.separated-columns th {
-    border-right: 1px solid #374151; /* Tailwind's gray-700 */
-    padding-right: 1rem;
-}
+	.separated-columns td,
+	.separated-columns th {
+		border-right: 1px solid #374151; /* Tailwind's gray-700 */
+		padding-right: 1rem;
+	}
 
-.separated-columns td:last-child,
-.separated-columns th:last-child {
-    border-right: none;
-    padding-right: 0.75rem;
-}
+	.separated-columns td:last-child,
+	.separated-columns th:last-child {
+		border-right: none;
+		padding-right: 0.75rem;
+	}
 
-/* Optional: Highlight entire column on hover */
-.separated-columns tr:hover td {
-    background-color: rgba(255, 255, 255, 0.05);
-}
+	/* Optional: Highlight entire column on hover */
+	.separated-columns tr:hover td {
+		background-color: rgba(255, 255, 255, 0.05);
+	}
 
-/* Add space between column groups */
-.machine-column { max-width: 10px; }
-.transaction-column { max-width: 15px; }
+	/* Totals row styling */
+	.totals-row {
+		background-color: var(--primary-color) !important;
+		color: var(--text-light) !important;
+		font-weight: bold;
+	}
+
+	.totals-row td {
+		border-top: 2px solid var(--secondary-color);
+		padding: 0.75rem;
+	}
+
+	/* Add space between column groups */
+	.machine-column { max-width: 10px; }
+	.transaction-column { max-width: 15px; }
 	</style>

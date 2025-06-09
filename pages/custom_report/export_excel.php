@@ -61,6 +61,21 @@ if (!empty($selected_columns)) {
             }
             fputcsv($output, $csv_row);
         }
+        
+        // Add totals row
+        if (!empty($totals)) {
+            $totals_row = [];
+            foreach ($selected_columns as $column) {
+                if ($column === 'machine_number') {
+                    $totals_row[] = 'TOTALS';
+                } elseif (isset($totals[$column])) {
+                    $totals_row[] = number_format($totals[$column], 2, '.', '');
+                } else {
+                    $totals_row[] = '';
+                }
+            }
+            fputcsv($output, $totals_row);
+        }
     } else {
         fputcsv($output, ['No data found for the selected criteria.']);
     }
@@ -74,21 +89,6 @@ fputcsv($output, ['Summary Information:']);
 
 // Calculate totals if applicable
 if (!empty($results) && !empty($selected_columns)) {
-    $totals = [];
-    
-    // Calculate totals for monetary columns
-    $monetary_columns = ['credit_value', 'total_handpay', 'total_ticket', 'total_refill', 'total_coins_drop', 'total_cash_drop', 'total_out', 'total_drop', 'result'];
-    
-    foreach ($monetary_columns as $col) {
-        if (in_array($col, $selected_columns)) {
-            $total = 0;
-            foreach ($results as $row) {
-                $total += (float)($row[$col] ?? 0);
-            }
-            $totals[$col] = $total;
-        }
-    }
-    
     // Write totals
     if (!empty($totals)) {
         fputcsv($output, ['Column Totals:']);

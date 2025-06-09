@@ -86,6 +86,15 @@ $filename = 'custom_report_' . date('Y-m-d_H-i-s') . '.pdf';
             text-align: right;
         }
         
+        .totals-row {
+            background-color: #e8e8e8;
+            font-weight: bold;
+        }
+        
+        .totals-row td {
+            border-top: 2px solid #333;
+        }
+        
         .no-data {
             text-align: center;
             padding: 40px;
@@ -172,6 +181,27 @@ $filename = 'custom_report_' . date('Y-m-d_H-i-s') . '.pdf';
                         <?php endforeach; ?>
                     </tr>
                 <?php endforeach; ?>
+                
+                <!-- Totals Row -->
+                <?php if (!empty($totals)): ?>
+                    <tr class="totals-row">
+                        <?php foreach ($selected_columns as $column): ?>
+                            <td <?php 
+                                if (in_array($column, ['credit_value', 'total_handpay', 'total_ticket', 'total_refill', 'total_coins_drop', 'total_cash_drop', 'total_out', 'total_drop', 'result'])) {
+                                    echo 'class="currency"';
+                                }
+                            ?>>
+                                <?php if ($column === 'machine_number'): ?>
+                                    TOTALS
+                                <?php elseif (isset($totals[$column])): ?>
+                                    <?= format_currency($totals[$column]) ?>
+                                <?php else: ?>
+                                    <!-- Empty cell for non-monetary columns -->
+                                <?php endif; ?>
+                            </td>
+                        <?php endforeach; ?>
+                    </tr>
+                <?php endif; ?>
             </tbody>
         </table>
     <?php else: ?>

@@ -171,8 +171,6 @@ try {
     $query .= " GROUP BY " . implode(", ", $group_by_parts);
     
     // Add ORDER BY
-    $sort_column = $_GET['sort'] ?? 'machine_number';
-    $sort_order = $_GET['order'] ?? 'ASC';
     $query .= " ORDER BY `$sort_column` $sort_order";
     
     // Execute query
@@ -183,6 +181,22 @@ try {
 } catch (PDOException $e) {
     $results = [];
     $error = "Database error: " . $e->getMessage();
+}
+
+// Calculate totals for export
+$totals = [];
+if (!empty($results) && !empty($selected_columns)) {
+    $monetary_columns = ['credit_value', 'total_handpay', 'total_ticket', 'total_refill', 'total_coins_drop', 'total_cash_drop', 'total_out', 'total_drop', 'result'];
+    
+    foreach ($selected_columns as $column) {
+        if (in_array($column, $monetary_columns)) {
+            $total = 0;
+            foreach ($results as $row) {
+                $total += (float)($row[$column] ?? 0);
+            }
+            $totals[$column] = $total;
+        }
+    }
 }
 
 // Generate report title
