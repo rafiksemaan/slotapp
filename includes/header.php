@@ -18,6 +18,11 @@ ob_start();
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="assets/js/jquery-3.6.0.min.js"></script>
     <script src="assets/js/main.js"></script>
+	
+	<?php
+// Define base URL or path to icons
+define('ICON_PATH', 'assets/icons'); // Make sure this matches your actual folder name
+?>
 </head>
 
 <body>
@@ -38,29 +43,26 @@ ob_start();
     <nav class="main-nav">
         <ul>
             <!-- Regular menu items -->
-            <li><a href="index.php?page=dashboard" class="<?= $page == 'dashboard' ? 'active' : '' ?>"><span class="menu-icon">🏠</span> Dashboard</a></li>
-            <li><a href="index.php?page=transactions" class="<?= $page == 'transactions' ? 'active' : '' ?>"><span class="menu-icon">💰</span> Transactions</a></li>
-            <li><a href="index.php?page=reports" class="<?= $page == 'reports' ? 'active' : '' ?>"><span class="menu-icon">📊</span> Reports</a></li>
-			<li><a href="index.php?page=custom_report" class="<?= $page == 'custom_report' ? 'active' : '' ?>">📋 Custom Report</a></li>
+            <li><a href="index.php?page=dashboard" class="<?= $page == 'dashboard' ? 'active' : '' ?>"><span class="menu-icon"><img src="<?= icon('home') ?>" alt="Dashboard" /></span> Dashboard</a></li>
+            <li><a href="index.php?page=transactions" class="<?= $page == 'transactions' ? 'active' : '' ?>"><span class="menu-icon"><img src="<?= icon('dollar-sign') ?>" alt="transactions" /></span> Transactions</a></li>
+            <li><a href="index.php?page=reports" class="<?= $page == 'reports' ? 'active' : '' ?>"><span class="menu-icon"><img src="<?= icon('report') ?>" alt="reports" /></span> Reports</a></li>
+			<li><a href="index.php?page=custom_report" class="<?= $page == 'custom_report' ? 'active' : '' ?>"><span class="menu-icon"><img src="<?= icon('report-chart') ?>" alt="custom_report" /> Custom Report</a></li>
 
             <!-- Admin Only: Settings Section -->
             <?php if ($_SESSION['user_role'] == 'admin'): ?>
-                <li class="settings-menu <?= in_array($page, ['machines', 'brands', 'machine_types', 'machine_groups', 'users']) ? 'open active' : '' ?>">
-    <a href="#" class="settings-toggle">
-        <span class="menu-icon">⚙️</span>
-        Settings <span class="submenu-arrow">▾</span>
+			<li class="settings-menu <?= in_array($page, ['machines', 'brands', 'machine_types', 'machine_groups', 'users']) ? 'open active' : '' ?>"><a href="#" class="settings-toggle"><span class="menu-icon"><img src="<?= icon('settings') ?>"</span> Settings <span class="submenu-arrow"> ▾</span>
     </a>
     <ul class="submenu">
         <li><a href="index.php?page=machines" class="<?= $page == 'machines' ? 'active' : '' ?>">
-            <span class="submenu-icon">🎰</span> Machines</a></li>
+            <span class="submenu-icon"><img src="<?= icon('machines') ?>" alt="machines" /></span> Machines</a></li>
         <li><a href="index.php?page=brands" class="<?= $page == 'brands' ? 'active' : '' ?>">
-            <span class="submenu-icon">🏷️</span> Brands</a></li>
+            <span class="submenu-icon"><img src="<?= icon('brands') ?>" alt="brands" />️</span> Brands</a></li>
         <li><a href="index.php?page=machine_types" class="<?= $page == 'machine_types' ? 'active' : '' ?>">
-            <span class="submenu-icon">💠</span> Machine Types</a></li>
+            <span class="submenu-icon"><img src="<?= icon('types') ?>" alt="types" /></span> Machine Types</a></li>
         <li><a href="index.php?page=machine_groups" class="<?= $page == 'machine_groups' ? 'active' : '' ?>">
-            <span class="submenu-icon">⭐</span> Machine Groups</a></li>
+            <span class="submenu-icon"><img src="<?= icon('groups') ?>" alt="groups" /></span> Machine Groups</a></li>
         <li><a href="index.php?page=users" class="<?= $page == 'users' ? 'active' : '' ?>">
-            <span class="submenu-icon">👥</span> Users</a></li>
+            <span class="submenu-icon"><img src="<?= icon('users') ?>" alt="users" /></span> Users</a></li>
     </ul>
 </li>
             <?php endif; ?>

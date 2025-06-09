@@ -342,9 +342,9 @@ $total_result = $total_drop - $total_out;
                                     <td class="px-4 py-2"><?php echo htmlspecialchars($t['username']); ?></td>
                                     <td class="px-4 py-2"><?php echo htmlspecialchars($t['notes'] ?? ''); ?></td>
                                     <td class="px-4 py-2 text-right">
-										<a href="index.php?page=transactions&action=view&id=<?php echo $t['id']; ?>" class="action-btn view-btn" data-tooltip="View Details">👁️</a>
-                                        <a href="index.php?page=transactions&action=edit&id=<?php echo $t['id']; ?>" class="action-btn edit-btn" data-tooltip="Edit">✏️</a>
-                                        <a href="index.php?page=transactions&action=delete&id=<?php echo $t['id']; ?>" class="action-btn delete-btn" data-tooltip="Delete" data-confirm="Are you sure you want to delete this transaction?">🗑️</a>
+										<a href="index.php?page=transactions&action=view&id=<?php echo $t['id']; ?>" class="action-btn view-btn" data-tooltip="View Details"><span class="menu-icon"><img src="<?= icon('view2') ?>"/></span></a>
+                                        <a href="index.php?page=transactions&action=edit&id=<?php echo $t['id']; ?>" class="action-btn edit-btn" data-tooltip="Edit"><span class="menu-icon"><img src="<?= icon('edit') ?>"/></span></a>
+                                        <a href="index.php?page=transactions&action=delete&id=<?php echo $t['id']; ?>" class="action-btn delete-btn" data-tooltip="Delete" data-confirm="Are you sure you want to delete this transaction?"><span class="menu-icon"><img src="<?= icon('delete') ?>"/></span></a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

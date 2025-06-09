@@ -917,7 +917,7 @@ option:focus {
 }
 
 /* Sidebar Icons */
-.menu-icon {
+.	 {
     margin-right: 0.5rem;
 }
 
@@ -1068,4 +1068,29 @@ option:focus {
 
 #table-container table {
     @apply min-w-full divide-y divide-gray-700;
+}
+
+.menu-icon {
+  display: inline-block;
+  height: auto;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+.submenu-icon {
+  display: inline-block;
+  height: auto;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.menu-icon img {
+  width: 20px;         /* Set desired width */
+  height: auto;        /* Keep aspect ratio */
+  max-width: 100%;     /* Prevent overflow */
+}
+
+.submenu-icon img {
+  width: 20px;         /* Set desired width */
+  height: auto;        /* Keep aspect ratio */
+  max-width: 100%;     /* Prevent overflow */
 }

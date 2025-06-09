@@ -102,8 +102,8 @@ $message = isset($_GET['message']) ? $_GET['message'] : '';
                                     <td><?php echo $brand['machine_count']; ?></td>
                                     <td>
                                         <?php if ($can_edit): ?>
-                                            <a href="index.php?page=brands&action=edit&id=<?php echo $brand['id']; ?>" class="action-btn edit-btn" data-tooltip="Edit">✏️</a>
-                                            <a href="index.php?page=brands&action=delete&id=<?php echo $brand['id']; ?>" class="action-btn delete-btn" data-tooltip="Delete" data-confirm="Are you sure you want to delete this brand?">🗑️</a>
+                                            <a href="index.php?page=brands&action=edit&id=<?php echo $brand['id']; ?>" class="action-btn edit-btn" data-tooltip="Edit"><span class="menu-icon"><img src="<?= icon('edit') ?>"/></span></a>
+                                            <a href="index.php?page=brands&action=delete&id=<?php echo $brand['id']; ?>" class="action-btn delete-btn" data-tooltip="Delete" data-confirm="Are you sure you want to delete this brand?"><span class="menu-icon"><img src="<?= icon('delete') ?>"/></span></a>
                                         <?php endif; ?>
                                     </td>
                                 </tr>

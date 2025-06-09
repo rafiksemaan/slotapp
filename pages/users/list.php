@@ -131,8 +131,8 @@ try {
                                     <td class="px-4 py-2"><?php echo ucfirst($user['status']); ?></td>
                                     <td class="px-4 py-2 text-right">
                                         <?php if ($can_edit): ?>
-                                            <a href="index.php?page=users&action=edit&id=<?php echo $user['id']; ?>" class="action-btn edit-btn" data-tooltip="Edit">✏️</a>
-                                            <a href="index.php?page=users&action=delete&id=<?php echo $user['id']; ?>" class="action-btn delete-btn" data-tooltip="Delete" data-confirm="Are you sure you want to delete this user?">🗑️</a>
+                                            <a href="index.php?page=users&action=edit&id=<?php echo $user['id']; ?>" class="action-btn edit-btn" data-tooltip="Edit"><span class="menu-icon"><img src="<?= icon('edit') ?>"/></span></a>
+                                            <a href="index.php?page=users&action=delete&id=<?php echo $user['id']; ?>" class="action-btn delete-btn" data-tooltip="Delete" data-confirm="Are you sure you want to delete this user?"><span class="menu-icon"><img src="<?= icon('delete') ?>"/></span></a>
                                         <?php endif; ?>
                                     </td>
                                 </tr>

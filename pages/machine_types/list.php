@@ -102,8 +102,8 @@ $message = isset($_GET['message']) ? $_GET['message'] : '';
                                     <td><?php echo $type['machine_count']; ?></td>
                                     <td>
                                         <?php if ($can_edit): ?>
-                                            <a href="index.php?page=machine_types&action=edit&id=<?php echo $type['id']; ?>" class="action-btn edit-btn" data-tooltip="Edit">✏️</a>
-                                            <a href="index.php?page=machine_types&action=delete&id=<?php echo $type['id']; ?>" class="action-btn delete-btn" data-tooltip="Delete" data-confirm="Are you sure you want to delete this machine type?">🗑️</a>
+                                            <a href="index.php?page=machine_types&action=edit&id=<?php echo $type['id']; ?>" class="action-btn edit-btn" data-tooltip="Edit"><span class="menu-icon"><img src="<?= icon('edit') ?>"/></span></a>
+                                            <a href="index.php?page=machine_types&action=delete&id=<?php echo $type['id']; ?>" class="action-btn delete-btn" data-tooltip="Delete" data-confirm="Are you sure you want to delete this machine type?"><span class="menu-icon"><img src="<?= icon('delete') ?>"/></span></a>
                                         <?php endif; ?>
                                     </td>
                                 </tr>

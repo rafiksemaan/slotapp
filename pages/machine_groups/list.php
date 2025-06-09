@@ -115,9 +115,9 @@ $error = isset($_GET['error']) ? $_GET['error'] : '';
                                     <td><?php echo $group['machine_count']; ?></td>
                                     <td><?php echo format_datetime($group['created_at'], 'd M Y'); ?></td>
                                     <td>
-                                        <a href="index.php?page=machine_groups&action=view&id=<?php echo $group['id']; ?>" class="action-btn view-btn" data-tooltip="View Details">👁️</a>
-                                        <a href="index.php?page=machine_groups&action=edit&id=<?php echo $group['id']; ?>" class="action-btn edit-btn" data-tooltip="Edit">✏️</a>
-                                        <a href="index.php?page=machine_groups&action=delete&id=<?php echo $group['id']; ?>" class="action-btn delete-btn" data-tooltip="Delete" data-confirm="Are you sure you want to delete this group?">🗑️</a>
+                                        <a href="index.php?page=machine_groups&action=view&id=<?php echo $group['id']; ?>" class="action-btn view-btn" data-tooltip="View Details"><span class="menu-icon"><img src="<?= icon('view2') ?>"/></span></a>
+                                        <a href="index.php?page=machine_groups&action=edit&id=<?php echo $group['id']; ?>" class="action-btn edit-btn" data-tooltip="Edit"><span class="menu-icon"><img src="<?= icon('edit') ?>"/></span></a>
+                                        <a href="index.php?page=machine_groups&action=delete&id=<?php echo $group['id']; ?>" class="action-btn delete-btn" data-tooltip="Delete" data-confirm="Are you sure you want to delete this group?"><span class="menu-icon"><img src="<?= icon('delete') ?>"/></span></a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

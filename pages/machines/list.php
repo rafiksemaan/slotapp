@@ -208,11 +208,11 @@ try {
                                         </span>
                                     </td>
                                     <td>
-                                        <a href="index.php?page=machines&action=view&id=<?php echo $machine['id']; ?>" class="action-btn view-btn" data-tooltip="View Details">👁️</a>
+                                        <a href="index.php?page=machines&action=view&id=<?php echo $machine['id']; ?>" class="action-btn view-btn" data-tooltip="View Details"><span class="menu-icon"><img src="<?= icon('view2') ?>"/></span></a>
                                         
                                         <?php if ($can_edit): ?>
-                                            <a href="index.php?page=machines&action=edit&id=<?php echo $machine['id']; ?>" class="action-btn edit-btn" data-tooltip="Edit">✏️</a>
-                                            <a href="index.php?page=machines&action=delete&id=<?php echo $machine['id']; ?>" class="action-btn delete-btn" data-tooltip="Delete" data-confirm="Are you sure you want to delete this machine?">🗑️</a>
+                                            <a href="index.php?page=machines&action=edit&id=<?php echo $machine['id']; ?>" class="action-btn edit-btn" data-tooltip="Edit"><span class="menu-icon"><img src="<?= icon('edit') ?>"/></span></a>
+                                            <a href="index.php?page=machines&action=delete&id=<?php echo $machine['id']; ?>" class="action-btn delete-btn" data-tooltip="Delete" data-confirm="Are you sure you want to delete this machine?"><span class="menu-icon"><img src="<?= icon('delete') ?>"/></span></a>
                                         <?php endif; ?>
                                     </td>
                                 </tr>

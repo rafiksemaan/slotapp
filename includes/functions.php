@@ -218,3 +218,7 @@ if (!function_exists('format_date')) {
         return date('d M Y', strtotime($dateString));
     }
 }
+
+function icon($name) {
+    return ICON_PATH . '/' . $name . '.png';
+}
