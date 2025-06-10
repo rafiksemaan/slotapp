@@ -15,6 +15,7 @@
 		$month = $_GET['month'] ?? date('Y-m');
 		$machine_id = $_GET['machine_id'] ?? 'all';
 		$brand_id = $_GET['brand_id'] ?? 'all';
+		$machine_group_id = $_GET['machine_group_id'] ?? 'all';
 		$selected_columns = $_GET['columns'] ?? [];
 		$sort_column = $_GET['sort'] ?? 'machine_number';
 		$sort_order = $_GET['order'] ?? 'ASC';
@@ -54,6 +55,7 @@
 	$month = $_GET['month'] ?? date('Y-m');
 	$machine_id = $_GET['machine_id'] ?? 'all';
 	$brand_id = $_GET['brand_id'] ?? 'all';
+	$machine_group_id = $_GET['machine_group_id'] ?? 'all';
 
 	// Calculate start/end dates
 	if ($date_range_type === 'range') {
@@ -116,6 +118,14 @@
 		$brands = $brands_stmt->fetchAll(PDO::FETCH_ASSOC);
 	} catch (PDOException $e) {
 		$brands = [];
+	}
+
+	// Get machine groups for dropdown
+	try {
+		$groups_stmt = $conn->query("SELECT id, name FROM machine_groups ORDER BY name");
+		$machine_groups = $groups_stmt->fetchAll(PDO::FETCH_ASSOC);
+	} catch (PDOException $e) {
+		$machine_groups = [];
 	}
 
 	// Build SQL query
@@ -235,11 +245,44 @@
 			$params[] = $brand_id;
 		}
 		
+		// Apply machine group filter
+		if ($machine_group_id !== 'all') {
+			$query .= " AND m.id IN (SELECT machine_id FROM machine_group_members WHERE group_id = ?)";
+			$params[] = $machine_group_id;
+		}
+		
 		// Add GROUP BY
 		$query .= " GROUP BY " . implode(", ", $group_by_parts);
 		
-		// Add ORDER BY
-		$query .= " ORDER BY `$sort_column` $sort_order";
+		// Add ORDER BY - fix the sorting issue
+		$order_column = $sort_column;
+		
+		// Map sort columns to actual column names in the query
+		switch ($sort_column) {
+			case 'brand_name':
+				$order_column = in_array('brand_name', $selected_columns) ? 'brand_name' : 'm.machine_number';
+				break;
+			case 'machine_type':
+				$order_column = in_array('machine_type', $selected_columns) ? 'machine_type' : 'm.machine_number';
+				break;
+			case 'machine_number':
+			case 'model':
+			case 'credit_value':
+			case 'serial_number':
+			case 'manufacturing_year':
+				$order_column = "m.$sort_column";
+				break;
+			default:
+				// For transaction columns, use the alias directly
+				if (in_array($sort_column, ['total_handpay', 'total_ticket', 'total_refill', 'total_coins_drop', 'total_cash_drop', 'total_out', 'total_drop', 'result'])) {
+					$order_column = $sort_column;
+				} else {
+					$order_column = 'm.machine_number';
+				}
+				break;
+		}
+		
+		$query .= " ORDER BY $order_column $sort_order";
 		
 		// Execute query
 		$stmt = $conn->prepare($query);
@@ -272,7 +315,8 @@
 	$filter_params = [
 		'date_range_type' => $date_range_type,
 		'machine_id' => $machine_id,
-		'brand_id' => $brand_id
+		'brand_id' => $brand_id,
+		'machine_group_id' => $machine_group_id
 	];
 
 	if ($date_range_type === 'range') {
@@ -359,6 +403,20 @@
 										<?php foreach ($brands as $brand): ?>
 											<option value="<?= $brand['id'] ?>" <?= $brand_id == $brand['id'] ? 'selected' : '' ?>>
 												<?= htmlspecialchars($brand['name']) ?>
+											</option>
+										<?php endforeach; ?>
+									</select>
+								</div>
+							</div>
+							
+							<div class="col">
+								<div class="form-group">
+									<label for="machine_group_id">Machine Group</label>
+									<select name="machine_group_id" id="machine_group_id" class="form-control">
+										<option value="all" <?= $machine_group_id === 'all' ? 'selected' : '' ?>>All Groups</option>
+										<?php foreach ($machine_groups as $group): ?>
+											<option value="<?= $group['id'] ?>" <?= $machine_group_id == $group['id'] ? 'selected' : '' ?>>
+												<?= htmlspecialchars($group['name']) ?>
 											</option>
 										<?php endforeach; ?>
 									</select>
@@ -469,6 +527,15 @@
 							}
 						}
 						echo "Machine #" . htmlspecialchars($selected_machine['machine_number'] ?? 'N/A');
+					} elseif ($machine_group_id !== 'all') {
+						$selected_group = null;
+						foreach ($machine_groups as $g) {
+							if ($g['id'] == $machine_group_id) {
+								$selected_group = $g;
+								break;
+							}
+						}
+						echo "Group: " . htmlspecialchars($selected_group['name'] ?? 'N/A');
 					} elseif ($brand_id !== 'all') {
 						$selected_brand = null;
 						foreach ($brands as $b) {
