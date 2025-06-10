@@ -128,138 +128,120 @@
 		$machine_groups = [];
 	}
 
-	// Build SQL query
-	$results = [];
-	$error = '';
+// Build SQL query
+$results = [];
+$error = '';
+try {
+    // Start building the query
+    $select_parts = [];
+    $join_parts = [];
+    $group_by_parts = ['m.id'];
+    
+    // Always include machine ID and number
+    $select_parts[] = "m.id AS machine_id";
+    $select_parts[] = "m.machine_number";
+    
+    // Add selected columns
+    if (in_array('brand_name', $selected_columns)) {
+        $select_parts[] = "b.name AS brand_name";
+        $join_parts[] = "LEFT JOIN brands b ON m.brand_id = b.id";
+    }
+    if (in_array('model', $selected_columns)) {
+        $select_parts[] = "m.model";
+    }
+    if (in_array('machine_type', $selected_columns)) {
+        $select_parts[] = "mt.name AS machine_type";
+        $join_parts[] = "LEFT JOIN machine_types mt ON m.type_id = mt.id";
+    }
+    if (in_array('credit_value', $selected_columns)) {
+        $select_parts[] = "m.credit_value";
+    }
+    if (in_array('serial_number', $selected_columns)) {
+        $select_parts[] = "m.serial_number";
+    }
+    if (in_array('manufacturing_year', $selected_columns)) {
+        $select_parts[] = "m.manufacturing_year";
+    }
 
-	try {
-		// Start building the query
-		$select_parts = [];
-		$join_parts = [];
-		$group_by_parts = ['m.id'];
-		
-		// Always include machine ID and number
-		$select_parts[] = "m.id AS machine_id";
-		$select_parts[] = "m.machine_number";
-		
-		// Add selected columns
-		if (in_array('brand_name', $selected_columns)) {
-			$select_parts[] = "b.name AS brand_name";
-			$join_parts[] = "LEFT JOIN brands b ON m.brand_id = b.id";
-		}
-		
-		if (in_array('model', $selected_columns)) {
-			$select_parts[] = "m.model";
-		}
-		
-		if (in_array('machine_type', $selected_columns)) {
-			$select_parts[] = "mt.name AS machine_type";
-			$join_parts[] = "LEFT JOIN machine_types mt ON m.type_id = mt.id";
-		}
-		
-		if (in_array('credit_value', $selected_columns)) {
-			$select_parts[] = "m.credit_value";
-		}
-		
-		if (in_array('serial_number', $selected_columns)) {
-			$select_parts[] = "m.serial_number";
-		}
-		
-		if (in_array('manufacturing_year', $selected_columns)) {
-			$select_parts[] = "m.manufacturing_year";
-		}
-		
-		// Add transaction-related columns - ALWAYS include these for sorting even if not selected
-		$has_transactions = false;
-		
-		// Always add transaction columns for sorting purposes
-		$select_parts[] = "COALESCE(SUM(CASE WHEN tt.name = 'Handpay' THEN t.amount ELSE 0 END), 0) AS total_handpay";
-		$select_parts[] = "COALESCE(SUM(CASE WHEN tt.name = 'Ticket' THEN t.amount ELSE 0 END), 0) AS total_ticket";
-		$select_parts[] = "COALESCE(SUM(CASE WHEN tt.name = 'Refill' THEN t.amount ELSE 0 END), 0) AS total_refill";
-		$select_parts[] = "COALESCE(SUM(CASE WHEN tt.name = 'Coins Drop' THEN t.amount ELSE 0 END), 0) AS total_coins_drop";
-		$select_parts[] = "COALESCE(SUM(CASE WHEN tt.name = 'Cash Drop' THEN t.amount ELSE 0 END), 0) AS total_cash_drop";
-		$select_parts[] = "COALESCE(SUM(CASE WHEN tt.category = 'OUT' THEN t.amount ELSE 0 END), 0) AS total_out";
-		$select_parts[] = "COALESCE(SUM(CASE WHEN tt.category = 'DROP' THEN t.amount ELSE 0 END), 0) AS total_drop";
-		$select_parts[] = "COALESCE(SUM(CASE WHEN tt.category = 'DROP' THEN t.amount ELSE 0 END), 0) - COALESCE(SUM(CASE WHEN tt.category = 'OUT' THEN t.amount ELSE 0 END), 0) AS result";
-		$has_transactions = true;
-		
-		// Add transaction joins
-		$join_parts[] = "LEFT JOIN transactions t ON m.id = t.machine_id AND t.timestamp BETWEEN ? AND ?";
-		$join_parts[] = "LEFT JOIN transaction_types tt ON t.transaction_type_id = tt.id";
-		
-		// Build the complete query
-		$query = "SELECT " . implode(", ", $select_parts);
-		$query .= " FROM machines m";
-		$query .= " " . implode(" ", array_unique($join_parts));
-		$query .= " WHERE 1=1";
-		
-		// Initialize params array
-		$params = [];
-		
-		// Add date filter
-		$params[] = "{$start_date} 00:00:00";
-		$params[] = "{$end_date} 23:59:59";
-		
-		// Apply machine filter
-		if ($machine_id !== 'all') {
-			$query .= " AND m.id = ?";
-			$params[] = $machine_id;
-		}
-		
-		// Apply brand filter
-		if ($brand_id !== 'all') {
-			$query .= " AND m.brand_id = ?";
-			$params[] = $brand_id;
-		}
-		
-		// Apply machine group filter
-		if ($machine_group_id !== 'all') {
-			$query .= " AND m.id IN (SELECT machine_id FROM machine_group_members WHERE group_id = ?)";
-			$params[] = $machine_group_id;
-		}
-		
-		// Add GROUP BY
-		$query .= " GROUP BY " . implode(", ", $group_by_parts);
-		
-		// Add ORDER BY - fix the sorting issue
-		$order_column = $sort_column;
-		
-		// Map sort columns to actual column names in the query
-		switch ($sort_column) {
-			case 'brand_name':
-				$order_column = 'brand_name';
-				break;
-			case 'machine_type':
-				$order_column = 'machine_type';
-				break;
-			case 'machine_number':
-			case 'model':
-			case 'credit_value':
-			case 'serial_number':
-			case 'manufacturing_year':
-				$order_column = "m.$sort_column";
-				break;
-			default:
-				// For transaction columns, use the alias directly
-				if (in_array($sort_column, ['total_handpay', 'total_ticket', 'total_refill', 'total_coins_drop', 'total_cash_drop', 'total_out', 'total_drop', 'result'])) {
-					$order_column = $sort_column;
-				} else {
-					$order_column = 'm.machine_number';
-				}
-				break;
-		}
-		
-		$query .= " ORDER BY $order_column $sort_order";
-		
-		// Execute query
-		$stmt = $conn->prepare($query);
-		$stmt->execute($params);
-		$results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Always include transaction-related columns (for display and sorting)
+    $select_parts[] = "COALESCE(SUM(CASE WHEN tt.name = 'Handpay' THEN t.amount ELSE 0 END), 0) AS total_handpay";
+    $select_parts[] = "COALESCE(SUM(CASE WHEN tt.name = 'Ticket' THEN t.amount ELSE 0 END), 0) AS total_ticket";
+    $select_parts[] = "COALESCE(SUM(CASE WHEN tt.name = 'Refill' THEN t.amount ELSE 0 END), 0) AS total_refill";
+    $select_parts[] = "COALESCE(SUM(CASE WHEN tt.name = 'Coins Drop' THEN t.amount ELSE 0 END), 0) AS total_coins_drop";
+    $select_parts[] = "COALESCE(SUM(CASE WHEN tt.name = 'Cash Drop' THEN t.amount ELSE 0 END), 0) AS total_cash_drop";
+    $select_parts[] = "COALESCE(SUM(CASE WHEN tt.category = 'OUT' THEN t.amount ELSE 0 END), 0) AS total_out";
+    $select_parts[] = "COALESCE(SUM(CASE WHEN tt.category = 'DROP' THEN t.amount ELSE 0 END), 0) AS total_drop";
+    $select_parts[] = "COALESCE(SUM(CASE WHEN tt.category = 'DROP' THEN t.amount ELSE 0 END), 0) - COALESCE(SUM(CASE WHEN tt.category = 'OUT' THEN t.amount ELSE 0 END), 0) AS result";
 
-	} catch (PDOException $e) {
-		$results = [];
-		$error = "Database error: " . $e->getMessage();
-	}
+    // Join with transactions and transaction_types
+    $join_parts[] = "LEFT JOIN transactions t ON m.id = t.machine_id AND t.timestamp BETWEEN ? AND ?";
+    $join_parts[] = "LEFT JOIN transaction_types tt ON t.transaction_type_id = tt.id";
+
+    // Build the complete query
+    $query = "SELECT " . implode(", ", $select_parts);
+    $query .= " FROM machines m";
+    $query .= " " . implode(" ", array_unique($join_parts));
+    $query .= " WHERE 1=1";
+
+    // Initialize params array
+    $params = [];
+    // Add date filter
+    $params[] = "{$start_date} 00:00:00";
+    $params[] = "{$end_date} 23:59:59";
+
+    // Apply filters
+    if ($machine_id !== 'all') {
+        $query .= " AND m.id = ?";
+        $params[] = $machine_id;
+    }
+    if ($brand_id !== 'all') {
+        $query .= " AND m.brand_id = ?";
+        $params[] = $brand_id;
+    }
+    if ($machine_group_id !== 'all') {
+        $query .= " AND m.id IN (SELECT machine_id FROM machine_group_members WHERE group_id = ?)";
+        $params[] = $machine_group_id;
+    }
+
+    // GROUP BY
+    $query .= " GROUP BY " . implode(", ", $group_by_parts);
+
+    // ORDER BY (ensure the column exists in SELECT)
+    $order_column = $sort_column;
+
+    switch ($sort_column) {
+        case 'brand_name':
+            $order_column = 'b.name';
+            break;
+        case 'machine_type':
+            $order_column = 'mt.name';
+            break;
+        case 'machine_number':
+        case 'model':
+        case 'credit_value':
+        case 'serial_number':
+        case 'manufacturing_year':
+            $order_column = "m.$sort_column";
+            break;
+        default:
+            // Use computed columns directly
+            if (in_array($sort_column, ['total_handpay', 'total_ticket', 'total_refill', 'total_coins_drop', 'total_cash_drop', 'total_out', 'total_drop', 'result'])) {
+                $order_column = $sort_column;
+            } else {
+                $order_column = 'm.machine_number';
+            }
+    }
+
+    $query .= " ORDER BY $order_column $sort_order";
+
+    // Execute query
+    $stmt = $conn->prepare($query);
+    $stmt->execute($params);
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $results = [];
+    $error = "Database error: " . $e->getMessage();
+}
 
 	// Calculate totals for selected columns
 	$totals = [];
@@ -569,17 +551,44 @@
 								<thead>
 									<tr>
 										<?php foreach ($selected_columns as $column): ?>
-											<?php if (isset($available_columns[$column])): ?>
-												<th>
-													<a href="<?= $base_url ?>&<?= $query_string ?>&sort=<?= $column ?>&order=<?= $sort_column === $column ? $toggle_order : 'ASC' ?>">
-														<?= $available_columns[$column] ?>
-														<?php if ($sort_column === $column): ?>
-															<?= $sort_order === 'ASC' ? '▲' : '▼' ?>
-														<?php endif; ?>
-													</a>
-												</th>
-											<?php endif; ?>
-										<?php endforeach; ?>
+    <?php if (isset($available_columns[$column])): ?>
+        <th>
+            <?php
+            // Build the full URL with all current filters and selected columns
+            $sort_params = [
+                'page' => 'custom_report',
+                'date_range_type' => $date_range_type,
+                'machine_id' => $machine_id,
+                'brand_id' => $brand_id,
+                'machine_group_id' => $machine_group_id,
+                'sort' => $column,
+                'order' => ($sort_column === $column ? $toggle_order : 'ASC')
+            ];
+
+            // Add date range parameters
+            if ($date_range_type === 'range') {
+                $sort_params['date_from'] = $date_from;
+                $sort_params['date_to'] = $date_to;
+            } else {
+                $sort_params['month'] = $month;
+            }
+
+            // Add selected columns
+            $sort_params['columns'] = $selected_columns;
+
+            // Generate the final URL
+            $sort_url = http_build_query($sort_params);
+            $sort_url = "index.php?$sort_url";
+            ?>
+            <a href="<?= htmlspecialchars($sort_url) ?>">
+                <?= $available_columns[$column] ?>
+                <?php if ($sort_column === $column): ?>
+                    <?= $sort_order === 'ASC' ? '▲' : '▼' ?>
+                <?php endif; ?>
+            </a>
+        </th>
+    <?php endif; ?>
+<?php endforeach; ?>
 									</tr>
 								</thead>
 								<tbody>
