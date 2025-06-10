@@ -169,54 +169,23 @@
 			$select_parts[] = "m.manufacturing_year";
 		}
 		
-		// Add transaction-related columns
+		// Add transaction-related columns - ALWAYS include these for sorting even if not selected
 		$has_transactions = false;
 		
-		if (in_array('total_handpay', $selected_columns)) {
-			$select_parts[] = "COALESCE(SUM(CASE WHEN tt.name = 'Handpay' THEN t.amount ELSE 0 END), 0) AS total_handpay";
-			$has_transactions = true;
-		}
+		// Always add transaction columns for sorting purposes
+		$select_parts[] = "COALESCE(SUM(CASE WHEN tt.name = 'Handpay' THEN t.amount ELSE 0 END), 0) AS total_handpay";
+		$select_parts[] = "COALESCE(SUM(CASE WHEN tt.name = 'Ticket' THEN t.amount ELSE 0 END), 0) AS total_ticket";
+		$select_parts[] = "COALESCE(SUM(CASE WHEN tt.name = 'Refill' THEN t.amount ELSE 0 END), 0) AS total_refill";
+		$select_parts[] = "COALESCE(SUM(CASE WHEN tt.name = 'Coins Drop' THEN t.amount ELSE 0 END), 0) AS total_coins_drop";
+		$select_parts[] = "COALESCE(SUM(CASE WHEN tt.name = 'Cash Drop' THEN t.amount ELSE 0 END), 0) AS total_cash_drop";
+		$select_parts[] = "COALESCE(SUM(CASE WHEN tt.category = 'OUT' THEN t.amount ELSE 0 END), 0) AS total_out";
+		$select_parts[] = "COALESCE(SUM(CASE WHEN tt.category = 'DROP' THEN t.amount ELSE 0 END), 0) AS total_drop";
+		$select_parts[] = "COALESCE(SUM(CASE WHEN tt.category = 'DROP' THEN t.amount ELSE 0 END), 0) - COALESCE(SUM(CASE WHEN tt.category = 'OUT' THEN t.amount ELSE 0 END), 0) AS result";
+		$has_transactions = true;
 		
-		if (in_array('total_ticket', $selected_columns)) {
-			$select_parts[] = "COALESCE(SUM(CASE WHEN tt.name = 'Ticket' THEN t.amount ELSE 0 END), 0) AS total_ticket";
-			$has_transactions = true;
-		}
-		
-		if (in_array('total_refill', $selected_columns)) {
-			$select_parts[] = "COALESCE(SUM(CASE WHEN tt.name = 'Refill' THEN t.amount ELSE 0 END), 0) AS total_refill";
-			$has_transactions = true;
-		}
-		
-		if (in_array('total_coins_drop', $selected_columns)) {
-			$select_parts[] = "COALESCE(SUM(CASE WHEN tt.name = 'Coins Drop' THEN t.amount ELSE 0 END), 0) AS total_coins_drop";
-			$has_transactions = true;
-		}
-		
-		if (in_array('total_cash_drop', $selected_columns)) {
-			$select_parts[] = "COALESCE(SUM(CASE WHEN tt.name = 'Cash Drop' THEN t.amount ELSE 0 END), 0) AS total_cash_drop";
-			$has_transactions = true;
-		}
-		
-		if (in_array('total_out', $selected_columns)) {
-			$select_parts[] = "COALESCE(SUM(CASE WHEN tt.category = 'OUT' THEN t.amount ELSE 0 END), 0) AS total_out";
-			$has_transactions = true;
-		}
-		
-		if (in_array('total_drop', $selected_columns)) {
-			$select_parts[] = "COALESCE(SUM(CASE WHEN tt.category = 'DROP' THEN t.amount ELSE 0 END), 0) AS total_drop";
-			$has_transactions = true;
-		}
-		
-		if (in_array('result', $selected_columns)) {
-			$select_parts[] = "COALESCE(SUM(CASE WHEN tt.category = 'DROP' THEN t.amount ELSE 0 END), 0) - COALESCE(SUM(CASE WHEN tt.category = 'OUT' THEN t.amount ELSE 0 END), 0) AS result";
-			$has_transactions = true;
-		}
-		
-		// Add transaction joins if needed
-		if ($has_transactions) {
-			$join_parts[] = "LEFT JOIN transactions t ON m.id = t.machine_id AND t.timestamp BETWEEN ? AND ?";
-			$join_parts[] = "LEFT JOIN transaction_types tt ON t.transaction_type_id = tt.id";
-		}
+		// Add transaction joins
+		$join_parts[] = "LEFT JOIN transactions t ON m.id = t.machine_id AND t.timestamp BETWEEN ? AND ?";
+		$join_parts[] = "LEFT JOIN transaction_types tt ON t.transaction_type_id = tt.id";
 		
 		// Build the complete query
 		$query = "SELECT " . implode(", ", $select_parts);
@@ -227,11 +196,9 @@
 		// Initialize params array
 		$params = [];
 		
-		// Add date filter if transactions are involved
-		if ($has_transactions) {
-			$params[] = "{$start_date} 00:00:00";
-			$params[] = "{$end_date} 23:59:59";
-		}
+		// Add date filter
+		$params[] = "{$start_date} 00:00:00";
+		$params[] = "{$end_date} 23:59:59";
 		
 		// Apply machine filter
 		if ($machine_id !== 'all') {
@@ -260,10 +227,10 @@
 		// Map sort columns to actual column names in the query
 		switch ($sort_column) {
 			case 'brand_name':
-				$order_column = in_array('brand_name', $selected_columns) ? 'brand_name' : 'm.machine_number';
+				$order_column = 'brand_name';
 				break;
 			case 'machine_type':
-				$order_column = in_array('machine_type', $selected_columns) ? 'machine_type' : 'm.machine_number';
+				$order_column = 'machine_type';
 				break;
 			case 'machine_number':
 			case 'model':
@@ -310,7 +277,7 @@
 		}
 	}
 
-	// Build base URL with current filters
+	// Build base URL with current filters - PRESERVE ALL PARAMETERS
 	$base_url = "index.php?page=custom_report";
 	$filter_params = [
 		'date_range_type' => $date_range_type,
@@ -326,6 +293,7 @@
 		$filter_params['month'] = $month;
 	}
 
+	// Preserve selected columns in URL
 	foreach ($selected_columns as $col) {
 		$filter_params['columns[]'] = $col;
 	}
