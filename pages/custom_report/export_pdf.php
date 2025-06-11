@@ -1,7 +1,7 @@
 <?php
 /**
  * PDF Export for Custom Reports
- * Uses direct HTML output for browser printing
+ * Uses direct HTML output for browser printing with auto-print functionality
  */
 
 // Prevent direct access
@@ -35,6 +35,26 @@ header('Content-Type: text/html; charset=utf-8');
             color: black;
             font-size: 12px;
             line-height: 1.4;
+        }
+        
+        /* Hide everything except printable content during print */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            
+            #printable-content, #printable-content * {
+                visibility: visible;
+            }
+            
+            #printable-content {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 10px;
+            }
         }
         
         /* Report header */
@@ -146,11 +166,11 @@ header('Content-Type: text/html; charset=utf-8');
             background-color: #45a049;
         }
         
-        /* Print-specific styles */
+        /* Print-specific styles for the selected div */
         @media print {
             body {
                 margin: 0;
-                padding: 10px;
+                padding: 0;
                 font-size: 10px;
             }
             
@@ -227,14 +247,20 @@ header('Content-Type: text/html; charset=utf-8');
     </style>
     <script>
         window.onload = function() {
-            // Auto-print when page loads
+            // Auto-print when page loads - only the printable content
             setTimeout(function() {
                 window.print();
             }, 500);
         }
         
         function printReport() {
+            // Print only the selected div
             window.print();
+        }
+        
+        // Optional: Close window after printing (uncomment if desired)
+        window.onafterprint = function() {
+            // window.close();
         }
     </script>
 </head>
