@@ -88,6 +88,18 @@ a:hover {
     gap: var(--spacing-md);
 }
 
+.user-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.user-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
 .username {
     font-weight: bold;
 }
@@ -95,6 +107,23 @@ a:hover {
 .role {
     color: var(--text-muted);
     font-size: var(--font-sm);
+}
+
+.profile-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-light);
+    transition: all var(--transition-speed);
+}
+
+.profile-btn:hover {
+    background-color: var(--secondary-color);
+    color: white;
 }
 
 .logout-btn {
@@ -543,6 +572,15 @@ tr:hover {
     .col-4, .col-6 {
         flex: 0 0 100%;
         max-width: 100%;
+    }
+
+    .user-info {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+
+    .user-details {
+        align-items: center;
     }
 }
 

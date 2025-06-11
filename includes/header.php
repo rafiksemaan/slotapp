@@ -32,9 +32,16 @@ define('ICON_PATH', 'assets/icons'); // Make sure this matches your actual folde
                 <h1><?php echo $app_name; ?></h1>
             </div>
             <div class="user-info">
-                <span class="username"><?php echo $_SESSION['username']; ?></span>
-                <span class="role"><?php echo $user_roles[$_SESSION['user_role']]; ?></span>
-                <a href="logout.php" class="logout-btn">Logout</a>
+                <div class="user-details">
+                    <span class="username"><?php echo $_SESSION['username']; ?></span>
+                    <span class="role"><?php echo $user_roles[$_SESSION['user_role']]; ?></span>
+                </div>
+                <div class="user-actions">
+                    <a href="index.php?page=profile" class="profile-btn" title="My Profile">
+                        <span class="menu-icon"><img src="<?= icon('users') ?>" alt="Profile" /></span>
+                    </a>
+                    <a href="logout.php" class="logout-btn">Logout</a>
+                </div>
             </div>
         </header>
         
@@ -47,6 +54,8 @@ define('ICON_PATH', 'assets/icons'); // Make sure this matches your actual folde
             <li><a href="index.php?page=transactions" class="<?= $page == 'transactions' ? 'active' : '' ?>"><span class="menu-icon"><img src="<?= icon('dollar-sign') ?>" alt="transactions" /></span> Transactions</a></li>
             <li><a href="index.php?page=reports" class="<?= $page == 'reports' ? 'active' : '' ?>"><span class="menu-icon"><img src="<?= icon('report') ?>" alt="reports" /></span> Reports</a></li>
 			<li><a href="index.php?page=custom_report" class="<?= $page == 'custom_report' ? 'active' : '' ?>"><span class="menu-icon"><img src="<?= icon('report-chart') ?>" alt="custom_report" /> Custom Report</a></li>
+            <li><a href="index.php?page=general_report" class="<?= $page == 'general_report' ? 'active' : '' ?>"><span class="menu-icon"><img src="<?= icon('report') ?>" alt="general_report" /></span> General Report</a></li>
+            <li><a href="index.php?page=profile" class="<?= $page == 'profile' ? 'active' : '' ?>"><span class="menu-icon"><img src="<?= icon('users') ?>" alt="profile" /></span> My Profile</a></li>
 
             <!-- Admin Only: Settings Section -->
             <?php if ($_SESSION['user_role'] == 'admin'): ?>
@@ -72,7 +81,7 @@ define('ICON_PATH', 'assets/icons'); // Make sure this matches your actual folde
             
             <main class="content">
                 <div class="page-header">
-                    <h2><?php echo ucfirst($page); ?></h2>
+                    <h2><?php echo ucfirst($page == 'custom_report' ? 'Custom Report' : ($page == 'general_report' ? 'General Report' : $page)); ?></h2>
                 </div>
                 <div class="page-content">
 				
