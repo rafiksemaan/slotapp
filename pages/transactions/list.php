@@ -141,14 +141,30 @@ try {
     $total_out = $total_drop = $total_result = 0;
 }
 
-// Calculate totals
+// Calculate totals and breakdown by transaction type
 $total_out = $total_drop = 0;
+$transaction_breakdown = [
+    'DROP' => [],
+    'OUT' => []
+];
 
 foreach ($transactions as $t) {
-    if (($t['category'] ?? '') === 'OUT') {
-        $total_out += (float)($t['amount'] ?? 0);
-    } elseif (($t['category'] ?? '') === 'DROP') {
-        $total_drop += (float)($t['amount'] ?? 0);
+    $category = $t['category'] ?? '';
+    $type = $t['transaction_type'] ?? '';
+    $amount = (float)($t['amount'] ?? 0);
+    
+    if ($category === 'OUT') {
+        $total_out += $amount;
+        if (!isset($transaction_breakdown['OUT'][$type])) {
+            $transaction_breakdown['OUT'][$type] = 0;
+        }
+        $transaction_breakdown['OUT'][$type] += $amount;
+    } elseif ($category === 'DROP') {
+        $total_drop += $amount;
+        if (!isset($transaction_breakdown['DROP'][$type])) {
+            $transaction_breakdown['DROP'][$type] = 0;
+        }
+        $transaction_breakdown['DROP'][$type] += $amount;
     }
 }
 
@@ -273,20 +289,44 @@ $total_result = $total_drop - $total_out;
         </p>
     </div>
 
-    <!-- Summary Stats -->
+    <!-- Summary Stats with Breakdown -->
     <div class="stats-container grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div class="stat-card in p-4 rounded bg-opacity-10 bg-success-color text-center">
             <div class="stat-title uppercase text-sm text-muted">Total DROP</div>
             <div class="stat-value text-lg font-bold"><?php echo format_currency($total_drop); ?></div>
+            <!-- DROP Breakdown -->
+            <div class="stat-breakdown">
+                <?php foreach ($transaction_breakdown['DROP'] as $type => $amount): ?>
+                    <div class="breakdown-item">
+                        <span class="breakdown-type"><?php echo htmlspecialchars($type); ?></span>
+                        <span class="breakdown-amount"><?php echo format_currency($amount); ?></span>
+                    </div>
+                <?php endforeach; ?>
+            </div>
         </div>
+        
         <div class="stat-card out p-4 rounded bg-opacity-10 bg-danger-color text-center">
             <div class="stat-title uppercase text-sm text-muted">Total OUT</div>
             <div class="stat-value text-lg font-bold"><?php echo format_currency($total_out); ?></div>
+            <!-- OUT Breakdown -->
+            <div class="stat-breakdown">
+                <?php foreach ($transaction_breakdown['OUT'] as $type => $amount): ?>
+                    <div class="breakdown-item">
+                        <span class="breakdown-type"><?php echo htmlspecialchars($type); ?></span>
+                        <span class="breakdown-amount"><?php echo format_currency($amount); ?></span>
+                    </div>
+                <?php endforeach; ?>
+            </div>
         </div>
 
         <div class="stat-card <?php echo $total_result >= 0 ? 'in' : 'out'; ?> p-4 rounded text-center bg-opacity-10 <?php echo $total_result >= 0 ? 'bg-success-color' : 'bg-danger-color'; ?>">
             <div class="stat-title uppercase text-sm text-muted">Result</div>
             <div class="stat-value text-lg font-bold"><?php echo format_currency($total_result); ?></div>
+            <div class="stat-breakdown">
+                <div class="breakdown-item">
+                    <span class="breakdown-type">DROP - OUT</span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -378,3 +418,43 @@ document.addEventListener('DOMContentLoaded', function () {
     toggleInputs(); // Initial call
 });
 </script>
+
+<style>
+.stat-breakdown {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    opacity: 0.8;
+}
+
+.breakdown-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.25rem;
+    padding: 0.125rem 0;
+}
+
+.breakdown-type {
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.breakdown-amount {
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .breakdown-item {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .breakdown-amount {
+        margin-left: 0;
+        margin-top: 0.125rem;
+    }
+}
+</style>
