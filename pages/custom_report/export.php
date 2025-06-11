@@ -9,6 +9,9 @@ if (!defined('EXPORT_HANDLER')) {
     define('EXPORT_HANDLER', true);
 }
 
+// Generate filename
+$filename = 'custom_report_' . date('Y-m-d_H-i-s') . ($export_type === 'pdf' ? '.pdf' : '.csv');
+
 // Get the same data as the main report
 $available_columns = [
     'machine_number' => 'Machine #',

@@ -67,7 +67,7 @@
 		$end_date = date("Y-m-t", strtotime($start_date));
 	}
 
-	// Get selected columns from URL
+	// Get selected columns from URL - FIXED HANDLING
 	$selected_columns = $_GET['columns'] ?? [];
 	if (!is_array($selected_columns)) {
 		$selected_columns = [];
@@ -259,9 +259,56 @@ try {
 		}
 	}
 
-	// Build base URL with current filters - PRESERVE ALL PARAMETERS
-	$base_url = "index.php?page=custom_report";
-	$filter_params = [
+	// Function to build sort URL with all current parameters - FIXED VERSION
+	function buildSortUrl($column, $order, $current_params) {
+		$url = 'index.php?page=custom_report';
+		$url .= '&sort=' . urlencode($column);
+		$url .= '&order=' . urlencode($order);
+		$url .= '&date_range_type=' . urlencode($current_params['date_range_type']);
+		$url .= '&machine_id=' . urlencode($current_params['machine_id']);
+		$url .= '&brand_id=' . urlencode($current_params['brand_id']);
+		$url .= '&machine_group_id=' . urlencode($current_params['machine_group_id']);
+
+		// Add date range parameters
+		if ($current_params['date_range_type'] === 'range') {
+			$url .= '&date_from=' . urlencode($current_params['date_from']);
+			$url .= '&date_to=' . urlencode($current_params['date_to']);
+		} else {
+			$url .= '&month=' . urlencode($current_params['month']);
+		}
+
+		// Add selected columns - FIXED: Use proper array syntax
+		if (!empty($current_params['selected_columns'])) {
+			foreach ($current_params['selected_columns'] as $col) {
+				$url .= '&columns[]=' . urlencode($col);
+			}
+		}
+
+		return $url;
+	}
+
+	// Current parameters for URL building
+	$current_params = [
+		'date_range_type' => $date_range_type,
+		'date_from' => $date_from,
+		'date_to' => $date_to,
+		'month' => $month,
+		'machine_id' => $machine_id,
+		'brand_id' => $brand_id,
+		'machine_group_id' => $machine_group_id,
+		'selected_columns' => $selected_columns
+	];
+
+	// Build export URLs
+	$export_base_params = $current_params;
+	$export_base_params['sort'] = $sort_column;
+	$export_base_params['order'] = $sort_order;
+
+	// Build export URLs manually to ensure proper array handling
+	$export_params = [
+		'page' => 'custom_report',
+		'sort' => $sort_column,
+		'order' => $sort_order,
 		'date_range_type' => $date_range_type,
 		'machine_id' => $machine_id,
 		'brand_id' => $brand_id,
@@ -269,26 +316,22 @@ try {
 	];
 
 	if ($date_range_type === 'range') {
-		$filter_params['date_from'] = $date_from;
-		$filter_params['date_to'] = $date_to;
+		$export_params['date_from'] = $date_from;
+		$export_params['date_to'] = $date_to;
 	} else {
-		$filter_params['month'] = $month;
+		$export_params['month'] = $month;
 	}
 
-	// Preserve selected columns in URL
+	$export_url_base = 'index.php?' . http_build_query($export_params);
+	
+	// Add columns to export URLs
+	$columns_query = '';
 	foreach ($selected_columns as $col) {
-		$filter_params['columns[]'] = $col;
+		$columns_query .= '&columns[]=' . urlencode($col);
 	}
 
-	$query_string = http_build_query($filter_params);
-
-	// Build export URLs
-	$export_base_params = $filter_params;
-	$export_base_params['sort'] = $sort_column;
-	$export_base_params['order'] = $sort_order;
-
-	$pdf_export_url = $base_url . '&' . http_build_query($export_base_params) . '&export=pdf';
-	$excel_export_url = $base_url . '&' . http_build_query($export_base_params) . '&export=excel';
+	$pdf_export_url = $export_url_base . $columns_query . '&export=pdf';
+	$excel_export_url = $export_url_base . $columns_query . '&export=excel';
 	?>
 
 	<div class="custom-report-page fade-in">
@@ -551,44 +594,17 @@ try {
 								<thead>
 									<tr>
 										<?php foreach ($selected_columns as $column): ?>
-    <?php if (isset($available_columns[$column])): ?>
-        <th>
-            <?php
-            // Build the full URL with all current filters and selected columns
-            $sort_params = [
-                'page' => 'custom_report',
-                'date_range_type' => $date_range_type,
-                'machine_id' => $machine_id,
-                'brand_id' => $brand_id,
-                'machine_group_id' => $machine_group_id,
-                'sort' => $column,
-                'order' => ($sort_column === $column ? $toggle_order : 'ASC')
-            ];
-
-            // Add date range parameters
-            if ($date_range_type === 'range') {
-                $sort_params['date_from'] = $date_from;
-                $sort_params['date_to'] = $date_to;
-            } else {
-                $sort_params['month'] = $month;
-            }
-
-            // Add selected columns
-            $sort_params['columns'] = $selected_columns;
-
-            // Generate the final URL
-            $sort_url = http_build_query($sort_params);
-            $sort_url = "index.php?$sort_url";
-            ?>
-            <a href="<?= htmlspecialchars($sort_url) ?>">
-                <?= $available_columns[$column] ?>
-                <?php if ($sort_column === $column): ?>
-                    <?= $sort_order === 'ASC' ? '▲' : '▼' ?>
-                <?php endif; ?>
-            </a>
-        </th>
-    <?php endif; ?>
-<?php endforeach; ?>
+											<?php if (isset($available_columns[$column])): ?>
+												<th>
+													<a href="<?= htmlspecialchars(buildSortUrl($column, ($sort_column === $column ? $toggle_order : 'ASC'), $current_params)) ?>">
+														<?= $available_columns[$column] ?>
+														<?php if ($sort_column === $column): ?>
+															<?= $sort_order === 'ASC' ? '▲' : '▼' ?>
+														<?php endif; ?>
+													</a>
+												</th>
+											<?php endif; ?>
+										<?php endforeach; ?>
 									</tr>
 								</thead>
 								<tbody>

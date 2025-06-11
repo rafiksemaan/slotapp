@@ -1,7 +1,7 @@
 <?php
 /**
  * PDF Export for Custom Reports
- * Uses HTML to PDF conversion
+ * Uses direct HTML output for browser printing
  */
 
 // Prevent direct access
@@ -10,12 +10,8 @@ if (!defined('EXPORT_HANDLER')) {
     exit;
 }
 
-// Set content type for PDF
+// Set content type for HTML
 header('Content-Type: text/html; charset=utf-8');
-
-// Generate filename
-$filename = 'custom_report_' . date('Y-m-d_H-i-s') . '.pdf';
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -24,6 +20,7 @@ $filename = 'custom_report_' . date('Y-m-d_H-i-s') . '.pdf';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($report_title) ?></title>
     <style>
+        /* Reset and base styles */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -32,6 +29,7 @@ $filename = 'custom_report_' . date('Y-m-d_H-i-s') . '.pdf';
             color: black;
         }
         
+        /* Report header */
         .report-header {
             text-align: center;
             margin-bottom: 30px;
@@ -63,6 +61,7 @@ $filename = 'custom_report_' . date('Y-m-d_H-i-s') . '.pdf';
             font-style: italic;
         }
         
+        /* Table styles */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -103,12 +102,15 @@ $filename = 'custom_report_' . date('Y-m-d_H-i-s') . '.pdf';
         }
         
         .footer {
+			margin-left: auto;
+			margin-right: auto;
             margin-top: 30px;
             text-align: center;
             font-size: 10px;
             color: #888;
             border-top: 1px solid #ddd;
             padding-top: 10px;
+			
         }
         
         @media print {
@@ -117,10 +119,12 @@ $filename = 'custom_report_' . date('Y-m-d_H-i-s') . '.pdf';
                 padding: 15px;
             }
             
-            .report-header {
-                margin-bottom: 20px;
-                padding-bottom: 15px;
-            }
+/* Hide header, footer, buttons, etc. */
+    .report-header,
+    .footer,
+    .print-button {
+        display: none !important;
+    }
             
             table {
                 font-size: 10px;
@@ -129,16 +133,50 @@ $filename = 'custom_report_' . date('Y-m-d_H-i-s') . '.pdf';
             th, td {
                 padding: 6px;
             }
+            
+            /* Hide print button when printing */
+            .no-print {
+                display: none !important;
+            }
+			/* Show only the body content area */
+    body > *:not(.report-header):not(.footer):not(.print-button) {
+        display: block !important;
+    }
+        }
+        
+        /* Print button */
+        .print-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .print-button:hover {
+            background-color: #45a049;
         }
     </style>
     <script>
-        // Auto-print when page loads
-        window.onload = function() {
-            window.print();
-        };
+	window.onload = function printContent() {
+    var restorePage = document.body.innerHTML;
+    var printContent = document.getElementById('printable-content').innerHTML;
+    document.body.innerHTML = printContent;
+    setTimeout(function() {
+                window.print();
+	}, 500);}
     </script>
 </head>
 <body>
+    <!-- Print button (visible only on screen) -->
+    <button class="print-button no-print" onclick="window.print()">Print Report</button>
+	<div id="printable-content">
     <div class="report-header">
         <h1><?= htmlspecialchars($report_title) ?></h1>
         <h2><?= htmlspecialchars($report_subtitle) ?></h2>
@@ -192,9 +230,9 @@ $filename = 'custom_report_' . date('Y-m-d_H-i-s') . '.pdf';
                                 }
                             ?>>
                                 <?php if ($column === 'machine_number'): ?>
-                                    TOTALS
+                                    <strong>TOTALS</strong>
                                 <?php elseif (isset($totals[$column])): ?>
-                                    <?= format_currency($totals[$column]) ?>
+                                    <strong><?= format_currency($totals[$column]) ?></strong>
                                 <?php else: ?>
                                     <!-- Empty cell for non-monetary columns -->
                                 <?php endif; ?>
@@ -215,8 +253,11 @@ $filename = 'custom_report_' . date('Y-m-d_H-i-s') . '.pdf';
     <?php endif; ?>
 
     <div class="footer">
+	<br/>
+	<br/>
         <p>Slot Management System - Custom Report</p>
-        <p>Report generated on <?= date('Y-m-d H:i:s') ?> | Total records: <?= count($results) ?></p>
+        <p>Report generated on <?= cairo_time('d M Y - H:i:s') ?> | Total records: <?= count($results) ?></p>
     </div>
+	</div>
 </body>
 </html>

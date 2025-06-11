@@ -10,9 +10,6 @@ if (!defined('EXPORT_HANDLER')) {
     exit;
 }
 
-// Generate filename
-$filename = 'custom_report_' . date('Y-m-d_H-i-s') . '.csv';
-
 // Set headers for CSV download
 header('Content-Type: text/csv; charset=utf-8');
 header('Content-Disposition: attachment; filename="' . $filename . '"');
