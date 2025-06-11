@@ -1,7 +1,7 @@
 <?php
 /**
  * PDF Export for Custom Reports
- * Uses direct HTML output for browser printing with auto-print functionality
+ * Uses direct HTML output for browser printing with auto-save functionality
  */
 
 // Prevent direct access
@@ -9,6 +9,10 @@ if (!defined('EXPORT_HANDLER')) {
     header("Location: index.php?page=custom_report");
     exit;
 }
+
+// Generate custom filename
+$date_part = cairo_time('d-M-Y - H:i:s');
+$custom_filename = "Custom_Report_{$date_part}";
 
 // Set content type for HTML
 header('Content-Type: text/html; charset=utf-8');
@@ -18,7 +22,7 @@ header('Content-Type: text/html; charset=utf-8');
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($report_title) ?></title>
+    <title><?= htmlspecialchars($custom_filename) ?></title>
     <style>
         /* Reset and base styles */
         * {
@@ -146,24 +150,20 @@ header('Content-Type: text/html; charset=utf-8');
             padding-top: 10px;
         }
         
-        /* Print button */
-        .print-button {
+        /* Loading message */
+        .loading-message {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 10px 20px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             background-color: #4CAF50;
             color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            padding: 20px 40px;
+            border-radius: 8px;
+            font-size: 18px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
             z-index: 1000;
-        }
-        
-        .print-button:hover {
-            background-color: #45a049;
+            text-align: center;
         }
         
         /* Print-specific styles for the selected div */
@@ -174,7 +174,7 @@ header('Content-Type: text/html; charset=utf-8');
                 font-size: 10px;
             }
             
-            .print-button {
+            .loading-message {
                 display: none !important;
             }
             
@@ -247,27 +247,54 @@ header('Content-Type: text/html; charset=utf-8');
     </style>
     <script>
         window.onload = function() {
-            // Auto-print when page loads - only the printable content
+            // Show loading message
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'loading-message';
+            loadingDiv.innerHTML = '📄 Preparing PDF...<br><small>Save dialog will open shortly</small>';
+            document.body.appendChild(loadingDiv);
+            
+            // Auto-print with save as PDF after a short delay
             setTimeout(function() {
+                // Set the document title to the custom filename for the save dialog
+                document.title = '<?= $custom_filename ?>';
+                
+                // Trigger print dialog (user can choose "Save as PDF")
                 window.print();
+                
+                // Remove loading message
+                loadingDiv.remove();
+            }, 1000);
+        }
+        
+        // Auto-close window after printing/saving
+        window.onafterprint = function() {
+            setTimeout(function() {
+                window.close();
             }, 500);
         }
         
-        function printReport() {
-            // Print only the selected div
-            window.print();
-        }
+        // Fallback: close window if user cancels print dialog
+        window.addEventListener('beforeunload', function() {
+            // This will trigger if user closes the tab/window
+        });
         
-        // Optional: Close window after printing (uncomment if desired)
-        window.onafterprint = function() {
-            // window.close();
-        }
+        // Additional method to detect print dialog cancellation
+        let printDialogOpen = false;
+        window.addEventListener('focus', function() {
+            if (printDialogOpen) {
+                // User likely cancelled the print dialog, close window
+                setTimeout(function() {
+                    window.close();
+                }, 1000);
+            }
+        });
+        
+        window.addEventListener('blur', function() {
+            printDialogOpen = true;
+        });
     </script>
 </head>
 <body>
-    <!-- Print button (visible only on screen) -->
-    <button class="print-button" onclick="printReport()">🖨️ Print Report</button>
-    
     <div id="printable-content">
         <div class="report-header">
             <h1><?= htmlspecialchars($report_title) ?></h1>
