@@ -13,7 +13,7 @@ $transaction = [
     'machine_id' => '',
     'transaction_type_id' => $_POST['transaction_type_id'] ?? '', // ✅ Preserve transaction type
     'amount' => '',
-    'timestamp' => date('Y-m-d H:i:s'),
+    'timestamp' => cairo_time('Y-m-d H:i:s'),
     'notes' => ''
 ];
 
@@ -175,7 +175,7 @@ try {
                         <div class="form-group">
                             <label for="timestamp">Date *</label>
                             <input type="datetime-local" id="timestamp" name="timestamp" class="form-control" 
-                                   value="<?php echo htmlspecialchars($transaction['timestamp'] ?? cairo_time('Y-m-d\TH:i')); ?>" 
+                                   value="<?php echo htmlspecialchars($transaction['timestamp'] ?? cairo_time('d M Y – H:i:s')); ?>" 
                                    required>
                         </div>
                     </div>
