@@ -51,34 +51,66 @@ define('ICON_PATH', 'assets/icons'); // Make sure this matches your actual folde
         </header>
         
         <div class="main-container">
-            <aside class="sidebar">
+            <aside class="sidebar" id="sidebar">
     <nav class="main-nav">
         <ul>
             <!-- Regular menu items -->
-            <li><a href="index.php?page=dashboard" class="<?= $page == 'dashboard' ? 'active' : '' ?>"><span class="menu-icon"><img src="<?= icon('home') ?>" alt="Dashboard" /></span> Dashboard</a></li>
-            <li><a href="index.php?page=transactions" class="<?= $page == 'transactions' ? 'active' : '' ?>"><span class="menu-icon"><img src="<?= icon('dollar-sign') ?>" alt="transactions" /></span> Transactions</a></li>
-            <li><a href="index.php?page=general_report" class="<?= $page == 'general_report' ? 'active' : '' ?>"><span class="menu-icon"><img src="<?= icon('report') ?>" alt="general_report" /></span> General Report</a></li>
-            <li><a href="index.php?page=reports" class="<?= $page == 'reports' ? 'active' : '' ?>"><span class="menu-icon"><img src="<?= icon('report') ?>" alt="reports" /></span> Reports</a></li>
-			<li><a href="index.php?page=custom_report" class="<?= $page == 'custom_report' ? 'active' : '' ?>"><span class="menu-icon"><img src="<?= icon('report-chart') ?>" alt="custom_report" /> Custom Report</a></li>
-            <li><a href="index.php?page=profile" class="<?= $page == 'profile' ? 'active' : '' ?>"><span class="menu-icon"><img src="<?= icon('profile') ?>" alt="profile" /></span> My Profile</a></li>
+            <li><a href="index.php?page=dashboard" class="<?= $page == 'dashboard' ? 'active' : '' ?>">
+                <span class="menu-icon"><img src="<?= icon('home') ?>" alt="Dashboard" /></span>
+                <span class="menu-text">Dashboard</span>
+            </a></li>
+            <li><a href="index.php?page=transactions" class="<?= $page == 'transactions' ? 'active' : '' ?>">
+                <span class="menu-icon"><img src="<?= icon('dollar-sign') ?>" alt="transactions" /></span>
+                <span class="menu-text">Transactions</span>
+            </a></li>
+            <li><a href="index.php?page=general_report" class="<?= $page == 'general_report' ? 'active' : '' ?>">
+                <span class="menu-icon"><img src="<?= icon('report') ?>" alt="general_report" /></span>
+                <span class="menu-text">General Report</span>
+            </a></li>
+            <li><a href="index.php?page=reports" class="<?= $page == 'reports' ? 'active' : '' ?>">
+                <span class="menu-icon"><img src="<?= icon('report') ?>" alt="reports" /></span>
+                <span class="menu-text">Reports</span>
+            </a></li>
+			<li><a href="index.php?page=custom_report" class="<?= $page == 'custom_report' ? 'active' : '' ?>">
+                <span class="menu-icon"><img src="<?= icon('report-chart') ?>" alt="custom_report" /></span>
+                <span class="menu-text">Custom Report</span>
+            </a></li>
+            <li><a href="index.php?page=profile" class="<?= $page == 'profile' ? 'active' : '' ?>">
+                <span class="menu-icon"><img src="<?= icon('profile') ?>" alt="profile" /></span>
+                <span class="menu-text">My Profile</span>
+            </a></li>
 
             <!-- Admin Only: Settings Section -->
             <?php if ($_SESSION['user_role'] == 'admin'): ?>
-			<li class="settings-menu <?= in_array($page, ['machines', 'brands', 'machine_types', 'machine_groups', 'users']) ? 'open active' : '' ?>"><a href="#" class="settings-toggle"><span class="menu-icon"><img src="<?= icon('settings') ?>"</span> Settings <span class="submenu-arrow"> ▾ </span>
-    </a>
-    <ul class="submenu">
-        <li><a href="index.php?page=machines" class="<?= $page == 'machines' ? 'active' : '' ?>">
-            <span class="submenu-icon"><img src="<?= icon('machines') ?>" alt="machines" /></span> Machines</a></li>
-        <li><a href="index.php?page=brands" class="<?= $page == 'brands' ? 'active' : '' ?>">
-            <span class="submenu-icon"><img src="<?= icon('brands') ?>" alt="brands" />️</span> Brands</a></li>
-        <li><a href="index.php?page=machine_types" class="<?= $page == 'machine_types' ? 'active' : '' ?>">
-            <span class="submenu-icon"><img src="<?= icon('types') ?>" alt="types" /></span> Machine Types</a></li>
-        <li><a href="index.php?page=machine_groups" class="<?= $page == 'machine_groups' ? 'active' : '' ?>">
-            <span class="submenu-icon"><img src="<?= icon('groups') ?>" alt="groups" /></span> Machine Groups</a></li>
-        <li><a href="index.php?page=users" class="<?= $page == 'users' ? 'active' : '' ?>">
-            <span class="submenu-icon"><img src="<?= icon('users') ?>" alt="users" /></span> Users</a></li>
-    </ul>
-</li>
+			<li class="settings-menu <?= in_array($page, ['machines', 'brands', 'machine_types', 'machine_groups', 'users']) ? 'open active' : '' ?>">
+                <a href="#" class="settings-toggle">
+                    <span class="menu-icon"><img src="<?= icon('settings') ?>" alt="Settings" /></span>
+                    <span class="menu-text">Settings</span>
+                    <span class="submenu-arrow">▾</span>
+                </a>
+                <ul class="submenu">
+                    <li><a href="index.php?page=machines" class="<?= $page == 'machines' ? 'active' : '' ?>">
+                        <span class="submenu-icon"><img src="<?= icon('machines') ?>" alt="machines" /></span>
+                        <span class="menu-text">Machines</span>
+                    </a></li>
+                    <li><a href="index.php?page=brands" class="<?= $page == 'brands' ? 'active' : '' ?>">
+                        <span class="submenu-icon"><img src="<?= icon('brands') ?>" alt="brands" /></span>
+                        <span class="menu-text">Brands</span>
+                    </a></li>
+                    <li><a href="index.php?page=machine_types" class="<?= $page == 'machine_types' ? 'active' : '' ?>">
+                        <span class="submenu-icon"><img src="<?= icon('types') ?>" alt="types" /></span>
+                        <span class="menu-text">Machine Types</span>
+                    </a></li>
+                    <li><a href="index.php?page=machine_groups" class="<?= $page == 'machine_groups' ? 'active' : '' ?>">
+                        <span class="submenu-icon"><img src="<?= icon('groups') ?>" alt="groups" /></span>
+                        <span class="menu-text">Machine Groups</span>
+                    </a></li>
+                    <li><a href="index.php?page=users" class="<?= $page == 'users' ? 'active' : '' ?>">
+                        <span class="submenu-icon"><img src="<?= icon('users') ?>" alt="users" /></span>
+                        <span class="menu-text">Users</span>
+                    </a></li>
+                </ul>
+            </li>
             <?php endif; ?>
         </ul>
     </nav>
@@ -92,19 +124,54 @@ define('ICON_PATH', 'assets/icons'); // Make sure this matches your actual folde
 				
 				<script>
 document.addEventListener('DOMContentLoaded', function () {
+    const sidebar = document.getElementById('sidebar');
     const settingsToggle = document.querySelector('.settings-toggle');
     const settingsMenu = document.querySelector('.settings-menu');
+    
+    let sidebarTimer;
+    let isHovering = false;
 
-    // Load saved state
-    const savedState = localStorage.getItem('settingsMenuOpen');
-    if (savedState === 'true') {
-        settingsMenu.classList.add('open');
+    // Auto-hide sidebar after 3 seconds
+    function startSidebarTimer() {
+        clearTimeout(sidebarTimer);
+        sidebarTimer = setTimeout(() => {
+            if (!isHovering) {
+                sidebar.classList.add('collapsed');
+            }
+        }, 3000);
     }
 
-    // Toggle Settings menu
+    // Show sidebar on hover
+    function showSidebar() {
+        isHovering = true;
+        sidebar.classList.remove('collapsed');
+        clearTimeout(sidebarTimer);
+    }
+
+    // Hide sidebar when not hovering
+    function hideSidebar() {
+        isHovering = false;
+        startSidebarTimer();
+    }
+
+    // Event listeners for sidebar auto-hide
+    sidebar.addEventListener('mouseenter', showSidebar);
+    sidebar.addEventListener('mouseleave', hideSidebar);
+
+    // Start the initial timer
+    startSidebarTimer();
+
+    // Settings menu functionality
     if (settingsToggle && settingsMenu) {
+        // Load saved state
+        const savedState = localStorage.getItem('settingsMenuOpen');
+        if (savedState === 'true') {
+            settingsMenu.classList.add('open');
+        }
+
+        // Toggle Settings menu
         settingsToggle.addEventListener('click', function (e) {
-            e.preventDefault(); // Prevent page jump
+            e.preventDefault();
             const isOpen = settingsMenu.classList.toggle('open');
             localStorage.setItem('settingsMenuOpen', isOpen);
         });
