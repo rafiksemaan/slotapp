@@ -236,30 +236,45 @@ a:hover {
     height: 24px;
     margin-right: var(--spacing-sm);
     flex-shrink: 0;
+    min-width: 24px; /* Ensure icon doesn't shrink */
 }
 
 .menu-icon img {
     width: 20px;
-    height: auto;
+    height: 20px;
     max-width: 100%;
+    object-fit: contain;
 }
 
 .menu-text {
     transition: opacity var(--transition-speed) ease;
+    flex: 1;
 }
 
+/* Collapsed sidebar styles */
 .sidebar.collapsed .menu-text {
     opacity: 0;
     pointer-events: none;
+    width: 0;
+    overflow: hidden;
 }
 
 .sidebar.collapsed .main-nav a {
-    padding: var(--spacing-md) calc(var(--sidebar-width-collapsed) / 2 - 12px);
+    padding: var(--spacing-md);
     justify-content: center;
+    margin: 0 auto;
+    width: var(--sidebar-width-collapsed);
+}
+
+.sidebar.collapsed .menu-icon {
+    margin-right: 0;
+    margin-left: 0;
 }
 
 .sidebar.collapsed .submenu-arrow {
     opacity: 0;
+    width: 0;
+    overflow: hidden;
 }
 
 .content {
@@ -702,18 +717,21 @@ tr:hover {
     height: 20px;
     margin-right: var(--spacing-sm);
     flex-shrink: 0;
+    min-width: 20px;
 }
 
 .submenu-icon img {
     width: 16px;
-    height: auto;
+    height: 16px;
     max-width: 100%;
+    object-fit: contain;
 }
 
 .submenu-arrow {
     margin-left: auto;
     font-size: 1rem;
     transition: transform 0.3s ease;
+    flex-shrink: 0;
 }
 
 .settings-menu.open .submenu-arrow {
@@ -722,18 +740,23 @@ tr:hover {
 
 /* Sidebar collapsed state for settings */
 .sidebar.collapsed .settings-toggle {
-    padding: var(--spacing-md) calc(var(--sidebar-width-collapsed) / 2 - 12px);
+    padding: var(--spacing-md);
     justify-content: center;
+    width: var(--sidebar-width-collapsed);
+    margin: 0 auto;
 }
 
 .sidebar.collapsed .submenu {
     display: none !important;
 }
 
-.sidebar.collapsed .menu-text,
-.sidebar.collapsed .submenu-arrow {
-    opacity: 0;
-    pointer-events: none;
+.sidebar.collapsed .submenu li a {
+    padding: var(--spacing-sm);
+    justify-content: center;
+}
+
+.sidebar.collapsed .submenu-icon {
+    margin-right: 0;
 }
 
 /* Responsive Design */

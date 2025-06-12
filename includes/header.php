@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!isHovering) {
                 sidebar.classList.add('collapsed');
             }
-        }, 1000);
+        }, 500);
     }
 
     // Show sidebar on hover
