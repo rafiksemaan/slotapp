@@ -30,8 +30,13 @@ define('ICON_PATH', 'assets/icons'); // Make sure this matches your actual folde
         <header class="app-header">
             <div class="logo">
                 <h1><?php echo $app_name; ?></h1>
-            </div>
-            <div class="user-info">
+			</div>
+			
+			<div class="logopic">
+				<img src="<?= icon('sgc') ?>" alt="Logo" />
+			</div>
+			
+			<div class="user-info">
                 <div class="user-details">
                     <span class="username"><?php echo $_SESSION['username']; ?></span>
                     <span class="role"><?php echo $user_roles[$_SESSION['user_role']]; ?></span>
