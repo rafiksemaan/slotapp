@@ -6,11 +6,7 @@
 
 // Pagination parameters
 $page_num = isset($_GET['page_num']) ? (int)$_GET['page_num'] : 1;
-<<<<<<< HEAD
 $per_page = 5;
-=======
-$per_page = 20;
->>>>>>> 398d8628a1437f73d341e62f838658fcf7266ec8
 $offset = ($page_num - 1) * $per_page;
 
 // Check if this is an AJAX request
