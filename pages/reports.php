@@ -224,7 +224,7 @@ try {
 
             <!-- Submit Button -->
             <div class="filter-group">
-                <button type="submit" class="btn btn-primary w-full">Generate Report</button>
+                <button type="submit" class="btn btn-primary w-full">Generate</button>
                 <a href="index.php?page=reports" class="btn btn-danger">Reset</a>
             </div>
         </form>

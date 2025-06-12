@@ -284,7 +284,7 @@ if ($date_range_type === 'range') {
 
                 <!-- Submit Buttons -->
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Generate Report</button>
+                    <button type="submit" class="btn btn-primary">Generate</button>
                     <a href="index.php?page=general_report" class="btn btn-danger">Reset</a>
                 </div>
             </form>
