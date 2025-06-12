@@ -184,9 +184,9 @@ if ($date_range_type === 'range') {
 <div class="general-report-page fade-in">
     <!-- Filters -->
     <div class="filters-container card mb-6">
-        <div class="card-header">
+       <!-- <div class="card-header">
             <h3>Report Configuration</h3>
-        </div>
+        </div> -->
         <div class="card-body">
             <form action="index.php" method="GET">
                 <input type="hidden" name="page" value="general_report">
@@ -231,7 +231,7 @@ if ($date_range_type === 'range') {
                     </div>
                 </div>
 
-                <!-- Machine Selection -->
+                <!-- Machine Selection 
                 <div class="form-section">
                     <h4>Machine Selection</h4>
                     <div class="row">
@@ -280,7 +280,7 @@ if ($date_range_type === 'range') {
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> -->
 
                 <!-- Submit Buttons -->
                 <div class="form-actions">

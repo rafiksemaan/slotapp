@@ -52,10 +52,10 @@ define('ICON_PATH', 'assets/icons'); // Make sure this matches your actual folde
             <!-- Regular menu items -->
             <li><a href="index.php?page=dashboard" class="<?= $page == 'dashboard' ? 'active' : '' ?>"><span class="menu-icon"><img src="<?= icon('home') ?>" alt="Dashboard" /></span> Dashboard</a></li>
             <li><a href="index.php?page=transactions" class="<?= $page == 'transactions' ? 'active' : '' ?>"><span class="menu-icon"><img src="<?= icon('dollar-sign') ?>" alt="transactions" /></span> Transactions</a></li>
+            <li><a href="index.php?page=general_report" class="<?= $page == 'general_report' ? 'active' : '' ?>"><span class="menu-icon"><img src="<?= icon('report') ?>" alt="general_report" /></span> General Report</a></li>
             <li><a href="index.php?page=reports" class="<?= $page == 'reports' ? 'active' : '' ?>"><span class="menu-icon"><img src="<?= icon('report') ?>" alt="reports" /></span> Reports</a></li>
 			<li><a href="index.php?page=custom_report" class="<?= $page == 'custom_report' ? 'active' : '' ?>"><span class="menu-icon"><img src="<?= icon('report-chart') ?>" alt="custom_report" /> Custom Report</a></li>
-            <li><a href="index.php?page=general_report" class="<?= $page == 'general_report' ? 'active' : '' ?>"><span class="menu-icon"><img src="<?= icon('report') ?>" alt="general_report" /></span> General Report</a></li>
-            <li><a href="index.php?page=profile" class="<?= $page == 'profile' ? 'active' : '' ?>"><span class="menu-icon"><img src="<?= icon('users') ?>" alt="profile" /></span> My Profile</a></li>
+            <li><a href="index.php?page=profile" class="<?= $page == 'profile' ? 'active' : '' ?>"><span class="menu-icon"><img src="<?= icon('profile') ?>" alt="profile" /></span> My Profile</a></li>
 
             <!-- Admin Only: Settings Section -->
             <?php if ($_SESSION['user_role'] == 'admin'): ?>
