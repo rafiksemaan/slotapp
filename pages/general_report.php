@@ -381,7 +381,7 @@ if ($date_range_type === 'range') {
                                     <span class="legend-color" style="background-color: <?= getChartColor($index) ?>"></span>
                                     <span class="legend-label">
                                         <?= htmlspecialchars($item['type']) ?>: 
-                                        <?= format_currency($item['result']) ?> (<?= $item['percentage'] ?>%)
+                                        <?= format_currency($item['result']) ?> <strong>(<?= $item['percentage'] ?>%)</strong>
                                     </span>
                                 </div>
                             <?php endforeach; ?>
