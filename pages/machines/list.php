@@ -79,53 +79,68 @@ try {
 
 <div class="machines-list fade-in">
     <!-- Filters -->
-    <div class="filters-container">
-        <form action="index.php" method="GET" class="filters-form">
-            <input type="hidden" name="page" value="machines">
-            <input type="hidden" name="sort" value="<?php echo $sort_column; ?>">
-            <input type="hidden" name="order" value="<?php echo $sort_order; ?>">
-            
-            <div class="filter-group">
-                <label for="brand">Brand</label>
-                <select name="brand" id="brand" class="form-control">
-                    <option value="">All Brands</option>
-                    <?php foreach ($brands as $brand): ?>
-                        <option value="<?php echo $brand['id']; ?>" <?php echo $filter_brand == $brand['id'] ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($brand['name']); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            
-            <div class="filter-group">
-                <label for="type">Type</label>
-                <select name="type" id="type" class="form-control">
-                    <option value="">All Types</option>
-                    <?php foreach ($types as $type): ?>
-                        <option value="<?php echo $type['id']; ?>" <?php echo $filter_type == $type['id'] ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($type['name']); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            
-            <div class="filter-group">
-                <label for="status">Status</label>
-                <select name="status" id="status" class="form-control">
-                    <option value="">All Statuses</option>
-                    <?php foreach ($machine_statuses as $status): ?>
-                        <option value="<?php echo $status; ?>" <?php echo $filter_status == $status ? 'selected' : ''; ?>>
-                            <?php echo $status; ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            
-            <div class="filter-group">
-                <button type="submit" class="btn btn-primary">Filter</button>
-                <a href="index.php?page=machines" class="btn btn-danger">Reset</a>
-            </div>
-        </form>
+    <div class="filters-container card mb-6">
+        <div class="card-body">
+            <form action="index.php" method="GET">
+                <input type="hidden" name="page" value="machines">
+                <input type="hidden" name="sort" value="<?php echo $sort_column; ?>">
+                <input type="hidden" name="order" value="<?php echo $sort_order; ?>">
+                
+                <!-- Filter Options Section -->
+                <div class="form-section">
+                    <h4>Filter Options</h4>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="brand">Brand</label>
+                                <select name="brand" id="brand" class="form-control">
+                                    <option value="">All Brands</option>
+                                    <?php foreach ($brands as $brand): ?>
+                                        <option value="<?php echo $brand['id']; ?>" <?php echo $filter_brand == $brand['id'] ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($brand['name']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="type">Type</label>
+                                <select name="type" id="type" class="form-control">
+                                    <option value="">All Types</option>
+                                    <?php foreach ($types as $type): ?>
+                                        <option value="<?php echo $type['id']; ?>" <?php echo $filter_type == $type['id'] ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($type['name']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="status">Status</label>
+                                <select name="status" id="status" class="form-control">
+                                    <option value="">All Statuses</option>
+                                    <?php foreach ($machine_statuses as $status): ?>
+                                        <option value="<?php echo $status; ?>" <?php echo $filter_status == $status ? 'selected' : ''; ?>>
+                                            <?php echo $status; ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Submit Buttons -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Apply Filters</button>
+                    <a href="index.php?page=machines" class="btn btn-danger">Reset</a>
+                </div>
+            </form>
+        </div>
     </div>
     
     <!-- Action Buttons -->
@@ -224,3 +239,33 @@ try {
         </div>
     </div>
 </div>
+
+<style>
+.form-section {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+}
+
+.form-section h4 {
+    margin-bottom: 1rem;
+    color: var(--secondary-color);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+.form-actions {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 1rem;
+}
+
+@media (max-width: 768px) {
+    .form-actions {
+        flex-direction: column;
+    }
+}
+</style>

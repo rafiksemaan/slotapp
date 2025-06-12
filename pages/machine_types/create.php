@@ -61,17 +61,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <?php endif; ?>
             
             <form action="index.php?page=machine_types&action=create" method="POST" onsubmit="return validateForm(this)">
-                <div class="form-group">
-                    <label for="name">Type Name *</label>
-                    <input type="text" id="name" name="name" class="form-control" value="<?php echo htmlspecialchars($machine_type['name']); ?>" required>
+                <!-- Machine Type Information Section -->
+                <div class="form-section">
+                    <h4>Machine Type Information</h4>
+                    <div class="form-group">
+                        <label for="name">Type Name *</label>
+                        <input type="text" id="name" name="name" class="form-control" value="<?php echo htmlspecialchars($machine_type['name']); ?>" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" name="description" class="form-control" rows="4" placeholder="Optional description of the machine type..."><?php echo htmlspecialchars($machine_type['description']); ?></textarea>
+                    </div>
                 </div>
                 
-                <div class="form-group">
-                    <label for="description">Description</label>
-                    <textarea id="description" name="description" class="form-control" rows="3"><?php echo htmlspecialchars($machine_type['description']); ?></textarea>
-                </div>
-                
-                <div class="form-group">
+                <!-- Form Actions -->
+                <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Save Machine Type</button>
                     <a href="index.php?page=machine_types" class="btn btn-danger">Cancel</a>
                 </div>
@@ -79,3 +84,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
     </div>
 </div>
+
+<style>
+.form-section {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+}
+
+.form-section h4 {
+    margin-bottom: 1rem;
+    color: var(--secondary-color);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+.form-actions {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 1rem;
+}
+
+@media (max-width: 768px) {
+    .form-actions {
+        flex-direction: column;
+    }
+}
+</style>

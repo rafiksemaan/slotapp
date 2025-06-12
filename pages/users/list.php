@@ -43,48 +43,60 @@ try {
 ?>
 
 <div class="users-page fade-in">
+    <!-- Filters -->
+	<!--
+    <div class="filters-container card mb-6">
+        <div class="card-body">
+            <form action="index.php" method="GET">
+                <input type="hidden" name="page" value="users">
+                <input type="hidden" name="sort" value="<?php echo $sort_column; ?>">
+                <input type="hidden" name="order" value="<?php echo $sort_order; ?>">
+
+                <!-- Filter Options Section 
+                <div class="form-section">
+                    <h4>Filter Options</h4>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="role">Role</label>
+                                <select name="role" id="role" class="form-control">
+                                    <option value="">All Roles</option>
+                                    <option value="admin" <?php echo ($filter_role === 'admin') ? 'selected' : ''; ?>>Admin</option>
+                                    <option value="editor" <?php echo ($filter_role === 'editor') ? 'selected' : ''; ?>>Editor</option>
+                                    <option value="viewer" <?php echo ($filter_role === 'viewer') ? 'selected' : ''; ?>>Viewer</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="status">Status</label>
+                                <select name="status" id="status" class="form-control">
+                                    <option value="">All Status</option>
+                                    <option value="Active" <?php echo ($filter_status === 'Active') ? 'selected' : ''; ?>>Active</option>
+                                    <option value="Inactive" <?php echo ($filter_status === 'Inactive') ? 'selected' : ''; ?>>Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Buttons 
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Apply Filters</button>
+                    <a href="index.php?page=users" class="btn btn-danger">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+	 -->
+
     <!-- Action Buttons -->
     <?php if ($can_edit): ?>
         <div class="action-buttons mb-6 flex justify-end">
             <a href="index.php?page=users&action=create" class="btn btn-primary">Add New User</a>
         </div>
     <?php endif; ?>
-
-    <!-- Filters -->
-    <div class="filters-container card mb-6">
-        <form action="index.php" method="GET" class="filters-form">
-            <input type="hidden" name="page" value="users">
-            <input type="hidden" name="sort" value="<?php echo $sort_column; ?>">
-            <input type="hidden" name="order" value="<?php echo $sort_order; ?>">
-
-            <!-- Role Filter -->
-            <div class="filter-group">
-                <label for="role">Role</label>
-                <select name="role" id="role" class="form-control">
-                    <option value="">All Roles</option>
-                    <option value="admin" <?php echo ($filter_role === 'admin') ? 'selected' : ''; ?>>Admin</option>
-                    <option value="editor" <?php echo ($filter_role === 'editor') ? 'selected' : ''; ?>>Editor</option>
-                    <option value="viewer" <?php echo ($filter_role === 'viewer') ? 'selected' : ''; ?>>Viewer</option>
-                </select>
-            </div>
-
-            <!-- Status Filter -->
-            <div class="filter-group">
-                <label for="status">Status</label>
-                <select name="status" id="status" class="form-control">
-                    <option value="">All Status</option>
-                    <option value="Active" <?php echo ($filter_status === 'Active') ? 'selected' : ''; ?>>Active</option>
-                    <option value="Inactive" <?php echo ($filter_status === 'Inactive') ? 'selected' : ''; ?>>Inactive</option>
-                </select>
-            </div>
-
-            <!-- Submit Button -->
-            <div class="filter-group">
-                <button type="submit" class="btn btn-primary w-full">Apply Filters</button>
-                <a href="index.php?page=users" class="btn btn-danger w-full mt-2">Reset</a>
-            </div>
-        </form>
-    </div>
 
     <!-- Users Table -->
     <div class="card overflow-hidden">
@@ -144,3 +156,33 @@ try {
         </div>
     </div>
 </div>
+
+<style>
+.form-section {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+}
+
+.form-section h4 {
+    margin-bottom: 1rem;
+    color: var(--secondary-color);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+.form-actions {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 1rem;
+}
+
+@media (max-width: 768px) {
+    .form-actions {
+        flex-direction: column;
+    }
+}
+</style>

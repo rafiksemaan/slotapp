@@ -57,43 +57,104 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php if (!empty($message)): ?>
                 <div class="alert alert-success"><?php echo $message; ?></div>
             <?php endif; ?>
+            
             <form method="POST" action="index.php?page=users&action=create" class="form">
-                <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" name="username" class="form-control" required>
+                <!-- User Information Section -->
+                <div class="form-section">
+                    <h4>User Information</h4>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="username">Username *</label>
+                                <input type="text" id="username" name="username" class="form-control" value="<?php echo htmlspecialchars($user['username']); ?>" required>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="name">Full Name *</label>
+                                <input type="text" id="name" name="name" class="form-control" value="<?php echo htmlspecialchars($user['name']); ?>" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="email">Email *</label>
+                                <input type="email" id="email" name="email" class="form-control" value="<?php echo htmlspecialchars($user['email']); ?>" required>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="password">Password *</label>
+                                <input type="password" id="password" name="password" class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="name">Full Name</label>
-                    <input type="text" id="name" name="name" class="form-control" required>
+                
+                <!-- Access & Status Section -->
+                <div class="form-section">
+                    <h4>Access & Status</h4>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="role">Role *</label>
+                                <select name="role" id="role" class="form-control" required>
+                                    <option value="admin" <?php echo $user['role'] === 'admin' ? 'selected' : ''; ?>>Admin</option>
+                                    <option value="editor" <?php echo $user['role'] === 'editor' ? 'selected' : ''; ?>>Editor</option>
+                                    <option value="viewer" <?php echo $user['role'] === 'viewer' ? 'selected' : ''; ?>>Viewer</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="status">Status *</label>
+                                <select name="status" id="status" class="form-control" required>
+                                    <option value="Active" <?php echo $user['status'] === 'Active' ? 'selected' : ''; ?>>Active</option>
+                                    <option value="Inactive" <?php echo $user['status'] === 'Inactive' ? 'selected' : ''; ?>>Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="role">Role</label>
-                    <select name="role" id="role" class="form-control">
-                        <option value="admin">Admin</option>
-                        <option value="editor">Editor</option>
-                        <option value="viewer" selected>Viewer</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="status">Status</label>
-                    <select name="status" id="status" class="form-control">
-                        <option value="Active">Active</option>
-                        <option value="Inactive">Inactive</option>
-                    </select>
-                </div>
+                
+                <!-- Form Actions -->
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Save User</button>
-                    <a href="index.php?page=users" class="btn btn-secondary">Cancel</a>
+                    <a href="index.php?page=users" class="btn btn-danger">Cancel</a>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<style>
+.form-section {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+}
+
+.form-section h4 {
+    margin-bottom: 1rem;
+    color: var(--secondary-color);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+.form-actions {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 1rem;
+}
+
+@media (max-width: 768px) {
+    .form-actions {
+        flex-direction: column;
+    }
+}
+</style>

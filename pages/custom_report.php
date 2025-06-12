@@ -337,9 +337,6 @@ try {
 	<div class="custom-report-page fade-in">
 		<!-- Filters -->
 		<div class="filters-container card mb-6">
-			<div class="card-header">
-				<h3>Report Configuration</h3>
-			</div>
 			<div class="card-body">
 				<form action="index.php" method="GET">
 					<input type="hidden" name="page" value="custom_report">
