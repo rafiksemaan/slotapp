@@ -165,76 +165,93 @@ $total_result = $total_drop - $total_out;
 <div class="transactions-page fade-in">
     <!-- Filters -->
     <div class="filters-container card mb-6">
-        <form action="index.php" method="GET" class="filters-form" id="filters-form">
-            <input type="hidden" name="page" value="transactions">
-            <input type="hidden" name="sort" value="<?php echo $sort_column; ?>">
-            <input type="hidden" name="order" value="<?php echo $sort_order; ?>">
+        <div class="card-body">
+            <form action="index.php" method="GET" id="filters-form">
+                <input type="hidden" name="page" value="transactions">
+                <input type="hidden" name="sort" value="<?php echo $sort_column; ?>">
+                <input type="hidden" name="order" value="<?php echo $sort_order; ?>">
 
-            <!-- Machine Filter -->
-            <div class="filter-group">
-                <label for="machine">Machine</label>
-                <select name="machine" id="machine" class="form-control">
-                    <option value="all" <?php echo ($filter_machine === 'all') ? 'selected' : ''; ?>>All Machines</option>
-                    <?php foreach ($machines as $m): ?>
-                        <option value="<?php echo $m['id']; ?>" <?php echo ($filter_machine == $m['id']) ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($m['machine_number']); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
+                <!-- Date Range Section -->
+                <div class="form-section">
+                    <h4>Date Range</h4>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="date_range_type">Date Range Type</label>
+                                <select name="date_range_type" id="date_range_type" class="form-control">
+                                    <option value="month" <?= $date_range_type === 'month' ? 'selected' : '' ?>>Full Month</option>
+                                    <option value="range" <?= $date_range_type === 'range' ? 'selected' : '' ?>>Custom Range</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="month">Select Month</label>
+                                <input type="month" name="month" id="month" class="form-control"
+                                       value="<?= $filter_month ?>" <?= $date_range_type !== 'month' ? 'disabled' : '' ?>>
+                            </div>
+                        </div>
+                        
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="date_from">From Date</label>
+                                <input type="date" name="date_from" id="date_from" class="form-control"
+                                       value="<?= $filter_date_from ?>" <?= $date_range_type !== 'range' ? 'disabled' : '' ?>>
+                            </div>
+                        </div>
+                        
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="date_to">To Date</label>
+                                <input type="date" name="date_to" id="date_to" class="form-control"
+                                       value="<?= $filter_date_to ?>" <?= $date_range_type !== 'range' ? 'disabled' : '' ?>>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-            <!-- Date Range Type -->
-            <div class="filter-group">
-                <label for="date_range_type">Date Range</label>
-                <select name="date_range_type" id="date_range_type" class="form-control">
-                    <option value="month" <?php echo ($date_range_type === 'month') ? 'selected' : ''; ?>>Full Month</option>
-                    <option value="range" <?php echo ($date_range_type === 'range') ? 'selected' : ''; ?>>Custom Range</option>
-                </select>
-            </div>
+                <!-- Machine & Category Selection -->
+                <div class="form-section">
+                    <h4>Filter Options</h4>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="machine">Machine</label>
+                                <select name="machine" id="machine" class="form-control">
+                                    <option value="all" <?= $filter_machine === 'all' ? 'selected' : '' ?>>All Machines</option>
+                                    <?php foreach ($machines as $m): ?>
+                                        <option value="<?= $m['id'] ?>" <?= $filter_machine == $m['id'] ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($m['machine_number']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="category">Category</label>
+                                <select name="category" id="category" class="form-control">
+                                    <option value="" <?= $filter_category === '' ? 'selected' : '' ?>>All Categories</option>
+                                    <?php foreach ($categories as $cat): ?>
+                                        <option value="<?= $cat['category'] ?>" <?= $filter_category === $cat['category'] ? 'selected' : '' ?>>
+                                            <?= ucfirst($cat['category']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-            <!-- From Date -->
-            <div class="filter-group">
-                <label for="date_from">From</label>
-                <input type="date" name="date_from" id="date_from" class="form-control"
-                       value="<?php echo $filter_date_from; ?>"
-                       <?php echo ($date_range_type !== 'range') ? 'disabled' : ''; ?>>
-            </div>
-
-            <!-- To Date -->
-            <div class="filter-group">
-                <label for="date_to">To</label>
-                <input type="date" name="date_to" id="date_to" class="form-control"
-                       value="<?php echo $filter_date_to; ?>"
-                       <?php echo ($date_range_type !== 'range') ? 'disabled' : ''; ?>>
-            </div>
-
-            <!-- Month Picker -->
-            <div class="filter-group">
-                <label for="month">Select Month</label>
-                <input type="month" name="month" id="month" class="form-control"
-                       value="<?php echo $filter_month; ?>"
-                       <?php echo ($date_range_type !== 'month') ? 'disabled' : ''; ?>>
-            </div>
-
-            <!-- Category Filter -->
-            <div class="filter-group">
-                <label for="category">Category</label>
-                <select name="category" id="category" class="form-control">
-                    <option value="" <?php echo ($filter_category === '') ? 'selected' : ''; ?>>All Categories</option>
-                    <?php foreach ($categories as $cat): ?>
-                        <option value="<?php echo $cat['category']; ?>" <?php echo ($filter_category === $cat['category']) ? 'selected' : ''; ?>>
-                            <?php echo ucfirst($cat['category']); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            
-            <!-- Submit Button -->
-            <div class="filter-group">
-                <button type="submit" class="btn btn-primary w-full">Apply Filters</button>
-                <a href="index.php?page=transactions" class="btn btn-danger">Reset</a>
-            </div>
-        </form>
+                <!-- Submit Buttons -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Apply Filters</button>
+                    <a href="index.php?page=transactions" class="btn btn-danger">Reset</a>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Action Buttons -->
@@ -591,6 +608,28 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 
 <style>
+.form-section {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+}
+
+.form-section h4 {
+    margin-bottom: 1rem;
+    color: var(--secondary-color);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+.form-actions {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 1rem;
+}
+
 .stat-breakdown {
     margin-top: 0.5rem;
     font-size: 0.75rem;
@@ -620,7 +659,11 @@ document.addEventListener('DOMContentLoaded', function () {
 }
 
 /* Responsive adjustments */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
+    .form-actions {
+        flex-direction: column;
+    }
+    
     .breakdown-item {
         flex-direction: column;
         align-items: center;
