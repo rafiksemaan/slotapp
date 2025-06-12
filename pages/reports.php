@@ -160,74 +160,91 @@ try {
 <div class="reports-page fade-in">
     <!-- Filters -->
     <div class="filters-container card mb-6">
-        <form id="report-filters" action="index.php" method="GET" class="filters-form">
-            <input type="hidden" name="page" value="reports">
+        <div class="card-body">
+            <form id="report-filters" action="index.php" method="GET">
+                <input type="hidden" name="page" value="reports">
 
-<!-- Brand Filter -->
-<div class="filter-group">
-    <label for="brand_id">Brand</label>
-    <select name="brand_id" id="brand_id" class="form-control">
-        <option value="all" <?php echo ($brand_id === 'all') ? 'selected' : ''; ?>>All Brands</option>
-        <?php foreach ($brands as $brand): ?>
-            <option value="<?php echo $brand['id']; ?>" <?php echo ($brand_id == $brand['id']) ? 'selected' : ''; ?>>
-                <?php echo htmlspecialchars($brand['name']); ?>
-            </option>
-        <?php endforeach; ?>
-    </select>
-</div>
+                <!-- Date Range Section -->
+                <div class="form-section">
+                    <h4>Date Range</h4>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="date_range_type">Date Range Type</label>
+                                <select name="date_range_type" id="date_range_type" class="form-control">
+                                    <option value="month" <?= $date_range_type === 'month' ? 'selected' : '' ?>>Full Month</option>
+                                    <option value="range" <?= $date_range_type === 'range' ? 'selected' : '' ?>>Custom Range</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="month">Select Month</label>
+                                <input type="month" name="month" id="month" class="form-control"
+                                       value="<?= $month ?>" <?= $date_range_type !== 'month' ? 'disabled' : '' ?>>
+                            </div>
+                        </div>
+                        
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="date_from">From Date</label>
+                                <input type="date" name="date_from" id="date_from" class="form-control"
+                                       value="<?= $date_from ?>" <?= $date_range_type !== 'range' ? 'disabled' : '' ?>>
+                            </div>
+                        </div>
+                        
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="date_to">To Date</label>
+                                <input type="date" name="date_to" id="date_to" class="form-control"
+                                       value="<?= $date_to ?>" <?= $date_range_type !== 'range' ? 'disabled' : '' ?>>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-            <!-- Machine Filter -->
-            <div class="filter-group">
-                <label for="machine_id">Machine</label>
-                <select name="machine_id" id="machine_id" class="form-control">
-                    <option value="all" <?php echo ($machine_id === 'all') ? 'selected' : ''; ?>>All Machines</option>
-                    <?php foreach ($machines as $machine): ?>
-                        <option value="<?php echo $machine['id']; ?>" <?php echo ($machine_id == $machine['id']) ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($machine['machine_number']); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
+                <!-- Machine Selection -->
+                <div class="form-section">
+                    <h4>Machine Selection</h4>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="brand_id">Brand</label>
+                                <select name="brand_id" id="brand_id" class="form-control">
+                                    <option value="all" <?= $brand_id === 'all' ? 'selected' : '' ?>>All Brands</option>
+                                    <?php foreach ($brands as $brand): ?>
+                                        <option value="<?= $brand['id'] ?>" <?= $brand_id == $brand['id'] ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($brand['name']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="machine_id">Specific Machine</label>
+                                <select name="machine_id" id="machine_id" class="form-control">
+                                    <option value="all" <?= $machine_id === 'all' ? 'selected' : '' ?>>All Machines</option>
+                                    <?php foreach ($machines as $machine): ?>
+                                        <option value="<?= $machine['id'] ?>" <?= $machine_id == $machine['id'] ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($machine['machine_number']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-            <!-- Date Range Type -->
-            <div class="filter-group">
-                <label for="date_range_type">Date Range</label>
-                <select name="date_range_type" id="date_range_type" class="form-control">
-                    <option value="month" <?php echo ($date_range_type === 'month') ? 'selected' : ''; ?>>Full Month</option>
-                    <option value="range" <?php echo ($date_range_type === 'range') ? 'selected' : ''; ?>>Custom Range</option>
-                </select>
-            </div>
-
-            <!-- From Date -->
-            <div class="filter-group">
-                <label for="date_from">From</label>
-                <input type="date" id="date_from" name="date_from" class="form-control"
-                       value="<?php echo $date_from; ?>"
-                       <?php echo ($date_range_type !== 'range') ? 'disabled' : ''; ?>>
-            </div>
-
-            <!-- To Date -->
-            <div class="filter-group">
-                <label for="date_to">To</label>
-                <input type="date" id="date_to" name="date_to" class="form-control"
-                       value="<?php echo $date_to; ?>"
-                       <?php echo ($date_range_type !== 'range') ? 'disabled' : ''; ?>>
-            </div>
-
-            <!-- Month Picker -->
-            <div class="filter-group">
-                <label for="month">Select Month</label>
-                <input type="month" id="month" name="month" class="form-control"
-                       value="<?php echo $month; ?>"
-                       <?php echo ($date_range_type !== 'month') ? 'disabled' : ''; ?>>
-            </div>
-
-            <!-- Submit Button -->
-            <div class="filter-group">
-                <button type="submit" class="btn btn-primary w-full">Generate</button>
-                <a href="index.php?page=reports" class="btn btn-danger">Reset</a>
-            </div>
-        </form>
+                <!-- Submit Buttons -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Generate</button>
+                    <a href="index.php?page=reports" class="btn btn-danger">Reset</a>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Report Header -->
@@ -384,3 +401,33 @@ document.addEventListener('DOMContentLoaded', function () {
     toggleInputs(); // Initial call
 });
 </script>
+
+<style>
+.form-section {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+}
+
+.form-section h4 {
+    margin-bottom: 1rem;
+    color: var(--secondary-color);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+.form-actions {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 1rem;
+}
+
+@media (max-width: 768px) {
+    .form-actions {
+        flex-direction: column;
+    }
+}
+</style>
