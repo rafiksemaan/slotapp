@@ -4,26 +4,9 @@
  * Shows transactions with filters and AJAX pagination
  */
 
-// Check if this is an AJAX request first
-$is_ajax = isset($_GET['ajax']) && $_GET['ajax'] === '1';
-
-// If AJAX request, set proper headers and handle errors
-if ($is_ajax) {
-    header('Content-Type: application/json');
-    
-    // Capture any PHP errors/warnings
-    ob_start();
-    
-    // Set error handler for AJAX requests
-    set_error_handler(function($severity, $message, $file, $line) {
-        throw new ErrorException($message, 0, $severity, $file, $line);
-    });
-}
-
 // Pagination parameters
-$page_num = isset($_GET['page_num']) ? (int)$_GET['page_num'] : 1;
+$page_num = 1; // Always start with page 1 for initial load
 $per_page = 5;
-$offset = ($page_num - 1) * $per_page;
 
 // Sorting parameters
 $sort_column = $_GET['sort'] ?? 'timestamp';
@@ -99,38 +82,22 @@ try {
     $actual_sort_column = $sort_map[$sort_column] ?? 't.timestamp';
 
     // Add sorting and pagination to main query
-    $query .= " ORDER BY $actual_sort_column $sort_order LIMIT $per_page OFFSET $offset";
+    $query .= " ORDER BY $actual_sort_column $sort_order LIMIT $per_page OFFSET 0";
 
     // Execute main query
     $stmt = $conn->prepare($query);
     $stmt->execute($params);
     $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Get machines for dropdown (only if not AJAX)
-    if (!$is_ajax) {
-        $machines_stmt = $conn->query("SELECT id, machine_number FROM machines ORDER BY machine_number");
-        $machines = $machines_stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Get machines for dropdown
+    $machines_stmt = $conn->query("SELECT id, machine_number FROM machines ORDER BY machine_number");
+    $machines = $machines_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Get transaction types for category dropdown
-        $types_stmt = $conn->query("SELECT DISTINCT category FROM transaction_types WHERE category IN ('OUT', 'DROP')");
-        $categories = $types_stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+    // Get transaction types for category dropdown
+    $types_stmt = $conn->query("SELECT DISTINCT category FROM transaction_types WHERE category IN ('OUT', 'DROP')");
+    $categories = $types_stmt->fetchAll(PDO::FETCH_ASSOC);
 
 } catch (Exception $e) {
-    if ($is_ajax) {
-        // Clean any output buffer
-        if (ob_get_length()) ob_clean();
-        
-        echo json_encode([
-            'error' => 'Database error: ' . $e->getMessage(),
-            'has_more' => false,
-            'current_page' => $page_num,
-            'total_pages' => 0,
-            'total_transactions' => 0,
-            'transactions' => []
-        ]);
-        exit;
-    }
     echo "<div class='alert alert-danger'>Database error: " . htmlspecialchars($e->getMessage()) . "</div>";
     $transactions = [];
     $machines = [];
@@ -139,38 +106,7 @@ try {
     $has_more = false;
 }
 
-// If this is an AJAX request, return JSON data
-if ($is_ajax) {
-    // Clean any output buffer
-    if (ob_get_length()) ob_clean();
-    
-    $response = [
-        'transactions' => [],
-        'has_more' => $has_more,
-        'current_page' => $page_num,
-        'total_pages' => $total_pages,
-        'total_transactions' => $total_transactions
-    ];
-    
-    foreach ($transactions as $t) {
-        $response['transactions'][] = [
-            'id' => $t['id'],
-            'timestamp' => htmlspecialchars(format_datetime($t['timestamp'], 'd M Y - H:i:s')),
-            'machine_number' => htmlspecialchars($t['machine_number']),
-            'transaction_type' => htmlspecialchars($t['transaction_type']),
-            'amount' => format_currency($t['amount']),
-            'category' => htmlspecialchars($t['category'] ?? 'N/A'),
-            'username' => htmlspecialchars($t['username']),
-            'notes' => htmlspecialchars($t['notes'] ?? ''),
-            'can_edit' => $can_edit
-        ];
-    }
-    
-    echo json_encode($response);
-    exit;
-}
-
-// Calculate totals and breakdown by transaction type (for first page only)
+// Calculate totals and breakdown by transaction type
 $total_out = $total_drop = 0;
 $transaction_breakdown = [
     'DROP' => [],
@@ -386,7 +322,7 @@ $total_result = $total_drop - $total_out;
         <div class="card-header bg-gray-800 text-white px-6 py-3 border-b border-gray-700">
             <h3 class="text-lg font-semibold">
                 Transactions 
-                <span class="text-sm font-normal">
+                <span class="text-sm font-normal" id="transaction-count">
                     (Showing <?php echo count($transactions); ?> of <?php echo $total_transactions; ?>)
                 </span>
             </h3>
@@ -464,7 +400,7 @@ $total_result = $total_drop - $total_out;
             <?php endif; ?>
             
             <!-- Pagination Info -->
-            <div class="text-center mt-4 text-gray-400 text-sm">
+            <div class="text-center mt-4 text-gray-400 text-sm" id="pagination-info">
                 Page <?php echo $page_num; ?> of <?php echo $total_pages; ?> 
                 (<?php echo $total_transactions; ?> total transactions)
             </div>
@@ -499,10 +435,8 @@ function loadMoreTransactions() {
     
     const nextPage = currentPage + 1;
     
-    // Build the URL parameters
+    // Build the URL parameters for the separate AJAX endpoint
     const params = new URLSearchParams();
-    params.set('page', 'transactions');
-    params.set('ajax', '1');
     params.set('page_num', nextPage);
     
     // Add all current filters
@@ -510,13 +444,13 @@ function loadMoreTransactions() {
         params.set(key, currentFilters[key]);
     });
     
-    const url = 'index.php?' + params.toString();
-    console.log('Loading URL:', url); // Debug log
+    const url = 'pages/transactions/ajax_transactions.php?' + params.toString();
+    console.log('Loading URL:', url);
     
     fetch(url)
         .then(response => {
-            console.log('Response status:', response.status); // Debug log
-            console.log('Response headers:', response.headers.get('content-type')); // Debug log
+            console.log('Response status:', response.status);
+            console.log('Response headers:', response.headers.get('content-type'));
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -525,7 +459,7 @@ function loadMoreTransactions() {
             const contentType = response.headers.get('content-type');
             if (!contentType || !contentType.includes('application/json')) {
                 return response.text().then(text => {
-                    console.log('Non-JSON response:', text.substring(0, 500)); // Debug log
+                    console.log('Non-JSON response:', text.substring(0, 500));
                     throw new Error('Response is not JSON. Got: ' + contentType);
                 });
             }
@@ -533,23 +467,29 @@ function loadMoreTransactions() {
             return response.json();
         })
         .then(data => {
-            console.log('Response data:', data); // Debug log
+            console.log('Response data:', data);
             
             if (data.error) {
                 alert('Error loading transactions: ' + data.error);
                 return;
             }
             
-            appendTransactions(data.transactions);
-            currentPage = data.current_page;
-            
-            // Hide load more button if no more pages
-            if (!data.has_more) {
-                document.getElementById('load-more-btn').style.display = 'none';
+            if (data.success && data.transactions) {
+                appendTransactions(data.transactions);
+                currentPage = data.current_page;
+                totalPages = data.total_pages;
+                
+                // Hide load more button if no more pages
+                if (!data.has_more) {
+                    document.getElementById('load-more-btn').style.display = 'none';
+                }
+                
+                // Update pagination info
+                updatePaginationInfo(data);
+            } else {
+                console.error('Invalid response format:', data);
+                alert('Invalid response format received');
             }
-            
-            // Update pagination info
-            updatePaginationInfo(data);
         })
         .catch(error => {
             console.error('Fetch error:', error);
@@ -595,13 +535,13 @@ function appendTransactions(transactions) {
 }
 
 function updatePaginationInfo(data) {
-    const infoElement = document.querySelector('.card-header h3 span');
-    if (infoElement) {
+    const countElement = document.getElementById('transaction-count');
+    if (countElement) {
         const currentCount = document.querySelectorAll('#transactions-tbody tr').length;
-        infoElement.textContent = `(Showing ${currentCount} of ${data.total_transactions})`;
+        countElement.textContent = `(Showing ${currentCount} of ${data.total_transactions})`;
     }
     
-    const paginationInfo = document.querySelector('.text-center.mt-4');
+    const paginationInfo = document.getElementById('pagination-info');
     if (paginationInfo) {
         paginationInfo.innerHTML = `Page ${data.current_page} of ${data.total_pages} (${data.total_transactions} total transactions)`;
     }
