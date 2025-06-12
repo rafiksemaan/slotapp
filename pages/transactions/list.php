@@ -1,8 +1,16 @@
 <?php
 /**
  * Transactions List Page
- * Shows transactions with filters and totals
+ * Shows transactions with filters and AJAX pagination
  */
+
+// Pagination parameters
+$page_num = isset($_GET['page_num']) ? (int)$_GET['page_num'] : 1;
+$per_page = 5;
+$offset = ($page_num - 1) * $per_page;
+
+// Check if this is an AJAX request
+$is_ajax = isset($_GET['ajax']) && $_GET['ajax'] === '1';
 
 // Sorting parameters
 $sort_column = $_GET['sort'] ?? 'timestamp';
@@ -19,11 +27,11 @@ $toggle_order = $sort_order === 'ASC' ? 'DESC' : 'ASC';
 
 // Filter parameters
 $filter_machine = $_GET['machine'] ?? 'all';
-$date_range_type = $_GET['date_range_type'] ?? 'month'; // 'range' or 'month'
+$date_range_type = $_GET['date_range_type'] ?? 'month';
 $filter_date_from = $_GET['date_from'] ?? date('Y-m-01');
 $filter_date_to = $_GET['date_to'] ?? date('Y-m-t');
 $filter_month = $_GET['month'] ?? date('Y-m');
-$filter_category = $_GET['category'] ?? ''; // 'OUT' or 'DROP'
+$filter_category = $_GET['category'] ?? '';
 
 // Calculate start and end dates
 if ($date_range_type === 'range') {
@@ -35,19 +43,7 @@ if ($date_range_type === 'range') {
     $end_date = date("Y-m-t", strtotime($start_date));
 }
 
-
-// Build base URL with filters
-$base_url = "index.php?page=transactions&sort=$sort_column&order=$sort_order";
-$base_url .= "&date_range_type=$date_range_type";
-if ($date_range_type === 'range') {
-    $base_url .= "&date_from=$filter_date_from&date_to=$filter_date_to";
-} else {
-    $base_url .= "&month=$filter_month";
-}
-if ($filter_machine !== 'all') $base_url .= "&machine=$filter_machine";
-if (!empty($filter_category)) $base_url .= "&category=$filter_category";
-
-// Build query with filtering
+// Build query with filtering and pagination
 try {
     $params = ["{$start_date} 00:00:00", "{$end_date} 23:59:59"];
     
@@ -70,102 +66,127 @@ try {
         $query .= " AND tt.category = 'DROP'";
     }
 
-    // Finalize query
-    $query .= " ORDER BY $sort_column $sort_order ";
+    // Get total count for pagination
+    $count_query = str_replace("SELECT t.*, m.machine_number, tt.name AS transaction_type, tt.category, u.username", "SELECT COUNT(*)", $query);
+    $count_stmt = $conn->prepare($count_query);
+    $count_stmt->execute($params);
+    $total_transactions = $count_stmt->fetchColumn();
+    $total_pages = ceil($total_transactions / $per_page);
+    $has_more = $page_num < $total_pages;
 
-    // Execute query
+    // Add sorting and pagination to main query
+    $query .= " ORDER BY $sort_column $sort_order LIMIT $per_page OFFSET $offset";
+
+    // Execute main query
     $stmt = $conn->prepare($query);
     $stmt->execute($params);
     $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Get total transactions (for infinite scroll detection)
-    $total_query = str_replace("SELECT t.*", "SELECT COUNT(*)", $query);
-    $total_stmt = $conn->prepare($total_query);
-    $total_stmt->execute($params);
-    $total_transactions = $total_stmt->fetchColumn();
+    // Get machines for dropdown (only if not AJAX)
+    if (!$is_ajax) {
+        $machines_stmt = $conn->query("SELECT id, machine_number FROM machines ORDER BY machine_number");
+        $machines = $machines_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-} catch (PDOException $e) {
-    $transactions = [];
-    $total_transactions = 0;
-    $total_pages = 1;
-}
-
-// Build query
-try {
-    $params = ["{$start_date} 00:00:00", "{$end_date} 23:59:59"];
-
-    // Base query with joins
-    $query = "
-        SELECT t.*, m.machine_number, tt.name AS transaction_type, tt.category, u.username
-        FROM transactions t
-        JOIN machines m ON t.machine_id = m.id
-        JOIN transaction_types tt ON t.transaction_type_id = tt.id
-        JOIN users u ON t.user_id = u.id
-        WHERE t.timestamp BETWEEN ? AND ?
-    ";
-
-    // Apply machine filter
-    if ($filter_machine !== 'all') {
-        $query .= " AND t.machine_id = ?";
-        $params[] = $filter_machine;
+        // Get transaction types for category dropdown
+        $types_stmt = $conn->query("SELECT DISTINCT category FROM transaction_types WHERE category IN ('OUT', 'DROP')");
+        $categories = $types_stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Apply category filter
-    if ($filter_category === 'OUT') {
-        $query .= " AND tt.category = 'OUT'";
-    } elseif ($filter_category === 'DROP') {
-        $query .= " AND tt.category = 'DROP'";
-    }
-
-    // Finalize query
-    $query .= " ORDER BY $sort_column $sort_order";
-
-    // Execute query
-    $stmt = $conn->prepare($query);
-    $stmt->execute($params);
-    $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // Get machines for dropdown
-    $machines_stmt = $conn->query("SELECT id, machine_number FROM machines ORDER BY machine_number");
-    $machines = $machines_stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // Get transaction types for category dropdown
-    $types_stmt = $conn->query("SELECT DISTINCT category FROM transaction_types WHERE category IN ('OUT', 'DROP')");
-    $categories = $types_stmt->fetchAll(PDO::FETCH_ASSOC);
-
 } catch (PDOException $e) {
+    if ($is_ajax) {
+        header('Content-Type: application/json');
+        echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+        exit;
+    }
     echo "<div class='alert alert-danger'>Database error: " . htmlspecialchars($e->getMessage()) . "</div>";
     $transactions = [];
     $machines = [];
     $categories = [];
     $total_out = $total_drop = $total_result = 0;
+    $has_more = false;
 }
 
-// Calculate totals and breakdown by transaction type
+// If this is an AJAX request, return JSON data
+if ($is_ajax) {
+    header('Content-Type: application/json');
+    
+    $response = [
+        'transactions' => [],
+        'has_more' => $has_more,
+        'current_page' => $page_num,
+        'total_pages' => $total_pages,
+        'total_transactions' => $total_transactions
+    ];
+    
+    foreach ($transactions as $t) {
+        $response['transactions'][] = [
+            'id' => $t['id'],
+            'timestamp' => htmlspecialchars(date('d M Y - H:i:s', strtotime($t['timestamp']))),
+            'machine_number' => htmlspecialchars($t['machine_number']),
+            'transaction_type' => htmlspecialchars($t['transaction_type']),
+            'amount' => format_currency($t['amount']),
+            'category' => htmlspecialchars($t['category'] ?? 'N/A'),
+            'username' => htmlspecialchars($t['username']),
+            'notes' => htmlspecialchars($t['notes'] ?? ''),
+            'can_edit' => $can_edit
+        ];
+    }
+    
+    echo json_encode($response);
+    exit;
+}
+
+// Calculate totals and breakdown by transaction type (for first page only)
 $total_out = $total_drop = 0;
 $transaction_breakdown = [
     'DROP' => [],
     'OUT' => []
 ];
 
-foreach ($transactions as $t) {
-    $category = $t['category'] ?? '';
-    $type = $t['transaction_type'] ?? '';
-    $amount = (float)($t['amount'] ?? 0);
+// Get totals for all transactions (not just current page)
+try {
+    $totals_query = "SELECT t.*, tt.name AS transaction_type, tt.category
+                     FROM transactions t
+                     JOIN transaction_types tt ON t.transaction_type_id = tt.id
+                     WHERE t.timestamp BETWEEN ? AND ?";
     
-    if ($category === 'OUT') {
-        $total_out += $amount;
-        if (!isset($transaction_breakdown['OUT'][$type])) {
-            $transaction_breakdown['OUT'][$type] = 0;
-        }
-        $transaction_breakdown['OUT'][$type] += $amount;
-    } elseif ($category === 'DROP') {
-        $total_drop += $amount;
-        if (!isset($transaction_breakdown['DROP'][$type])) {
-            $transaction_breakdown['DROP'][$type] = 0;
-        }
-        $transaction_breakdown['DROP'][$type] += $amount;
+    $totals_params = ["{$start_date} 00:00:00", "{$end_date} 23:59:59"];
+    
+    if ($filter_machine !== 'all') {
+        $totals_query .= " AND t.machine_id = ?";
+        $totals_params[] = $filter_machine;
     }
+    if ($filter_category === 'OUT') {
+        $totals_query .= " AND tt.category = 'OUT'";
+    } elseif ($filter_category === 'DROP') {
+        $totals_query .= " AND tt.category = 'DROP'";
+    }
+    
+    $totals_stmt = $conn->prepare($totals_query);
+    $totals_stmt->execute($totals_params);
+    $all_transactions = $totals_stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    foreach ($all_transactions as $t) {
+        $category = $t['category'] ?? '';
+        $type = $t['transaction_type'] ?? '';
+        $amount = (float)($t['amount'] ?? 0);
+        
+        if ($category === 'OUT') {
+            $total_out += $amount;
+            if (!isset($transaction_breakdown['OUT'][$type])) {
+                $transaction_breakdown['OUT'][$type] = 0;
+            }
+            $transaction_breakdown['OUT'][$type] += $amount;
+        } elseif ($category === 'DROP') {
+            $total_drop += $amount;
+            if (!isset($transaction_breakdown['DROP'][$type])) {
+                $transaction_breakdown['DROP'][$type] = 0;
+            }
+            $transaction_breakdown['DROP'][$type] += $amount;
+        }
+    }
+} catch (PDOException $e) {
+    // Handle error silently for totals
 }
 
 $total_result = $total_drop - $total_out;
@@ -174,97 +195,93 @@ $total_result = $total_drop - $total_out;
 <div class="transactions-page fade-in">
     <!-- Filters -->
     <div class="filters-container card mb-6">
-    <form action="index.php" method="GET" class="filters-form">
-        <input type="hidden" name="page" value="transactions">
-        <input type="hidden" name="sort" value="<?php echo $sort_column; ?>">
-        <input type="hidden" name="order" value="<?php echo $sort_order; ?>">
+        <form action="index.php" method="GET" class="filters-form" id="filters-form">
+            <input type="hidden" name="page" value="transactions">
+            <input type="hidden" name="sort" value="<?php echo $sort_column; ?>">
+            <input type="hidden" name="order" value="<?php echo $sort_order; ?>">
 
-        <!-- Machine Filter -->
-        <div class="filter-group">
-            <label for="machine">Machine</label>
-            <select name="machine" id="machine" class="form-control">
-                <option value="all" <?php echo ($filter_machine === 'all') ? 'selected' : ''; ?>>All Machines</option>
-                <?php foreach ($machines as $m): ?>
-                    <option value="<?php echo $m['id']; ?>" <?php echo ($filter_machine == $m['id']) ? 'selected' : ''; ?>>
-                        <?php echo htmlspecialchars($m['machine_number']); ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
+            <!-- Machine Filter -->
+            <div class="filter-group">
+                <label for="machine">Machine</label>
+                <select name="machine" id="machine" class="form-control">
+                    <option value="all" <?php echo ($filter_machine === 'all') ? 'selected' : ''; ?>>All Machines</option>
+                    <?php foreach ($machines as $m): ?>
+                        <option value="<?php echo $m['id']; ?>" <?php echo ($filter_machine == $m['id']) ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars($m['machine_number']); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
 
-        <!-- Date Range Type -->
-        <div class="filter-group">
-            <label for="date_range_type">Date Range</label>
-            <select name="date_range_type" id="date_range_type" class="form-control">
-                <option value="month" <?php echo ($date_range_type === 'month') ? 'selected' : ''; ?>>Full Month</option>
-                <option value="range" <?php echo ($date_range_type === 'range') ? 'selected' : ''; ?>>Custom Range</option>
-            </select>
-        </div>
+            <!-- Date Range Type -->
+            <div class="filter-group">
+                <label for="date_range_type">Date Range</label>
+                <select name="date_range_type" id="date_range_type" class="form-control">
+                    <option value="month" <?php echo ($date_range_type === 'month') ? 'selected' : ''; ?>>Full Month</option>
+                    <option value="range" <?php echo ($date_range_type === 'range') ? 'selected' : ''; ?>>Custom Range</option>
+                </select>
+            </div>
 
-        <!-- From Date -->
-        <div class="filter-group">
-            <label for="date_from">From</label>
-            <input type="date" name="date_from" id="date_from" class="form-control"
-                   value="<?php echo $filter_date_from; ?>"
-                   <?php echo ($date_range_type !== 'range') ? 'disabled' : ''; ?>>
-        </div>
+            <!-- From Date -->
+            <div class="filter-group">
+                <label for="date_from">From</label>
+                <input type="date" name="date_from" id="date_from" class="form-control"
+                       value="<?php echo $filter_date_from; ?>"
+                       <?php echo ($date_range_type !== 'range') ? 'disabled' : ''; ?>>
+            </div>
 
-        <!-- To Date -->
-        <div class="filter-group">
-            <label for="date_to">To</label>
-            <input type="date" name="date_to" id="date_to" class="form-control"
-                   value="<?php echo $filter_date_to; ?>"
-                   <?php echo ($date_range_type !== 'range') ? 'disabled' : ''; ?>>
-        </div>
+            <!-- To Date -->
+            <div class="filter-group">
+                <label for="date_to">To</label>
+                <input type="date" name="date_to" id="date_to" class="form-control"
+                       value="<?php echo $filter_date_to; ?>"
+                       <?php echo ($date_range_type !== 'range') ? 'disabled' : ''; ?>>
+            </div>
 
-        <!-- Month Picker -->
-        <div class="filter-group">
-            <label for="month">Select Month</label>
-            <input type="month" name="month" id="month" class="form-control"
-                   value="<?php echo $filter_month; ?>"
-                   <?php echo ($date_range_type !== 'month') ? 'disabled' : ''; ?>>
-        </div>
+            <!-- Month Picker -->
+            <div class="filter-group">
+                <label for="month">Select Month</label>
+                <input type="month" name="month" id="month" class="form-control"
+                       value="<?php echo $filter_month; ?>"
+                       <?php echo ($date_range_type !== 'month') ? 'disabled' : ''; ?>>
+            </div>
 
-        <!-- Category Filter -->
-        <div class="filter-group">
-            <label for="category">Category</label>
-            <select name="category" id="category" class="form-control">
-                <option value="" <?php echo ($filter_category === '') ? 'selected' : ''; ?>>All Categories</option>
-                <?php foreach ($categories as $cat): ?>
-                    <option value="<?php echo $cat['category']; ?>" <?php echo ($filter_category === $cat['category']) ? 'selected' : ''; ?>>
-                        <?php echo ucfirst($cat['category']); ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-		
-		<!-- Submit Button -->
-        <div class="filter-group">
-            <button type="submit" class="btn btn-primary w-full">Apply Filters</button>
-            <a href="index.php?page=transactions" class="btn btn-danger">Reset</a>
-        </div>
-    </form>
-</div>
-<!-- Action Buttons -->
-<?php if ($can_edit): ?>
-    <div class="action-buttons mb-6 flex justify-end">
-        <!-- Add New Transaction Button -->
-        <a href="index.php?page=transactions&action=create<?php 
-            // Preserve current filters in URL
-            echo $filter_machine !== 'all' ? '&machine=' . $filter_machine : '';
-            echo $date_range_type === 'range' ? '&date_from=' . $filter_date_from . '&date_to=' . $filter_date_to : '&month=' . $filter_month;
-            echo '&sort=' . $sort_column . '&order=' . $sort_order;
-        ?>" class="btn btn-primary">
-            Add New Transaction
-        </a>
+            <!-- Category Filter -->
+            <div class="filter-group">
+                <label for="category">Category</label>
+                <select name="category" id="category" class="form-control">
+                    <option value="" <?php echo ($filter_category === '') ? 'selected' : ''; ?>>All Categories</option>
+                    <?php foreach ($categories as $cat): ?>
+                        <option value="<?php echo $cat['category']; ?>" <?php echo ($filter_category === $cat['category']) ? 'selected' : ''; ?>>
+                            <?php echo ucfirst($cat['category']); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            
+            <!-- Submit Button -->
+            <div class="filter-group">
+                <button type="submit" class="btn btn-primary w-full">Apply Filters</button>
+                <a href="index.php?page=transactions" class="btn btn-danger">Reset</a>
+            </div>
+        </form>
     </div>
-<?php endif; ?>
+
+    <!-- Action Buttons -->
+    <?php if ($can_edit): ?>
+        <div class="action-buttons mb-6 flex justify-end">
+            <a href="index.php?page=transactions&action=create" class="btn btn-primary">
+                Add New Transaction
+            </a>
+        </div>
+    <?php endif; ?>
+
     <!-- Report Header -->
     <div class="report-header text-center py-4 px-6 rounded-lg bg-gradient-to-r from-gray-800 to-black shadow-md mb-6">
         <h3 class="text-xl font-bold text-secondary-color">Transactions for:</h3>
         <p class="date-range text-lg font-medium text-white mt-2 mb-1">
             <?php if ($filter_machine === 'all'): ?>
-                All Machines <?php echo $filter_category = $_GET['category'] ?? ''; ?>
+                All Machines <?php echo $filter_category; ?>
             <?php else: ?>
                 <?php
                 $selected_machine = null;
@@ -274,7 +291,7 @@ $total_result = $total_drop - $total_out;
                         break;
                     }
                 }
-                echo "Machine #" . htmlspecialchars($selected_machine['machine_number'] ?? 'Unknown')." " . $filter_category = $_GET['category'] ?? '';
+                echo "Machine #" . htmlspecialchars($selected_machine['machine_number'] ?? 'Unknown')." " . $filter_category;
                 ?>
             <?php endif; ?>
             |
@@ -333,7 +350,12 @@ $total_result = $total_drop - $total_out;
     <!-- Transactions Table -->
     <div class="card overflow-hidden">
         <div class="card-header bg-gray-800 text-white px-6 py-3 border-b border-gray-700">
-            <h3 class="text-lg font-semibold">Transactions</h3>
+            <h3 class="text-lg font-semibold">
+                Transactions 
+                <span class="text-sm font-normal">
+                    (Showing <?php echo count($transactions); ?> of <?php echo $total_transactions; ?>)
+                </span>
+            </h3>
         </div>
         <div class="card-body p-6">
             <div class="table-container overflow-x-auto">
@@ -341,22 +363,22 @@ $total_result = $total_drop - $total_out;
                     <thead class="bg-gray-800 text-white">
                         <tr>
                             <th class="px-4 py-2 text-left">
-                                <a href="index.php?page=transactions&sort=timestamp&order=<?php echo $toggle_order; ?>">
+                                <a href="#" onclick="sortTransactions('timestamp', '<?php echo $toggle_order; ?>')">
                                     Date & Time <?php if ($sort_column == 'timestamp') echo $sort_order == 'ASC' ? '▲' : '▼'; ?>
                                 </a>
                             </th>
                             <th class="px-4 py-2 text-left">
-                                <a href="index.php?page=transactions&sort=machine_number&order=<?php echo $toggle_order; ?>">
+                                <a href="#" onclick="sortTransactions('machine_number', '<?php echo $toggle_order; ?>')">
                                     Machine <?php if ($sort_column == 'machine_number') echo $sort_order == 'ASC' ? '▲' : '▼'; ?>
                                 </a>
                             </th>
                             <th class="px-4 py-2 text-left">
-                                <a href="index.php?page=transactions&sort=transaction_type&order=<?php echo $toggle_order; ?>">
+                                <a href="#" onclick="sortTransactions('transaction_type', '<?php echo $toggle_order; ?>')">
                                     Transaction <?php if ($sort_column == 'transaction_type') echo $sort_order == 'ASC' ? '▲' : '▼'; ?>
                                 </a>
                             </th>
                             <th class="px-4 py-2 text-right">
-                                <a href="index.php?page=transactions&sort=amount&order=<?php echo $toggle_order; ?>">
+                                <a href="#" onclick="sortTransactions('amount', '<?php echo $toggle_order; ?>')">
                                     Amount <?php if ($sort_column == 'amount') echo $sort_order == 'ASC' ? '▲' : '▼'; ?>
                                 </a>
                             </th>
@@ -366,9 +388,9 @@ $total_result = $total_drop - $total_out;
                             <th class="px-4 py-2 text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-700">
+                    <tbody class="divide-y divide-gray-700" id="transactions-tbody">
                         <?php if (empty($transactions)): ?>
-                            <tr>
+                            <tr id="no-transactions-row">
                                 <td colspan="8" class="text-center px-4 py-6">No transactions found</td>
                             </tr>
                         <?php else: ?>
@@ -382,9 +404,11 @@ $total_result = $total_drop - $total_out;
                                     <td class="px-4 py-2"><?php echo htmlspecialchars($t['username']); ?></td>
                                     <td class="px-4 py-2"><?php echo htmlspecialchars($t['notes'] ?? ''); ?></td>
                                     <td class="px-4 py-2 text-right">
-										<a href="index.php?page=transactions&action=view&id=<?php echo $t['id']; ?>" class="action-btn view-btn" data-tooltip="View Details"><span class="menu-icon"><img src="<?= icon('view2') ?>"/></span></a>
-                                        <a href="index.php?page=transactions&action=edit&id=<?php echo $t['id']; ?>" class="action-btn edit-btn" data-tooltip="Edit"><span class="menu-icon"><img src="<?= icon('edit') ?>"/></span></a>
-                                        <a href="index.php?page=transactions&action=delete&id=<?php echo $t['id']; ?>" class="action-btn delete-btn" data-tooltip="Delete" data-confirm="Are you sure you want to delete this transaction?"><span class="menu-icon"><img src="<?= icon('delete') ?>"/></span></a>
+                                        <a href="index.php?page=transactions&action=view&id=<?php echo $t['id']; ?>" class="action-btn view-btn" data-tooltip="View Details"><span class="menu-icon"><img src="<?= icon('view2') ?>"/></span></a>
+                                        <?php if ($can_edit): ?>
+                                            <a href="index.php?page=transactions&action=edit&id=<?php echo $t['id']; ?>" class="action-btn edit-btn" data-tooltip="Edit"><span class="menu-icon"><img src="<?= icon('edit') ?>"/></span></a>
+                                            <a href="index.php?page=transactions&action=delete&id=<?php echo $t['id']; ?>" class="action-btn delete-btn" data-tooltip="Delete" data-confirm="Are you sure you want to delete this transaction?"><span class="menu-icon"><img src="<?= icon('delete') ?>"/></span></a>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -392,14 +416,154 @@ $total_result = $total_drop - $total_out;
                     </tbody>
                 </table>
             </div>
+            
+            <!-- Load More Button -->
+            <?php if ($has_more): ?>
+                <div class="text-center mt-6">
+                    <button id="load-more-btn" class="btn btn-primary" onclick="loadMoreTransactions()">
+                        Load More Transactions
+                    </button>
+                    <div id="loading-indicator" class="hidden mt-2">
+                        <span class="text-gray-400">Loading...</span>
+                    </div>
+                </div>
+            <?php endif; ?>
+            
+            <!-- Pagination Info -->
+            <div class="text-center mt-4 text-gray-400 text-sm">
+                Page <?php echo $page_num; ?> of <?php echo $total_pages; ?> 
+                (<?php echo $total_transactions; ?> total transactions)
+            </div>
         </div>
     </div>
-	<!-- Sentinel for infinite scroll -->
-<div id="infinite-scroll-sentinel" class="h-10"></div>
 </div>
 
-<!-- JavaScript: Toggle inputs based on date range type -->
+<!-- JavaScript for AJAX pagination and sorting -->
 <script>
+let currentPage = <?php echo $page_num; ?>;
+let totalPages = <?php echo $total_pages; ?>;
+let isLoading = false;
+
+// Current filter parameters
+const currentFilters = {
+    machine: '<?php echo $filter_machine; ?>',
+    date_range_type: '<?php echo $date_range_type; ?>',
+    date_from: '<?php echo $filter_date_from; ?>',
+    date_to: '<?php echo $filter_date_to; ?>',
+    month: '<?php echo $filter_month; ?>',
+    category: '<?php echo $filter_category; ?>',
+    sort: '<?php echo $sort_column; ?>',
+    order: '<?php echo $sort_order; ?>'
+};
+
+function loadMoreTransactions() {
+    if (isLoading || currentPage >= totalPages) return;
+    
+    isLoading = true;
+    document.getElementById('loading-indicator').classList.remove('hidden');
+    document.getElementById('load-more-btn').disabled = true;
+    
+    const nextPage = currentPage + 1;
+    const params = new URLSearchParams({
+        page: 'transactions',
+        ajax: '1',
+        page_num: nextPage,
+        ...currentFilters
+    });
+    
+    fetch(`index.php?${params.toString()}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert('Error loading transactions: ' + data.error);
+                return;
+            }
+            
+            appendTransactions(data.transactions);
+            currentPage = data.current_page;
+            
+            // Hide load more button if no more pages
+            if (!data.has_more) {
+                document.getElementById('load-more-btn').style.display = 'none';
+            }
+            
+            // Update pagination info
+            updatePaginationInfo(data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error loading transactions');
+        })
+        .finally(() => {
+            isLoading = false;
+            document.getElementById('loading-indicator').classList.add('hidden');
+            document.getElementById('load-more-btn').disabled = false;
+        });
+}
+
+function appendTransactions(transactions) {
+    const tbody = document.getElementById('transactions-tbody');
+    
+    // Remove "no transactions" row if it exists
+    const noTransactionsRow = document.getElementById('no-transactions-row');
+    if (noTransactionsRow) {
+        noTransactionsRow.remove();
+    }
+    
+    transactions.forEach(t => {
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-gray-800 transition duration-150';
+        row.innerHTML = `
+            <td class="px-4 py-2">${t.timestamp}</td>
+            <td class="px-4 py-2">${t.machine_number}</td>
+            <td class="px-4 py-2">${t.transaction_type}</td>
+            <td class="px-4 py-2 text-right">${t.amount}</td>
+            <td class="px-4 py-2">${t.category}</td>
+            <td class="px-4 py-2">${t.username}</td>
+            <td class="px-4 py-2">${t.notes}</td>
+            <td class="px-4 py-2 text-right">
+                <a href="index.php?page=transactions&action=view&id=${t.id}" class="action-btn view-btn" data-tooltip="View Details"><span class="menu-icon"><img src="<?= icon('view2') ?>"/></span></a>
+                ${t.can_edit ? `
+                    <a href="index.php?page=transactions&action=edit&id=${t.id}" class="action-btn edit-btn" data-tooltip="Edit"><span class="menu-icon"><img src="<?= icon('edit') ?>"/></span></a>
+                    <a href="index.php?page=transactions&action=delete&id=${t.id}" class="action-btn delete-btn" data-tooltip="Delete" data-confirm="Are you sure you want to delete this transaction?"><span class="menu-icon"><img src="<?= icon('delete') ?>"/></span></a>
+                ` : ''}
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+function updatePaginationInfo(data) {
+    const infoElement = document.querySelector('.card-header h3 span');
+    if (infoElement) {
+        const currentCount = document.querySelectorAll('#transactions-tbody tr').length;
+        infoElement.textContent = `(Showing ${currentCount} of ${data.total_transactions})`;
+    }
+    
+    const paginationInfo = document.querySelector('.text-center.mt-4');
+    if (paginationInfo) {
+        paginationInfo.innerHTML = `Page ${data.current_page} of ${data.total_pages} (${data.total_transactions} total transactions)`;
+    }
+}
+
+function sortTransactions(column, order) {
+    // Update current filters
+    currentFilters.sort = column;
+    currentFilters.order = order;
+    
+    // Reset to first page
+    currentPage = 1;
+    
+    // Reload page with new sort parameters
+    const params = new URLSearchParams({
+        page: 'transactions',
+        ...currentFilters
+    });
+    
+    window.location.href = `index.php?${params.toString()}`;
+}
+
+// Date range toggle functionality
 document.addEventListener('DOMContentLoaded', function () {
     const rangeType = document.getElementById('date_range_type');
     const fromDate = document.getElementById('date_from');
@@ -408,7 +572,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function toggleInputs() {
         const isRange = rangeType.value === 'range';
-
         fromDate.disabled = !isRange;
         toDate.disabled = !isRange;
         monthInput.disabled = isRange;
@@ -416,6 +579,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     rangeType.addEventListener('change', toggleInputs);
     toggleInputs(); // Initial call
+    
+    // Handle form submission to reset pagination
+    document.getElementById('filters-form').addEventListener('submit', function() {
+        currentPage = 1;
+    });
 });
 </script>
 
@@ -442,6 +610,10 @@ document.addEventListener('DOMContentLoaded', function () {
 .breakdown-amount {
     font-weight: 600;
     margin-left: 0.5rem;
+}
+
+.hidden {
+    display: none;
 }
 
 /* Responsive adjustments */
