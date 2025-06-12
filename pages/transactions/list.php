@@ -4,13 +4,26 @@
  * Shows transactions with filters and AJAX pagination
  */
 
+// Check if this is an AJAX request first
+$is_ajax = isset($_GET['ajax']) && $_GET['ajax'] === '1';
+
+// If AJAX request, set proper headers and handle errors
+if ($is_ajax) {
+    header('Content-Type: application/json');
+    
+    // Capture any PHP errors/warnings
+    ob_start();
+    
+    // Set error handler for AJAX requests
+    set_error_handler(function($severity, $message, $file, $line) {
+        throw new ErrorException($message, 0, $severity, $file, $line);
+    });
+}
+
 // Pagination parameters
 $page_num = isset($_GET['page_num']) ? (int)$_GET['page_num'] : 1;
 $per_page = 5;
 $offset = ($page_num - 1) * $per_page;
-
-// Check if this is an AJAX request
-$is_ajax = isset($_GET['ajax']) && $_GET['ajax'] === '1';
 
 // Sorting parameters
 $sort_column = $_GET['sort'] ?? 'timestamp';
@@ -74,8 +87,19 @@ try {
     $total_pages = ceil($total_transactions / $per_page);
     $has_more = $page_num < $total_pages;
 
+    // Map sort columns to actual database columns
+    $sort_map = [
+        'timestamp' => 't.timestamp',
+        'machine_number' => 'm.machine_number',
+        'transaction_type' => 'tt.name',
+        'amount' => 't.amount',
+        'username' => 'u.username'
+    ];
+    
+    $actual_sort_column = $sort_map[$sort_column] ?? 't.timestamp';
+
     // Add sorting and pagination to main query
-    $query .= " ORDER BY $sort_column $sort_order LIMIT $per_page OFFSET $offset";
+    $query .= " ORDER BY $actual_sort_column $sort_order LIMIT $per_page OFFSET $offset";
 
     // Execute main query
     $stmt = $conn->prepare($query);
@@ -92,10 +116,19 @@ try {
         $categories = $types_stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-} catch (PDOException $e) {
+} catch (Exception $e) {
     if ($is_ajax) {
-        header('Content-Type: application/json');
-        echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+        // Clean any output buffer
+        if (ob_get_length()) ob_clean();
+        
+        echo json_encode([
+            'error' => 'Database error: ' . $e->getMessage(),
+            'has_more' => false,
+            'current_page' => $page_num,
+            'total_pages' => 0,
+            'total_transactions' => 0,
+            'transactions' => []
+        ]);
         exit;
     }
     echo "<div class='alert alert-danger'>Database error: " . htmlspecialchars($e->getMessage()) . "</div>";
@@ -108,7 +141,8 @@ try {
 
 // If this is an AJAX request, return JSON data
 if ($is_ajax) {
-    header('Content-Type: application/json');
+    // Clean any output buffer
+    if (ob_get_length()) ob_clean();
     
     $response = [
         'transactions' => [],
@@ -121,7 +155,7 @@ if ($is_ajax) {
     foreach ($transactions as $t) {
         $response['transactions'][] = [
             'id' => $t['id'],
-            'timestamp' => htmlspecialchars(date('d M Y - H:i:s', strtotime($t['timestamp']))),
+            'timestamp' => htmlspecialchars(format_datetime($t['timestamp'], 'd M Y - H:i:s')),
             'machine_number' => htmlspecialchars($t['machine_number']),
             'transaction_type' => htmlspecialchars($t['transaction_type']),
             'amount' => format_currency($t['amount']),
@@ -396,7 +430,7 @@ $total_result = $total_drop - $total_out;
                         <?php else: ?>
                             <?php foreach ($transactions as $t): ?>
                                 <tr class="hover:bg-gray-800 transition duration-150">
-                                    <td class="px-4 py-2"><?php echo htmlspecialchars(date('d M Y - H:i:s', strtotime($t['timestamp']))); ?></td>
+                                    <td class="px-4 py-2"><?php echo htmlspecialchars(format_datetime($t['timestamp'], 'd M Y - H:i:s')); ?></td>
                                     <td class="px-4 py-2"><?php echo htmlspecialchars($t['machine_number']); ?></td>
                                     <td class="px-4 py-2"><?php echo htmlspecialchars($t['transaction_type']); ?></td>
                                     <td class="px-4 py-2 text-right"><?php echo format_currency($t['amount']); ?></td>
@@ -464,16 +498,43 @@ function loadMoreTransactions() {
     document.getElementById('load-more-btn').disabled = true;
     
     const nextPage = currentPage + 1;
-    const params = new URLSearchParams({
-        page: 'transactions',
-        ajax: '1',
-        page_num: nextPage,
-        ...currentFilters
+    
+    // Build the URL parameters
+    const params = new URLSearchParams();
+    params.set('page', 'transactions');
+    params.set('ajax', '1');
+    params.set('page_num', nextPage);
+    
+    // Add all current filters
+    Object.keys(currentFilters).forEach(key => {
+        params.set(key, currentFilters[key]);
     });
     
-    fetch(`index.php?${params.toString()}`)
-        .then(response => response.json())
+    const url = 'index.php?' + params.toString();
+    console.log('Loading URL:', url); // Debug log
+    
+    fetch(url)
+        .then(response => {
+            console.log('Response status:', response.status); // Debug log
+            console.log('Response headers:', response.headers.get('content-type')); // Debug log
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                return response.text().then(text => {
+                    console.log('Non-JSON response:', text.substring(0, 500)); // Debug log
+                    throw new Error('Response is not JSON. Got: ' + contentType);
+                });
+            }
+            
+            return response.json();
+        })
         .then(data => {
+            console.log('Response data:', data); // Debug log
+            
             if (data.error) {
                 alert('Error loading transactions: ' + data.error);
                 return;
@@ -491,8 +552,8 @@ function loadMoreTransactions() {
             updatePaginationInfo(data);
         })
         .catch(error => {
-            console.error('Error:', error);
-            alert('Error loading transactions');
+            console.error('Fetch error:', error);
+            alert('Error loading transactions: ' + error.message);
         })
         .finally(() => {
             isLoading = false;
@@ -554,13 +615,15 @@ function sortTransactions(column, order) {
     // Reset to first page
     currentPage = 1;
     
-    // Reload page with new sort parameters
-    const params = new URLSearchParams({
-        page: 'transactions',
-        ...currentFilters
+    // Build URL parameters
+    const params = new URLSearchParams();
+    params.set('page', 'transactions');
+    
+    Object.keys(currentFilters).forEach(key => {
+        params.set(key, currentFilters[key]);
     });
     
-    window.location.href = `index.php?${params.toString()}`;
+    window.location.href = 'index.php?' + params.toString();
 }
 
 // Date range toggle functionality
