@@ -15,15 +15,6 @@ echo "<!DOCTYPE html>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
     <title>MySQL Compatibility Fix</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
-        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .success { color: #27ae60; background: #d5f4e6; padding: 10px; border-radius: 4px; margin: 10px 0; }
-        .error { color: #e74c3c; background: #fdf2f2; padding: 10px; border-radius: 4px; margin: 10px 0; }
-        .info { color: #3498db; background: #ebf3fd; padding: 10px; border-radius: 4px; margin: 10px 0; }
-        h1 { color: #2c3e50; }
-        .btn { display: inline-block; padding: 10px 20px; background: #3498db; color: white; text-decoration: none; border-radius: 4px; margin: 5px; }
-    </style>
 </head>
 <body>
     <div class='container'>

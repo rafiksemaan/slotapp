@@ -282,26 +282,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Install - Slot Management System</title>
     <link rel="stylesheet" href="assets/css/styles.css">
-    <style>
-        .password-requirements {
-            background-color: rgba(52, 152, 219, 0.1);
-            border: 1px solid rgba(52, 152, 219, 0.3);
-            color: #3498db;
-            padding: 1rem;
-            border-radius: var(--border-radius);
-            margin-top: 0.5rem;
-            font-size: 0.85rem;
-        }
-        
-        .password-requirements ul {
-            margin: 0.5rem 0 0 1rem;
-            padding: 0;
-        }
-        
-        .password-requirements li {
-            margin-bottom: 0.25rem;
-        }
-    </style>
 </head>
 <body class="login-page">
     <div class="login-container">

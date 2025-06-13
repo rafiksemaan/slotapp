@@ -122,60 +122,6 @@ try {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Database Connection Error - <?php echo $app_name; ?></title>
         <link rel="stylesheet" href="assets/css/styles.css">
-        <style>
-            .error-container {
-                max-width: 600px;
-                margin: 50px auto;
-                padding: 2rem;
-                background-color: var(--light-bg);
-                border-radius: var(--border-radius);
-                box-shadow: var(--box-shadow);
-            }
-            .error-icon {
-                font-size: 4rem;
-                text-align: center;
-                margin-bottom: 1rem;
-            }
-            .error-title {
-                color: var(--danger-color);
-                text-align: center;
-                margin-bottom: 1rem;
-            }
-            .error-message {
-                background-color: rgba(231, 76, 60, 0.1);
-                border: 1px solid rgba(231, 76, 60, 0.3);
-                color: var(--danger-color);
-                padding: 1rem;
-                border-radius: var(--border-radius);
-                margin-bottom: 1rem;
-            }
-            .troubleshooting {
-                background-color: rgba(52, 152, 219, 0.1);
-                border: 1px solid rgba(52, 152, 219, 0.3);
-                color: #3498db;
-                padding: 1rem;
-                border-radius: var(--border-radius);
-            }
-            .troubleshooting h4 {
-                margin-top: 0;
-                color: #3498db;
-            }
-            .troubleshooting ol {
-                margin: 0.5rem 0;
-                padding-left: 1.5rem;
-            }
-            .troubleshooting li {
-                margin-bottom: 0.5rem;
-            }
-            .mysql-info {
-                background-color: rgba(46, 204, 113, 0.1);
-                border: 1px solid rgba(46, 204, 113, 0.3);
-                color: #27ae60;
-                padding: 1rem;
-                border-radius: var(--border-radius);
-                margin-bottom: 1rem;
-            }
-        </style>
     </head>
     <body style="background-color: var(--dark-bg); color: var(--text-light); font-family: 'Segoe UI', sans-serif;">
         <div class="error-container">
