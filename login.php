@@ -98,7 +98,7 @@ $csrf_token = generateCSRFToken();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Slot Management System</title>
     <link rel="stylesheet" href="assets/css/styles.min.css">
-    <link rel="stylesheet" href="assets/css/page-specific.min.css">
+    <link rel="stylesheet" href="assets/css/page-specific.css">
 </head>
 <body class="login-page">
     <div class="login-container">
