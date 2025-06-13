@@ -19,11 +19,10 @@ ob_start();
     <script src="assets/js/jquery-3.6.0.min.js"></script>
     <script src="assets/js/main.js"></script>
 	<!-- Favicon -->
-	<link rel="icon" type="image/png" href="assets/icons/icon-32.png" sizes="32x32">
-	<link rel="icon" type="image/png" href="assets/icons/icon-16.png" sizes="16x16">
-	<link rel="apple-touch-icon" href="assets/icons/icon-180.png">
-	<link rel="manifest" href="/manifest.json">
-	<link rel="icon" href="/favicon.ico" type="image/x-icon">
+	<link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96" />
+	<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+	<link rel="shortcut icon" href="favicon.ico" />
+	<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
 	
 	<?php
 // Define base URL or path to icons
