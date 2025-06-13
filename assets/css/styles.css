@@ -304,12 +304,60 @@ a:hover {
     padding: var(--spacing-md);
     text-align: center;
     border-top: 1px solid var(--border-color);
-    margin-left: var(--sidebar-width-expanded);
-    transition: margin-left var(--transition-speed) ease;
+    /* Removed margin-left and transition - footer is now always full width */
+    width: 100%;
+    position: relative;
+    z-index: 50; /* Lower than sidebar but above content */
 }
 
-.sidebar.collapsed ~ .app-footer {
-    margin-left: var(--sidebar-width-collapsed);
+/* Removed the sidebar collapse footer adjustment rule */
+
+/* Footer Credit */
+.footer-credit {
+    background-color: var(--dark-bg);
+    padding: var(--spacing-sm) var(--spacing-md);
+    text-align: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    width: 100%;
+    position: relative;
+    z-index: 50;
+}
+
+.footer-credit p {
+    margin: 0;
+    font-size: var(--font-sm);
+    color: var(--text-muted);
+}
+
+.footer-credit .heart {
+    color: #e74c3c;
+    font-size: 1.1em;
+    animation: heartbeat 1.5s ease-in-out infinite;
+    display: inline-block;
+}
+
+.footer-credit strong {
+    color: var(--secondary-color);
+    font-weight: 600;
+}
+
+/* Heartbeat animation */
+@keyframes heartbeat {
+    0% {
+        transform: scale(1);
+    }
+    14% {
+        transform: scale(1.2);
+    }
+    28% {
+        transform: scale(1);
+    }
+    42% {
+        transform: scale(1.2);
+    }
+    70% {
+        transform: scale(1);
+    }
 }
 
 /* Login Page */
@@ -1238,4 +1286,33 @@ option:focus {
   width: 20px;         /* Set desired width */
   height: auto;        /* Keep aspect ratio */
   max-width: 100%;     /* Prevent overflow */
+}
+
+/* Form Sections - Unified Design */
+.form-section {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+}
+
+.form-section h4 {
+    margin-bottom: 1rem;
+    color: var(--secondary-color);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+.form-actions {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 1rem;
+}
+
+@media (max-width: 768px) {
+    .form-actions {
+        flex-direction: column;
+    }
 }

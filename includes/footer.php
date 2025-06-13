@@ -37,6 +37,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 <p>&copy; <?php echo date('Y'); ?> <?php echo $app_name; ?> v<?php echo $app_version; ?></p>
             </div>
         </footer>
+        
+        <!-- Personal Credit -->
+        <div class="footer-credit">
+            <p>Made with <span class="menu-icon heart"><img src="<?= icon('heart') ?>" alt="heart" /></span>by <strong>Raf</strong></p>
+        </div>
     </div><!-- .app-container -->
     
     <!-- JavaScript -->
