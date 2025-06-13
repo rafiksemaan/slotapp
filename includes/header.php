@@ -18,6 +18,12 @@ ob_start();
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="assets/js/jquery-3.6.0.min.js"></script>
     <script src="assets/js/main.js"></script>
+	<!-- Favicon -->
+	<link rel="icon" type="image/png" href="assets/icons/icon-32.png" sizes="32x32">
+	<link rel="icon" type="image/png" href="assets/icons/icon-16.png" sizes="16x16">
+	<link rel="apple-touch-icon" href="assets/icons/icon-180.png">
+	<link rel="manifest" href="/manifest.json">
+	<link rel="icon" href="/favicon.ico" type="image/x-icon">
 	
 	<?php
 // Define base URL or path to icons
