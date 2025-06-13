@@ -29,8 +29,6 @@ function cairo_time($format = 'd M Y – H:i') {
     return $dt->format($format);
 }
 
-
-
 /**
  * Check if user has required permission
  * 
@@ -107,8 +105,6 @@ function calculate_date_range($period, $date = null) {
     if ($date === null) {
         $date = date('Y-m-d');
     }
-	
-	
     
     $start_date = '';
     $end_date = '';
@@ -171,10 +167,8 @@ function log_action($action, $details = '') {
     }
 }
 
-
-
 /**
- * Sanitize input data
+ * Enhanced sanitize input data with security measures
  * 
  * @param mixed $data Data to sanitize
  * @return mixed Sanitized data
@@ -188,6 +182,13 @@ function sanitize_input($data) {
         $data = trim($data);
         $data = stripslashes($data);
         $data = htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
+        
+        // Additional security: Remove potential XSS patterns
+        $data = preg_replace('/javascript:/i', '', $data);
+        $data = preg_replace('/vbscript:/i', '', $data);
+        $data = preg_replace('/onload/i', '', $data);
+        $data = preg_replace('/onerror/i', '', $data);
+        $data = preg_replace('/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/mi', '', $data);
     }
     
     return $data;
@@ -213,6 +214,75 @@ function is_valid_ip($ip) {
     return filter_var($ip, FILTER_VALIDATE_IP) !== false;
 }
 
+/**
+ * Check if current request is from a secure connection
+ */
+function is_secure_connection() {
+    return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || 
+           $_SERVER['SERVER_PORT'] == 443 ||
+           (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+}
+
+/**
+ * Get client IP address (considering proxies)
+ */
+function get_client_ip() {
+    $ip_keys = ['HTTP_X_FORWARDED_FOR', 'HTTP_X_REAL_IP', 'HTTP_CLIENT_IP', 'REMOTE_ADDR'];
+    
+    foreach ($ip_keys as $key) {
+        if (!empty($_SERVER[$key])) {
+            $ips = explode(',', $_SERVER[$key]);
+            $ip = trim($ips[0]);
+            
+            if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+                return $ip;
+            }
+        }
+    }
+    
+    return $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+}
+
+/**
+ * Generate secure token for various purposes
+ */
+function generate_secure_token($length = 32) {
+    return bin2hex(random_bytes($length));
+}
+
+/**
+ * Check if user session is valid and not expired
+ */
+function is_valid_session() {
+    if (!isset($_SESSION['user_id']) || !isset($_SESSION['login_time'])) {
+        return false;
+    }
+    
+    // Check session timeout
+    if (isset($_SESSION['last_activity']) && 
+        (time() - $_SESSION['last_activity']) > SESSION_TIMEOUT) {
+        return false;
+    }
+    
+    return true;
+}
+
+/**
+ * Secure redirect function
+ */
+function secure_redirect($url) {
+    // Validate URL to prevent open redirects
+    $parsed_url = parse_url($url);
+    
+    // Only allow relative URLs or URLs to the same domain
+    if (isset($parsed_url['host']) && $parsed_url['host'] !== $_SERVER['HTTP_HOST']) {
+        $url = 'index.php'; // Default safe redirect
+    }
+    
+    header("Location: $url");
+    exit;
+}
+
 if (!function_exists('format_date')) {
     function format_date($dateString) {
         return date('d M Y', strtotime($dateString));
@@ -222,3 +292,4 @@ if (!function_exists('format_date')) {
 function icon($name) {
     return ICON_PATH . '/' . $name . '.png';
 }
+?>
