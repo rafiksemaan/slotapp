@@ -308,7 +308,7 @@ try {
         </div>
         <div class="card-body p-6">
             <div class="table-container overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-700">
+                <table class="min-w-full divide-y divide-gray-700 separated-columns>
                     <thead>
                         <tr class="bg-gray-800 text-white">
                             <th class="px-4 py-2 text-left">Machine #</th>
@@ -403,6 +403,41 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 
 <style>
+/* Totals row styling */
+	.totals-row {
+		background-color: var(--primary-color) !important;
+		color: var(--text-light) !important;
+		font-weight: bold;
+	}
+
+	.totals-row td {
+		border-top: 2px solid var(--secondary-color);
+		padding: 0.75rem;
+	}
+	
+	/* Add space between column groups */
+	.machine-column { max-width: 10px; }
+	.transaction-column { max-width: 15px; }
+	
+		/* Add column separator */
+	.separated-columns td,
+	.separated-columns th {
+		border-right: 1px solid #374151; /* Tailwind's gray-700 */
+		padding-right: 1rem;
+	}
+
+	.separated-columns td:last-child,
+	.separated-columns th:last-child {
+		border-right: none;
+		padding-right: 0.75rem;
+	}
+
+	/* Optional: Highlight entire column on hover */
+	.separated-columns tr:hover td {
+		background-color: rgba(255, 255, 255, 0.05);
+	}
+
+
 .form-section {
     margin-bottom: 2rem;
     padding: 1rem;
