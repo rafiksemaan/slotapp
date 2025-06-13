@@ -32,12 +32,12 @@ if ($return_var === 0) {
     die("Backup failed with error code: $return_var\n");
 }
 
-// Delete backups older than 7 days
+// Delete backups older than 8 days
 $files = glob($backupDir . "db_backup_*.sql");
 foreach ($files as $file) {
     $fileDate = substr(basename($file), 11, 10); // Extract date from filename
     $backupTime = strtotime($fileDate);
-    if (time() - $backupTime > 7 * 24 * 60 * 60) {
+    if (time() - $backupTime > 8 * 24 * 60 * 60) {
         unlink($file);
         echo "Deleted old backup: " . basename($file) . "\n";
     }
