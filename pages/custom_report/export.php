@@ -9,6 +9,14 @@ if (!defined('EXPORT_HANDLER')) {
     define('EXPORT_HANDLER', true);
 }
 
+// Clear any output buffers to prevent HTML contamination
+while (ob_get_level()) {
+    ob_end_clean();
+}
+
+// Start fresh output buffering
+ob_start();
+
 // Generate filename
 $filename = 'custom_report_' . date('Y-m-d_H-i-s') . ($export_type === 'pdf' ? '.pdf' : '.csv');
 

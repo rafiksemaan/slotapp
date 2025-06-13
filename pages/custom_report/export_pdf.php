@@ -10,12 +10,19 @@ if (!defined('EXPORT_HANDLER')) {
     exit;
 }
 
+// Clear any output buffers
+while (ob_get_level()) {
+    ob_end_clean();
+}
+
 // Generate custom filename
-$date_part = cairo_time('d-M-Y - H:i:s');
+$date_part = cairo_time('d-M-Y_H-i-s');
 $custom_filename = "Custom_Report_{$date_part}";
 
 // Set content type for HTML
 header('Content-Type: text/html; charset=utf-8');
+header('Cache-Control: no-cache, must-revalidate');
+header('Pragma: no-cache');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -102,14 +109,14 @@ header('Content-Type: text/html; charset=utf-8');
         }
         
         th, td {
-            border: 1px solid #e0e0e0; /* Lighter grey borders */
-            padding: 4px 6px; /* Reduced padding: 4px vertical, 6px horizontal */
+            border: 1px solid #e0e0e0;
+            padding: 4px 6px;
             text-align: left;
             vertical-align: middle;
         }
         
         th {
-            background-color: #f8f9fa; /* Very light grey background */
+            background-color: #f8f9fa;
             font-weight: bold;
             text-align: center;
             font-size: 10px;
@@ -123,7 +130,7 @@ header('Content-Type: text/html; charset=utf-8');
         }
         
         .totals-row {
-            background-color: #f0f0f0; /* Light grey background for totals */
+            background-color: #f0f0f0;
             font-weight: bold;
             border-top: 2px solid #333;
         }
@@ -166,7 +173,7 @@ header('Content-Type: text/html; charset=utf-8');
             text-align: center;
         }
         
-        /* Print-specific styles for the selected div */
+        /* Print-specific styles */
         @media print {
             body {
                 margin: 0;
@@ -189,8 +196,8 @@ header('Content-Type: text/html; charset=utf-8');
             }
             
             th, td {
-                padding: 2px 4px; /* Even more compact for print */
-                border: 1px solid #d0d0d0; /* Slightly lighter for print */
+                padding: 2px 4px;
+                border: 1px solid #d0d0d0;
                 font-size: 9px;
             }
             
@@ -211,7 +218,6 @@ header('Content-Type: text/html; charset=utf-8');
                 font-size: 8px;
             }
             
-            /* Ensure page breaks work well */
             table {
                 page-break-inside: auto;
             }
@@ -339,7 +345,7 @@ header('Content-Type: text/html; charset=utf-8');
                         </tr>
                     <?php endforeach; ?>
                     
-                    <!-- Totals Row -->
+                    <!-- Totals Row (excluding credit_value) -->
                     <?php if (!empty($totals)): ?>
                         <tr class="totals-row">
                             <?php foreach ($selected_columns as $column): ?>
@@ -350,6 +356,9 @@ header('Content-Type: text/html; charset=utf-8');
                                 ?>>
                                     <?php if ($column === 'machine_number'): ?>
                                         <strong>TOTALS</strong>
+                                    <?php elseif ($column === 'credit_value'): ?>
+                                        <!-- Skip credit value in totals - empty cell -->
+                                        <strong>-</strong>
                                     <?php elseif (isset($totals[$column])): ?>
                                         <strong><?= format_currency($totals[$column]) ?></strong>
                                     <?php else: ?>
@@ -378,3 +387,7 @@ header('Content-Type: text/html; charset=utf-8');
     </div>
 </body>
 </html>
+<?php
+// Ensure no additional output after HTML
+exit;
+?>

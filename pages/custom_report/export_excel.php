@@ -10,11 +10,22 @@ if (!defined('EXPORT_HANDLER')) {
     exit;
 }
 
+// Clear any output buffers completely
+while (ob_get_level()) {
+    ob_end_clean();
+}
+
+// Ensure no whitespace or HTML is output before headers
+if (headers_sent($file, $line)) {
+    die("Headers already sent in $file on line $line");
+}
+
 // Set headers for CSV download
 header('Content-Type: text/csv; charset=utf-8');
 header('Content-Disposition: attachment; filename="' . $filename . '"');
 header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
 header('Pragma: public');
+header('Expires: 0');
 
 // Create output stream
 $output = fopen('php://output', 'w');
@@ -24,11 +35,11 @@ fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
 
 // Write report header information
 fputcsv($output, ['Slot Management System - Custom Report']);
-fputcsv($output, ['Report:', $report_title]);
-fputcsv($output, ['Scope:', $report_subtitle]);
-fputcsv($output, ['Period:', $date_subtitle]);
-fputcsv($output, ['Generated:', cairo_time('d M Y – H:i:s')]);
-fputcsv($output, ['Total Records:', count($results)]);
+fputcsv($output, ['Report Title', $report_title]);
+fputcsv($output, ['Scope', $report_subtitle]);
+fputcsv($output, ['Period', $date_subtitle]);
+fputcsv($output, ['Generated', cairo_time('d M Y – H:i:s')]);
+fputcsv($output, ['Total Records', count($results)]);
 fputcsv($output, []); // Empty row
 
 // Write column headers
@@ -59,12 +70,18 @@ if (!empty($selected_columns)) {
             fputcsv($output, $csv_row);
         }
         
-        // Add totals row
+        // Add empty row before totals
+        fputcsv($output, []);
+        
+        // Add totals row (excluding credit_value)
         if (!empty($totals)) {
             $totals_row = [];
             foreach ($selected_columns as $column) {
                 if ($column === 'machine_number') {
                     $totals_row[] = 'TOTALS';
+                } elseif ($column === 'credit_value') {
+                    // Skip credit value in totals - just add empty cell
+                    $totals_row[] = '';
                 } elseif (isset($totals[$column])) {
                     $totals_row[] = number_format($totals[$column], 2, '.', '');
                 } else {
@@ -82,20 +99,26 @@ if (!empty($selected_columns)) {
 
 // Add summary section
 fputcsv($output, []); // Empty row
-fputcsv($output, ['Summary Information:']);
+fputcsv($output, ['Summary Information']);
 
-// Calculate totals if applicable
+// Calculate totals if applicable (excluding credit_value)
 if (!empty($results) && !empty($selected_columns)) {
-    // Write totals
+    // Write totals summary
     if (!empty($totals)) {
-        fputcsv($output, ['Column Totals:']);
+        fputcsv($output, []); // Empty row
+        fputcsv($output, ['Column Totals']);
         foreach ($totals as $column => $total) {
-            fputcsv($output, [$available_columns[$column], number_format($total, 2, '.', '')]);
+            // Skip credit_value from summary totals
+            if ($column !== 'credit_value' && isset($available_columns[$column])) {
+                fputcsv($output, [$available_columns[$column], number_format($total, 2, '.', '')]);
+            }
         }
     }
 }
 
 // Close output stream
 fclose($output);
+
+// Ensure no additional output
 exit;
 ?>

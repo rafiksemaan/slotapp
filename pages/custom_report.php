@@ -243,13 +243,14 @@ try {
     $error = "Database error: " . $e->getMessage();
 }
 
-	// Calculate totals for selected columns
+	// Calculate totals for selected columns (excluding credit_value)
 	$totals = [];
 	if (!empty($results) && !empty($selected_columns)) {
 		$monetary_columns = ['total_handpay', 'total_ticket', 'total_refill', 'total_coins_drop', 'total_cash_drop', 'total_out', 'total_drop', 'result'];
 		
 		foreach ($selected_columns as $column) {
-			if (in_array($column, $monetary_columns)) {
+			// Skip credit_value from totals calculation
+			if (in_array($column, $monetary_columns) && $column !== 'credit_value') {
 				$total = 0;
 				foreach ($results as $row) {
 					$total += (float)($row[$column] ?? 0);
@@ -624,13 +625,16 @@ try {
 										</tr>
 									<?php endforeach; ?>
 									
-									<!-- Totals Row -->
+									<!-- Totals Row (excluding credit_value) -->
 									<?php if (!empty($totals)): ?>
 										<tr class="totals-row bg-gray-800 text-white font-bold">
 											<?php foreach ($selected_columns as $column): ?>
 												<td>
 													<?php if ($column === 'machine_number'): ?>
 														<strong>TOTALS</strong>
+													<?php elseif ($column === 'credit_value'): ?>
+														<!-- Skip credit value in totals - show dash -->
+														<strong>-</strong>
 													<?php elseif (isset($totals[$column])): ?>
 														<strong><?= format_currency($totals[$column]) ?></strong>
 													<?php else: ?>
