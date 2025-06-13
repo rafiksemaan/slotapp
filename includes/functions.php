@@ -73,11 +73,6 @@ function format_currency($amount) {
  * @param string $format Format string
  * @return string Formatted date/time
  */
-function format_datetime($datetime, $format = 'Y-m-d H:i:s') {
-    $date = new DateTime($datetime);
-    return $date->format($format);
-}
-
 function format_date($dateString) {
     return date('d M Y', strtotime($dateString));
 }
@@ -281,12 +276,6 @@ function secure_redirect($url) {
     
     header("Location: $url");
     exit;
-}
-
-if (!function_exists('format_date')) {
-    function format_date($dateString) {
-        return date('d M Y', strtotime($dateString));
-    }
 }
 
 function icon($name) {
