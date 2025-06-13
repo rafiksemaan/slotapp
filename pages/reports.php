@@ -248,11 +248,11 @@ try {
     </div>
 
     <!-- Report Header -->
-    <div class="report-header">
-        <h3 class="text-2xl font-bold text-secondary-color">Report for:</h3>
+    <div class="report-header text-center py-4 px-6 rounded-lg bg-gradient-to-r from-gray-800 to-black shadow-md mb-6">
+        <h3 class="text-xl font-bold text-secondary-color">Report for:</h3>
 
         <!-- Main Title Line -->
-        <p class="date-range">
+        <p class="date-range text-lg font-medium text-white mt-2 mb-1">
             <?php
             // Show Machine Number if selected
             if ($machine_id !== 'all') {
@@ -280,7 +280,7 @@ try {
         </p>
 
         <!-- Generated Timestamp -->
-        <p class="generated-at">
+        <p class="generated-at text-sm italic text-gray-400">
             Generated at: <?php echo cairo_time('d M Y - H:i:s'); ?>
         </p>
     </div>
@@ -401,68 +401,3 @@ document.addEventListener('DOMContentLoaded', function () {
     toggleInputs(); // Initial call
 });
 </script>
-
-<style>
-/* Totals row styling */
-	.totals-row {
-		background-color: var(--primary-color) !important;
-		color: var(--text-light) !important;
-		font-weight: bold;
-	}
-
-	.totals-row td {
-		border-top: 2px solid var(--secondary-color);
-		padding: 0.75rem;
-	}
-	
-	/* Add space between column groups */
-	.machine-column { max-width: 10px; }
-	.transaction-column { max-width: 15px; }
-	
-		/* Add column separator */
-	.separated-columns td,
-	.separated-columns th {
-		border-right: 1px solid #374151; /* Tailwind's gray-700 */
-		padding-right: 1rem;
-	}
-
-	.separated-columns td:last-child,
-	.separated-columns th:last-child {
-		border-right: none;
-		padding-right: 0.75rem;
-	}
-
-	/* Optional: Highlight entire column on hover */
-	.separated-columns tr:hover td {
-		background-color: rgba(255, 255, 255, 0.05);
-	}
-
-
-.form-section {
-    margin-bottom: 2rem;
-    padding: 1rem;
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-}
-
-.form-section h4 {
-    margin-bottom: 1rem;
-    color: var(--secondary-color);
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 0.5rem;
-}
-
-.form-actions {
-    margin-top: 2rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--border-color);
-    display: flex;
-    gap: 1rem;
-}
-
-@media (max-width: 768px) {
-    .form-actions {
-        flex-direction: column;
-    }
-}
-</style>

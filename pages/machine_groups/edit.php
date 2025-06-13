@@ -166,57 +166,6 @@ try {
     </div>
 </div>
 
-<style>
-.machine-selection {
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    padding: var(--spacing-md);
-    max-height: 400px;
-    overflow-y: auto;
-}
-
-.machine-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: var(--spacing-sm);
-}
-
-.machine-checkbox {
-    display: flex;
-    align-items: center;
-    padding: var(--spacing-sm);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    transition: all var(--transition-speed);
-}
-
-.machine-checkbox:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-}
-
-.machine-checkbox input[type="checkbox"] {
-    margin-right: var(--spacing-sm);
-}
-
-.machine-info {
-    flex: 1;
-}
-
-.selection-info {
-    margin-top: var(--spacing-sm);
-    padding: var(--spacing-xs) var(--spacing-sm);
-    background-color: rgba(255, 255, 255, 0.05);
-    border-radius: var(--border-radius);
-    font-size: var(--font-sm);
-}
-
-.selection-info #count {
-    font-weight: bold;
-    color: var(--secondary-color);
-}
-</style>
-
 <script>
 function validateGroupForm(form) {
     const checkboxes = form.querySelectorAll('input[name="machine_ids[]"]:checked');

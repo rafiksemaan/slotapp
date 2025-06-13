@@ -21,28 +21,17 @@ require_once __DIR__ . '/security.php';
 // Initialize secure session
 initSecureSession();
 
-// Set security headers
-if (ENABLE_SECURITY_HEADERS) {
-    // Prevent clickjacking
-    header('X-Frame-Options: DENY');
-    
-    // Prevent MIME type sniffing
-    header('X-Content-Type-Options: nosniff');
-    
-    // Enable XSS protection
-    header('X-XSS-Protection: 1; mode=block');
-    
-    // Referrer policy
-    header('Referrer-Policy: strict-origin-when-cross-origin');
-    
-    // Content Security Policy
-    header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' https:;");
-    
-    // Force HTTPS in production
-    if (FORCE_HTTPS && !isset($_SERVER['HTTPS'])) {
-        header('Location: https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], true, 301);
-        exit;
+// Set basic security headers (only if not already sent)
+if (ENABLE_SECURITY_HEADERS && !headers_sent()) {
+    // Hide PHP version
+    if (function_exists('header_remove')) {
+        header_remove('X-Powered-By');
     }
+    
+    // Basic security headers
+    header('X-Frame-Options: DENY');
+    header('X-Content-Type-Options: nosniff');
+    header('X-XSS-Protection: 1; mode=block');
 }
 
 // Detect suspicious activity

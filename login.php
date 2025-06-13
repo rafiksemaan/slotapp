@@ -97,37 +97,8 @@ $csrf_token = generateCSRFToken();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Slot Management System</title>
-    <link rel="stylesheet" href="assets/css/styles.css">
-    <style>
-        .security-notice {
-            background-color: rgba(52, 152, 219, 0.1);
-            border: 1px solid rgba(52, 152, 219, 0.3);
-            color: #3498db;
-            padding: 1rem;
-            border-radius: var(--border-radius);
-            margin-bottom: 1rem;
-            font-size: 0.9rem;
-        }
-        
-        .lockout-message {
-            background-color: rgba(231, 76, 60, 0.2);
-            border: 1px solid rgba(231, 76, 60, 0.5);
-            color: #e74c3c;
-            padding: 1rem;
-            border-radius: var(--border-radius);
-            margin-bottom: 1rem;
-            font-weight: bold;
-        }
-        
-        .password-strength {
-            margin-top: 0.5rem;
-            font-size: 0.8rem;
-        }
-        
-        .strength-weak { color: #e74c3c; }
-        .strength-medium { color: #f39c12; }
-        .strength-strong { color: #27ae60; }
-    </style>
+    <link rel="stylesheet" href="assets/css/styles.min.css">
+    <link rel="stylesheet" href="assets/css/page-specific.min.css">
 </head>
 <body class="login-page">
     <div class="login-container">

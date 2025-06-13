@@ -139,22 +139,3 @@ try {
         </div>
     </div>
 </div>
-
-<style>
-.detail-group {
-    margin-bottom: 1rem;
-}
-
-.detail-group strong {
-    display: inline-block;
-    width: 120px;
-    color: var(--text-muted);
-}
-
-.machines-section h4 {
-    color: var(--secondary-color);
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--border-color);
-}
-</style>
