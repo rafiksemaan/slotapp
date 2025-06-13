@@ -168,9 +168,9 @@ foreach ($out_transactions as $transaction) {
         </div>
     </div>
     
-    <!-- Charts Row -->
-    <div class="row">
-        <div class="col">
+    <!-- Charts Row with Fixed Layout -->
+    <div class="dashboard-charts-row">
+        <div class="dashboard-chart-card">
             <div class="card">
                 <div class="card-header">
                     <h3>Machine Distribution</h3>
@@ -183,7 +183,7 @@ foreach ($out_transactions as $transaction) {
             </div>
         </div>
         
-        <div class="col">
+        <div class="dashboard-chart-card">
             <div class="card">
                 <div class="card-header">
                     <h3>This Month's Transactions</h3>
@@ -340,7 +340,26 @@ document.addEventListener('DOMContentLoaded', function() {
     margin-left: 0.5rem;
 }
 
+/* Fixed Dashboard Charts Layout */
+.dashboard-charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.dashboard-chart-card {
+    /* Ensure cards maintain their size */
+    min-width: 0; /* Prevents flex items from overflowing */
+}
+
 /* Responsive adjustments */
+@media (max-width: 1200px) {
+    .dashboard-charts-row {
+        grid-template-columns: 1fr;
+    }
+}
+
 @media (max-width: 640px) {
     .breakdown-item {
         flex-direction: column;
