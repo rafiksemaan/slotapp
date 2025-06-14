@@ -3,7 +3,7 @@
 $db_host = 'localhost';
 $db_name = 'slotapp';
 $db_user = 'root';
-$db_pass = ''; // Update with your actual password if needed
+$db_pass = 'Mcmxcix7//6'; // Update with your actual password if needed
 
 // Application settings
 $app_name = 'Slot Management System';
