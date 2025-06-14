@@ -57,13 +57,13 @@ function has_permission($required_role) {
 }
 
 /**
- * Format currency amount
+ * Format currency amount with dollar sign
  * 
  * @param float $amount Amount to format
- * @return string Formatted amount
+ * @return string Formatted amount with dollar sign
  */
 function format_currency($amount) {
-    return number_format((float)$amount, 2);
+    return '$' . number_format((float)$amount, 2);
 }
 
 /**
