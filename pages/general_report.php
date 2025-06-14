@@ -179,15 +179,23 @@ if ($date_range_type === 'range') {
 } else {
     $date_subtitle = date('F Y', strtotime($month));
 }
+
+// Check if we have filter parameters (indicating a report was generated)
+$has_filters = !empty($_GET['machine_id']) || !empty($_GET['brand_id']) || !empty($_GET['machine_group_id']) || !empty($_GET['date_range_type']) || !empty($_GET['date_from']) || !empty($_GET['date_to']) || !empty($_GET['month']);
 ?>
 
 <div class="general-report-page fade-in">
-    <!-- Filters -->
+    <!-- Collapsible Filters -->
     <div class="filters-container card mb-6">
-       <!-- <div class="card-header">
-            <h3>Report Configuration</h3>
-        </div> -->
-        <div class="card-body">
+        <div class="card-header" style="cursor: pointer;" onclick="toggleFilters()">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h4 style="margin: 0;">Report Configuration</h4>
+                <span id="filter-toggle-icon" class="filter-toggle-icon">
+                    <?php echo $has_filters ? '▼' : '▲'; ?>
+                </span>
+            </div>
+        </div>
+        <div class="card-body" id="filters-body" style="<?php echo $has_filters ? 'display: none;' : ''; ?>">
             <form action="index.php" method="GET">
                 <input type="hidden" name="page" value="general_report">
 
@@ -231,7 +239,7 @@ if ($date_range_type === 'range') {
                     </div>
                 </div>
 
-                <!-- Machine Selection 
+                <!-- Machine Selection -->
                 <div class="form-section">
                     <h4>Machine Selection</h4>
                     <div class="row">
@@ -280,7 +288,7 @@ if ($date_range_type === 'range') {
                             </div>
                         </div>
                     </div>
-                </div> -->
+                </div>
 
                 <!-- Submit Buttons -->
                 <div class="form-actions">
@@ -395,7 +403,7 @@ if ($date_range_type === 'range') {
     <?php endif; ?>
 </div>
 
-<!-- JavaScript for form interactions and chart -->
+<!-- JavaScript for form interactions, chart, and toggle filters -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     // Date range type toggle
@@ -465,6 +473,33 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     <?php endif; ?>
 });
+
+// Toggle filters function
+function toggleFilters() {
+    const filtersBody = document.getElementById('filters-body');
+    const toggleIcon = document.getElementById('filter-toggle-icon');
+    
+    if (filtersBody.style.display === 'none') {
+        filtersBody.style.display = 'block';
+        toggleIcon.textContent = '▲';
+        // Add smooth animation
+        filtersBody.style.opacity = '0';
+        filtersBody.style.transform = 'translateY(-10px)';
+        setTimeout(() => {
+            filtersBody.style.transition = 'all 0.3s ease';
+            filtersBody.style.opacity = '1';
+            filtersBody.style.transform = 'translateY(0)';
+        }, 10);
+    } else {
+        filtersBody.style.transition = 'all 0.3s ease';
+        filtersBody.style.opacity = '0';
+        filtersBody.style.transform = 'translateY(-10px)';
+        setTimeout(() => {
+            filtersBody.style.display = 'none';
+            toggleIcon.textContent = '▼';
+        }, 300);
+    }
+}
 </script>
 
 <?php

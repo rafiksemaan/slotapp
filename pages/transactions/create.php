@@ -81,9 +81,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
-// Get machines for dropdown
+// Get machines for dropdown with brand information
 try {
-    $stmt = $conn->query("SELECT id, machine_number FROM machines ORDER BY machine_number");
+    $stmt = $conn->query("
+        SELECT m.id, m.machine_number, b.name as brand_name 
+        FROM machines m 
+        LEFT JOIN brands b ON m.brand_id = b.id 
+        ORDER BY m.machine_number
+    ");
     $machines = $stmt->fetchAll();
 } catch (PDOException $e) {
     $machines = [];
@@ -128,6 +133,9 @@ try {
                                         <option value="<?php echo $machine['id']; ?>" 
                                             <?php echo $transaction['machine_id'] == $machine['id'] ? 'selected' : ''; ?>>
                                             <?php echo htmlspecialchars($machine['machine_number']); ?>
+                                            <?php if ($machine['brand_name']): ?>
+                                                (<?php echo htmlspecialchars($machine['brand_name']); ?>)
+                                            <?php endif; ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>

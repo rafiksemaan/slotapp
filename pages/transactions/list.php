@@ -89,8 +89,13 @@ try {
     $stmt->execute($params);
     $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Get machines for dropdown
-    $machines_stmt = $conn->query("SELECT id, machine_number FROM machines ORDER BY machine_number");
+    // Get machines for dropdown with brand information
+    $machines_stmt = $conn->query("
+        SELECT m.id, m.machine_number, b.name as brand_name 
+        FROM machines m 
+        LEFT JOIN brands b ON m.brand_id = b.id 
+        ORDER BY m.machine_number
+    ");
     $machines = $machines_stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Get transaction types for category dropdown
@@ -160,12 +165,23 @@ try {
 }
 
 $total_result = $total_drop - $total_out;
+
+// Check if we have filter parameters (indicating a report was generated)
+$has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !empty($_GET['date_from']) || !empty($_GET['date_to']) || !empty($_GET['month']) || !empty($filter_category);
 ?>
 
 <div class="transactions-page fade-in">
-    <!-- Filters -->
+    <!-- Collapsible Filters -->
     <div class="filters-container card mb-6">
-        <div class="card-body">
+        <div class="card-header" style="cursor: pointer;" onclick="toggleFilters()">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h4 style="margin: 0;">Transaction Filters</h4>
+                <span id="filter-toggle-icon" class="filter-toggle-icon">
+                    <?php echo $has_filters ? '▼' : '▲'; ?>
+                </span>
+            </div>
+        </div>
+        <div class="card-body" id="filters-body" style="<?php echo $has_filters ? 'display: none;' : ''; ?>">
             <form action="index.php" method="GET" id="filters-form">
                 <input type="hidden" name="page" value="transactions">
                 <input type="hidden" name="sort" value="<?php echo $sort_column; ?>">
@@ -223,6 +239,9 @@ $total_result = $total_drop - $total_out;
                                     <?php foreach ($machines as $m): ?>
                                         <option value="<?= $m['id'] ?>" <?= $filter_machine == $m['id'] ? 'selected' : '' ?>>
                                             <?= htmlspecialchars($m['machine_number']) ?>
+                                            <?php if ($m['brand_name']): ?>
+                                                (<?= htmlspecialchars($m['brand_name']) ?>)
+                                            <?php endif; ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
@@ -278,7 +297,11 @@ $total_result = $total_drop - $total_out;
                         break;
                     }
                 }
-                echo "Machine #" . htmlspecialchars($selected_machine['machine_number'] ?? 'Unknown')." " . $filter_category;
+                echo "Machine #" . htmlspecialchars($selected_machine['machine_number'] ?? 'Unknown');
+                if ($selected_machine['brand_name']) {
+                    echo " (" . htmlspecialchars($selected_machine['brand_name']) . ")";
+                }
+                echo " " . $filter_category;
                 ?>
             <?php endif; ?>
             |
@@ -425,7 +448,7 @@ $total_result = $total_drop - $total_out;
     </div>
 </div>
 
-<!-- JavaScript for AJAX pagination and sorting -->
+<!-- JavaScript for AJAX pagination, sorting, and toggle filters -->
 <script>
 let currentPage = <?php echo $page_num; ?>;
 let totalPages = <?php echo $total_pages; ?>;
@@ -581,6 +604,33 @@ function sortTransactions(column, order) {
     });
     
     window.location.href = 'index.php?' + params.toString();
+}
+
+// Toggle filters function
+function toggleFilters() {
+    const filtersBody = document.getElementById('filters-body');
+    const toggleIcon = document.getElementById('filter-toggle-icon');
+    
+    if (filtersBody.style.display === 'none') {
+        filtersBody.style.display = 'block';
+        toggleIcon.textContent = '▲';
+        // Add smooth animation
+        filtersBody.style.opacity = '0';
+        filtersBody.style.transform = 'translateY(-10px)';
+        setTimeout(() => {
+            filtersBody.style.transition = 'all 0.3s ease';
+            filtersBody.style.opacity = '1';
+            filtersBody.style.transform = 'translateY(0)';
+        }, 10);
+    } else {
+        filtersBody.style.transition = 'all 0.3s ease';
+        filtersBody.style.opacity = '0';
+        filtersBody.style.transform = 'translateY(-10px)';
+        setTimeout(() => {
+            filtersBody.style.display = 'none';
+            toggleIcon.textContent = '▼';
+        }, 300);
+    }
 }
 
 // Date range toggle functionality

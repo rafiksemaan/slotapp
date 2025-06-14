@@ -58,9 +58,14 @@ try {
     $transaction_types = [];
 }
 
-// Get all machines for dropdown
+// Get all machines for dropdown with brand information
 try {
-    $machines_stmt = $conn->query("SELECT id, machine_number FROM machines ORDER BY machine_number");
+    $machines_stmt = $conn->query("
+        SELECT m.id, m.machine_number, b.name as brand_name 
+        FROM machines m 
+        LEFT JOIN brands b ON m.brand_id = b.id 
+        ORDER BY m.machine_number
+    ");
     $machines = $machines_stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     $error = "Database error: " . $e->getMessage();
@@ -151,6 +156,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <?php foreach ($machines as $machine): ?>
                                         <option value="<?php echo $machine['id']; ?>" <?php echo $machine['id'] == $transaction['machine_id'] ? 'selected' : ''; ?>>
                                             <?php echo htmlspecialchars($machine['machine_number']); ?>
+                                            <?php if ($machine['brand_name']): ?>
+                                                (<?php echo htmlspecialchars($machine['brand_name']); ?>)
+                                            <?php endif; ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>

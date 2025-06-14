@@ -30,6 +30,277 @@ header('Pragma: no-cache');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($custom_filename) ?></title>
+    <style>
+        /* Professional PDF Export Styles */
+        :root {
+            --primary-color: #1a2b4d;
+            --secondary-color: #c4933f;
+            --accent-color: #e74c3c;
+            --dark-bg: #121212;
+            --light-bg: #1e1e1e;
+            --text-light: #ffffff;
+            --text-dark: #333333;
+            --text-muted: #666666;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --border-color: #ddd;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #ffffff;
+            color: var(--text-dark);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        /* Loading Message Styles */
+        .loading-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 30px 40px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            z-index: 10000;
+            border: 2px solid var(--secondary-color);
+        }
+
+        .loading-message small {
+            display: block;
+            margin-top: 10px;
+            font-size: 14px;
+            opacity: 0.9;
+            font-weight: normal;
+        }
+
+        /* Report Header Styles */
+        .report-header {
+            background: linear-gradient(135deg, var(--primary-color), #2c3e50);
+            color: white;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 3px solid var(--secondary-color);
+        }
+
+        .report-header h1 {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .report-header h2 {
+            font-size: 20px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #ffffff;
+        }
+
+        .report-header .date-range {
+            font-size: 18px;
+            font-weight: 500;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .report-header .generated-at {
+            font-size: 14px;
+            color: #cccccc;
+            font-style: italic;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        thead {
+            background: linear-gradient(135deg, var(--primary-color), #2c3e50);
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 12px;
+            text-align: left;
+            font-weight: bold;
+            font-size: 14px;
+            border-bottom: 2px solid var(--secondary-color);
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            font-size: 13px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        tr:hover {
+            background-color: #e8f4f8;
+        }
+
+        .currency {
+            text-align: right;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        /* Totals Row */
+        .totals-row {
+            background: linear-gradient(135deg, var(--primary-color), #2c3e50) !important;
+            color: white !important;
+            font-weight: bold;
+        }
+
+        .totals-row td {
+            border-top: 3px solid var(--secondary-color);
+            padding: 15px 12px;
+            font-size: 14px;
+        }
+
+        .totals-row .currency {
+            color: white;
+        }
+
+        /* No Data Message */
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+            font-size: 16px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border: 2px dashed #ddd;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid var(--border-color);
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+
+        .footer p {
+            margin-bottom: 5px;
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                padding: 0;
+                background: white;
+                font-size: 11px;
+            }
+
+            .loading-message {
+                display: none !important;
+            }
+
+            .report-header {
+                background: var(--primary-color) !important;
+                color: white !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                page-break-inside: avoid;
+            }
+
+            .report-header h1 {
+                color: var(--secondary-color) !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            table {
+                page-break-inside: auto;
+                font-size: 10px;
+            }
+
+            thead {
+                background: var(--primary-color) !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            th {
+                background-color: var(--primary-color) !important;
+                color: white !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .totals-row {
+                background: var(--primary-color) !important;
+                color: white !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            tr {
+                page-break-inside: avoid;
+            }
+
+            .footer {
+                page-break-inside: avoid;
+            }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .report-header {
+                padding: 20px;
+            }
+
+            .report-header h1 {
+                font-size: 22px;
+            }
+
+            .report-header h2 {
+                font-size: 16px;
+            }
+
+            table {
+                font-size: 11px;
+            }
+
+            th, td {
+                padding: 8px 6px;
+            }
+        }
+    </style>
     <script>
         window.onload = function() {
             // Show loading message
@@ -160,7 +431,7 @@ header('Pragma: no-cache');
         <?php endif; ?>
 
         <div class="footer">
-            <p>Slot Management System - Custom Report</p>
+            <p><strong>Slot Management System - Custom Report</strong></p>
             <p>Report generated on <?= cairo_time('d M Y - H:i:s') ?> | Total records: <?= count($results) ?></p>
         </div>
     </div>
