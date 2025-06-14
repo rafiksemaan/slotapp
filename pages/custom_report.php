@@ -333,12 +333,23 @@ try {
 
 	$pdf_export_url = $export_url_base . $columns_query . '&export=pdf';
 	$excel_export_url = $export_url_base . $columns_query . '&export=excel';
+
+	// Check if we have filter parameters (indicating a report was generated)
+	$has_filters = !empty($selected_columns) || $machine_id !== 'all' || $brand_id !== 'all' || $machine_group_id !== 'all' || $date_range_type !== 'month' || !empty($_GET['date_from']) || !empty($_GET['date_to']) || !empty($_GET['month']);
 	?>
 
 	<div class="custom-report-page fade-in">
-		<!-- Filters -->
+		<!-- Collapsible Filters -->
 		<div class="filters-container card mb-6">
-			<div class="card-body">
+			<div class="card-header" style="cursor: pointer;" onclick="toggleFilters()">
+				<div style="display: flex; justify-content: space-between; align-items: center;">
+					<h4 style="margin: 0;">Report Configuration</h4>
+					<span id="filter-toggle-icon" class="filter-toggle-icon">
+						<?php echo $has_filters ? '▼' : '▲'; ?>
+					</span>
+				</div>
+			</div>
+			<div class="card-body" id="filters-body" style="<?php echo $has_filters ? 'display: none;' : ''; ?>">
 				<form action="index.php" method="GET">
 					<input type="hidden" name="page" value="custom_report">
 
@@ -657,7 +668,7 @@ try {
 		<?php endif; ?>
 	</div>
 
-	<!-- JavaScript for form interactions -->
+	<!-- JavaScript for form interactions and toggle filters -->
 	<script>
 	document.addEventListener('DOMContentLoaded', function () {
 		const dateRangeType = document.getElementById('date_range_type');
@@ -676,4 +687,31 @@ try {
 		dateRangeType.addEventListener('change', toggleDateInputs);
 		toggleDateInputs(); // Initial call
 	});
+
+	// Toggle filters function
+	function toggleFilters() {
+		const filtersBody = document.getElementById('filters-body');
+		const toggleIcon = document.getElementById('filter-toggle-icon');
+		
+		if (filtersBody.style.display === 'none') {
+			filtersBody.style.display = 'block';
+			toggleIcon.textContent = '▲';
+			// Add smooth animation
+			filtersBody.style.opacity = '0';
+			filtersBody.style.transform = 'translateY(-10px)';
+			setTimeout(() => {
+				filtersBody.style.transition = 'all 0.3s ease';
+				filtersBody.style.opacity = '1';
+				filtersBody.style.transform = 'translateY(0)';
+			}, 10);
+		} else {
+			filtersBody.style.transition = 'all 0.3s ease';
+			filtersBody.style.opacity = '0';
+			filtersBody.style.transform = 'translateY(-10px)';
+			setTimeout(() => {
+				filtersBody.style.display = 'none';
+				toggleIcon.textContent = '▼';
+			}, 300);
+		}
+	}
 	</script>

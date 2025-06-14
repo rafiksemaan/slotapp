@@ -80,8 +80,10 @@ try {
     $stmt->execute($params);
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Get machines for filter dropdown
-    $query = "SELECT m.id, m.machine_number, mt.name as type FROM machines m LEFT JOIN machine_types mt ON m.type_id = mt.id";
+    // Get machines for filter dropdown with brand information
+    $query = "SELECT m.id, m.machine_number, b.name as brand_name, mt.name as type FROM machines m 
+              LEFT JOIN brands b ON m.brand_id = b.id 
+              LEFT JOIN machine_types mt ON m.type_id = mt.id";
     $params = [];
 
     if ($brand_id !== 'all') {
@@ -155,12 +157,23 @@ try {
     $grand_total_drop = 0;
     $grand_total_result = 0;
 }
+
+// Check if we have filter parameters (indicating a report was generated)
+$has_filters = !empty($_GET['machine_id']) || !empty($_GET['brand_id']) || !empty($_GET['date_range_type']) || !empty($_GET['date_from']) || !empty($_GET['date_to']) || !empty($_GET['month']);
 ?>
 
 <div class="reports-page fade-in">
-    <!-- Filters -->
+    <!-- Collapsible Filters -->
     <div class="filters-container card mb-6">
-        <div class="card-body">
+        <div class="card-header" style="cursor: pointer;" onclick="toggleFilters()">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h4 style="margin: 0;">Report Filters</h4>
+                <span id="filter-toggle-icon" class="filter-toggle-icon">
+                    <?php echo $has_filters ? '▼' : '▲'; ?>
+                </span>
+            </div>
+        </div>
+        <div class="card-body" id="filters-body" style="<?php echo $has_filters ? 'display: none;' : ''; ?>">
             <form id="report-filters" action="index.php" method="GET">
                 <input type="hidden" name="page" value="reports">
 
@@ -230,6 +243,9 @@ try {
                                     <?php foreach ($machines as $machine): ?>
                                         <option value="<?= $machine['id'] ?>" <?= $machine_id == $machine['id'] ? 'selected' : '' ?>>
                                             <?= htmlspecialchars($machine['machine_number']) ?>
+                                            <?php if ($machine['brand_name']): ?>
+                                                (<?= htmlspecialchars($machine['brand_name']) ?>)
+                                            <?php endif; ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
@@ -264,6 +280,18 @@ try {
                     }
                 }
                 echo "Machine #" . htmlspecialchars($selected_machine['machine_number'] ?? 'N/A');
+                if ($selected_machine['brand_name']) {
+                    echo " (" . htmlspecialchars($selected_machine['brand_name']) . ")";
+                }
+            } elseif ($brand_id !== 'all') {
+                $selected_brand = null;
+                foreach ($brands as $b) {
+                    if ($b['id'] == $brand_id) {
+                        $selected_brand = $b;
+                        break;
+                    }
+                }
+                echo "Brand: " . htmlspecialchars($selected_brand['name'] ?? 'N/A');
             } else {
                 echo "All Machines";
             }
@@ -381,7 +409,7 @@ try {
     </div>
 </div>
 
-<!-- JavaScript: Enable/Disable Fields Based on Date Range Selection -->
+<!-- JavaScript: Enable/Disable Fields Based on Date Range Selection and Toggle Filters -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const rangeType = document.getElementById('date_range_type');
@@ -400,4 +428,31 @@ document.addEventListener('DOMContentLoaded', function () {
     rangeType.addEventListener('change', toggleInputs);
     toggleInputs(); // Initial call
 });
+
+// Toggle filters function
+function toggleFilters() {
+    const filtersBody = document.getElementById('filters-body');
+    const toggleIcon = document.getElementById('filter-toggle-icon');
+    
+    if (filtersBody.style.display === 'none') {
+        filtersBody.style.display = 'block';
+        toggleIcon.textContent = '▲';
+        // Add smooth animation
+        filtersBody.style.opacity = '0';
+        filtersBody.style.transform = 'translateY(-10px)';
+        setTimeout(() => {
+            filtersBody.style.transition = 'all 0.3s ease';
+            filtersBody.style.opacity = '1';
+            filtersBody.style.transform = 'translateY(0)';
+        }, 10);
+    } else {
+        filtersBody.style.transition = 'all 0.3s ease';
+        filtersBody.style.opacity = '0';
+        filtersBody.style.transform = 'translateY(-10px)';
+        setTimeout(() => {
+            filtersBody.style.display = 'none';
+            toggleIcon.textContent = '▼';
+        }, 300);
+    }
+}
 </script>
