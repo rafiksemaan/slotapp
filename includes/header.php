@@ -48,7 +48,7 @@ define('ICON_PATH', 'assets/icons'); // Make sure this matches your actual folde
                 </div>
                 <div class="user-actions">
                     <a href="index.php?page=profile" class="profile-btn" title="My Profile">
-                        <span class="menu-icon"><img src="<?= icon('users') ?>" alt="Profile" /></span>
+                        <span class="menu-icon"><img src="<?= icon('profile') ?>" alt="Profile" /></span>
                     </a>
                     <a href="logout.php" class="logout-btn">Logout</a>
                 </div>

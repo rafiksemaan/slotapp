@@ -136,6 +136,13 @@ a:hover {
     gap: var(--spacing-sm);
 }
 
+.user-actions .menu-icon {
+	margin-left: 8px;
+	display: flex;
+    align-items: center;
+	
+}
+
 .username {
     font-weight: bold;
 }
