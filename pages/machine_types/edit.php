@@ -90,19 +90,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <form method="POST" class="machine-type-form">
-                <div class="form-group">
-                    <label for="name">Type Name *</label>
-                    <input type="text" id="name" name="name" class="form-control" 
-                           value="<?php echo htmlspecialchars($machine_type['name']); ?>" required>
+                <!-- Machine Type Information Section -->
+                <div class="form-section">
+                    <h4>Machine Type Information</h4>
+                    <div class="form-group">
+                        <label for="name">Type Name *</label>
+                        <input type="text" id="name" name="name" class="form-control" 
+                               value="<?php echo htmlspecialchars($machine_type['name']); ?>" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" name="description" class="form-control" 
+                                  rows="4" placeholder="Optional description of the machine type..."><?php echo htmlspecialchars($machine_type['description'] ?? ''); ?></textarea>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="description">Description</label>
-                    <textarea id="description" name="description" class="form-control" 
-                              rows="3"><?php echo htmlspecialchars($machine_type['description'] ?? ''); ?></textarea>
-                </div>
-
-                <div class="form-group">
+                <!-- Form Actions -->
+                <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Update Machine Type</button>
                     <a href="index.php?page=machine_types" class="btn btn-danger">Cancel</a>
                 </div>

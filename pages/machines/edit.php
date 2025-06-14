@@ -136,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
-<div class="machine-create fade-in">
+<div class="machine-edit fade-in">
     <div class="card">
         <div class="card-header">
             <h3>Edit Machine</h3>
@@ -148,98 +148,116 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
             <?php endif; ?>
             
-            <form action="index.php?page=machines&action=edit&id=<?php echo $machine_id; ?>" method="POST">
-                <div class="row">
-                    <div class="col">
-                        <div class="form-group">
-                            <label for="machine_number">Machine Number *</label>
-                            <input type="text" id="machine_number" name="machine_number" class="form-control" value="<?php echo htmlspecialchars($machine['machine_number']); ?>" required>
+            <form action="index.php?page=machines&action=edit&id=<?php echo $machine_id; ?>" method="POST" onsubmit="return validateForm(this)">
+                <!-- Basic Information Section -->
+                <div class="form-section">
+                    <h4>Basic Information</h4>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="machine_number">Machine Number *</label>
+                                <input type="text" id="machine_number" name="machine_number" class="form-control" value="<?php echo htmlspecialchars($machine['machine_number']); ?>" required>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="brand_id">Brand</label>
+                                <select id="brand_id" name="brand_id" class="form-control">
+                                    <option value="">Select Brand</option>
+                                    <?php foreach ($brands as $brand): ?>
+                                        <option value="<?php echo $brand['id']; ?>" <?php echo $machine['brand_id'] == $brand['id'] ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($brand['name']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
                         </div>
                     </div>
-                    <div class="col">
-                        <div class="form-group">
-                            <label for="brand_id">Brand</label>
-                            <select id="brand_id" name="brand_id" class="form-control">
-                                <option value="">Select Brand</option>
-                                <?php foreach ($brands as $brand): ?>
-                                    <option value="<?php echo $brand['id']; ?>" <?php echo $machine['brand_id'] == $brand['id'] ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($brand['name']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
+                    
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="model">Model *</label>
+                                <input type="text" id="model" name="model" class="form-control" value="<?php echo htmlspecialchars($machine['model']); ?>" required>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col">
-                        <div class="form-group">
-                            <label for="model">Model *</label>
-                            <input type="text" id="model" name="model" class="form-control" value="<?php echo htmlspecialchars($machine['model']); ?>" required>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="form-group">
-                            <label for="type_id">Type *</label>
-                            <select id="type_id" name="type_id" class="form-control" required>
-                                <option value="">Select Type</option>
-                                <?php foreach ($machine_types as $type): ?>
-                                    <option value="<?php echo $type['id']; ?>" <?php echo $machine['type_id'] == $type['id'] ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($type['name']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col">
-                        <div class="form-group">
-                            <label for="credit_value">Credit Value *</label>
-                            <input type="number" id="credit_value" name="credit_value" class="form-control" value="<?php echo htmlspecialchars(number_format((float)$machine['credit_value'], 2)); ?>" step="0.01" min="0" required>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="form-group">
-                            <label for="manufacturing_year">Manufacturing Year</label>
-                            <input type="number" id="manufacturing_year" name="manufacturing_year" class="form-control" value="<?php echo htmlspecialchars($machine['manufacturing_year']); ?>" min="1900" max="<?php echo date('Y'); ?>">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="type_id">Type *</label>
+                                <select id="type_id" name="type_id" class="form-control" required>
+                                    <option value="">Select Type</option>
+                                    <?php foreach ($machine_types as $type): ?>
+                                        <option value="<?php echo $type['id']; ?>" <?php echo $machine['type_id'] == $type['id'] ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($type['name']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col">
-                        <div class="form-group">
-                            <label for="ip_address">IP Address</label>
-                            <input type="text" id="ip_address" name="ip_address" class="form-control ip-address" value="<?php echo htmlspecialchars($machine['ip_address']); ?>">
+                
+                <!-- Technical Details Section -->
+                <div class="form-section">
+                    <h4>Technical Details</h4>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="credit_value">Credit Value *</label>
+                                <input type="number" id="credit_value" name="credit_value" class="form-control" value="<?php echo htmlspecialchars(number_format((float)$machine['credit_value'], 2)); ?>" step="0.01" min="0" required>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="manufacturing_year">Manufacturing Year</label>
+                                <input type="number" id="manufacturing_year" name="manufacturing_year" class="form-control" value="<?php echo htmlspecialchars($machine['manufacturing_year']); ?>" min="1900" max="<?php echo date('Y'); ?>">
+                            </div>
                         </div>
                     </div>
-                    <div class="col">
-                        <div class="form-group">
-                            <label for="mac_address">MAC Address</label>
-                            <input type="text" id="mac_address" name="mac_address" class="form-control mac-address" value="<?php echo htmlspecialchars($machine['mac_address']); ?>" placeholder="00:1A:2B:3C:4D:5E">
+                    
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="serial_number">Serial Number</label>
+                                <input type="text" id="serial_number" name="serial_number" class="form-control" value="<?php echo htmlspecialchars($machine['serial_number']); ?>">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="status">Status *</label>
+                                <select id="status" name="status" class="form-control" required>
+                                    <?php foreach ($machine_statuses as $status_opt): ?>
+                                        <option value="<?php echo $status_opt; ?>" <?php echo $machine['status'] == $status_opt ? 'selected' : ''; ?>>
+                                            <?php echo $status_opt; ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col">
-                        <div class="form-group">
-                            <label for="serial_number">Serial Number</label>
-                            <input type="text" id="serial_number" name="serial_number" class="form-control" value="<?php echo htmlspecialchars($machine['serial_number']); ?>">
+                
+                <!-- Network Configuration Section -->
+                <div class="form-section">
+                    <h4>Network Configuration</h4>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="ip_address">IP Address</label>
+                                <input type="text" id="ip_address" name="ip_address" class="form-control ip-address" value="<?php echo htmlspecialchars($machine['ip_address']); ?>">
+                            </div>
                         </div>
-                    </div>
-                    <div class="col">
-                        <div class="form-group">
-                            <label for="status">Status *</label>
-                            <select id="status" name="status" class="form-control" required>
-                                <?php foreach ($machine_statuses as $status_opt): ?>
-                                    <option value="<?php echo $status_opt; ?>" <?php echo $machine['status'] == $status_opt ? 'selected' : ''; ?>>
-                                        <?php echo $status_opt; ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="mac_address">MAC Address</label>
+                                <input type="text" id="mac_address" name="mac_address" class="form-control mac-address" value="<?php echo htmlspecialchars($machine['mac_address']); ?>" placeholder="00:1A:2B:3C:4D:5E">
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="form-group">
+                
+                <!-- Form Actions -->
+                <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Update Machine</button>
                     <a href="index.php?page=machines" class="btn btn-danger">Cancel</a>
                 </div>

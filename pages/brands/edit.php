@@ -90,17 +90,22 @@ try {
             <?php endif; ?>
 
             <form method="POST" class="brand-form">
-                <div class="form-group">
-                    <label for="name">Brand Name *</label>
-                    <input type="text" id="name" name="name" class="form-control" value="<?php echo htmlspecialchars($brand['name']); ?>" required>
+                <!-- Brand Information Section -->
+                <div class="form-section">
+                    <h4>Brand Information</h4>
+                    <div class="form-group">
+                        <label for="name">Brand Name *</label>
+                        <input type="text" id="name" name="name" class="form-control" value="<?php echo htmlspecialchars($brand['name']); ?>" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" name="description" class="form-control" rows="4" placeholder="Optional description of the brand..."><?php echo htmlspecialchars($brand['description']); ?></textarea>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="description">Description</label>
-                    <textarea id="description" name="description" class="form-control" rows="4"><?php echo htmlspecialchars($brand['description']); ?></textarea>
-                </div>
-
-                <div class="form-group">
+                <!-- Form Actions -->
+                <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Update Brand</button>
                     <a href="index.php?page=brands" class="btn btn-danger">Cancel</a>
                 </div>

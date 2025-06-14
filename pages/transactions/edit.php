@@ -132,57 +132,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <form method="POST" class="transaction-form">
-                <div class="row">
-                    <div class="col">
-                        <div class="form-group">
-							<label for="timestamp">Date & Time *</label>
-							<input type="datetime-local" id="timestamp" name="timestamp" class="form-control"
-    value="<?php echo date('Y-m-d\TH:i', strtotime($transaction['timestamp'])); ?>" required>
-						</div>
+                <!-- Transaction Details Section -->
+                <div class="form-section">
+                    <h4>Transaction Details</h4>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="timestamp">Date & Time *</label>
+                                <input type="datetime-local" id="timestamp" name="timestamp" class="form-control"
+                                       value="<?php echo date('Y-m-d\TH:i', strtotime($transaction['timestamp'])); ?>" required>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="machine_id">Machine *</label>
+                                <select id="machine_id" name="machine_id" class="form-control" required>
+                                    <option value="">Select Machine</option>
+                                    <?php foreach ($machines as $machine): ?>
+                                        <option value="<?php echo $machine['id']; ?>" <?php echo $machine['id'] == $transaction['machine_id'] ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($machine['machine_number']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col">
-                        <div class="form-group">
-                            <label for="machine_id">Machine *</label>
-                            <select id="machine_id" name="machine_id" class="form-control" required>
-                                <option value="">Select Machine</option>
-                                <?php foreach ($machines as $machine): ?>
-                                    <option value="<?php echo $machine['id']; ?>" <?php echo $machine['id'] == $transaction['machine_id'] ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($machine['machine_number']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
+
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="transaction_type_id">Transaction Type *</label>
+                                <select id="transaction_type_id" name="transaction_type_id" class="form-control" required>
+                                    <option value="">Select Type</option>
+                                    <?php foreach ($transaction_types as $type): ?>
+                                        <option value="<?php echo $type['id']; ?>" <?php echo $type['id'] == $transaction['transaction_type_id'] ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($type['name']); ?> (<?php echo $type['category']; ?>)
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="amount">Amount *</label>
+                                <input type="number" id="amount" name="amount" step="0.01" min="0" class="form-control" value="<?php echo number_format((float)$transaction['amount'], 2, '.', ''); ?>" required>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col">
-                        <div class="form-group">
-                            <label for="transaction_type_id">Transaction Type *</label>
-                            <select id="transaction_type_id" name="transaction_type_id" class="form-control" required>
-                                <option value="">Select Type</option>
-                                <?php foreach ($transaction_types as $type): ?>
-                                    <option value="<?php echo $type['id']; ?>" <?php echo $type['id'] == $transaction['transaction_type_id'] ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($type['name']); ?> (<?php echo $type['category']; ?>)
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="form-group">
-							<label for="amount">Amount *</label>
-							<input type="number" id="amount" name="amount" step="0.01" min="0" class="form-control" value="<?php echo number_format((float)$transaction['amount'], 2, '.', ''); ?>" required>
-</div>
+                <!-- Additional Information Section -->
+                <div class="form-section">
+                    <h4>Additional Information</h4>
+                    <div class="form-group">
+                        <label for="notes">Notes</label>
+                        <textarea id="notes" name="notes" class="form-control" rows="4" placeholder="Optional notes about this transaction..."><?php echo htmlspecialchars($transaction['notes'] ?? ''); ?></textarea>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="notes">Notes</label>
-                    <textarea id="notes" name="notes" class="form-control" rows="4"><?php echo htmlspecialchars($transaction['notes'] ?? ''); ?></textarea>
-                </div>
-
-                <div class="form-group">
+                <!-- Form Actions -->
+                <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Update Transaction</button>
                     <a href="index.php?page=transactions" class="btn btn-danger">Cancel</a>
                 </div>

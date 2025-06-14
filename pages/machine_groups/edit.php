@@ -121,43 +121,54 @@ try {
             <?php endif; ?>
 
             <form method="POST" class="group-form" onsubmit="return validateGroupForm(this)">
-                <div class="form-group">
-                    <label for="name">Group Name *</label>
-                    <input type="text" id="name" name="name" class="form-control" value="<?php echo htmlspecialchars($name); ?>" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="description">Description</label>
-                    <textarea id="description" name="description" class="form-control" rows="3"><?php echo htmlspecialchars($description); ?></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>Select Machines * (minimum 2 required)</label>
-                    <div class="machine-selection">
-                        <?php if (empty($machines)): ?>
-                            <p class="text-muted">No machines available</p>
-                        <?php else: ?>
-                            <div class="machine-grid">
-                                <?php foreach ($machines as $machine): ?>
-                                    <label class="machine-checkbox">
-                                        <input type="checkbox" name="machine_ids[]" value="<?php echo $machine['id']; ?>" 
-                                               <?php echo in_array($machine['id'], $machine_ids) ? 'checked' : ''; ?>>
-                                        <div class="machine-info">
-                                            <strong><?php echo htmlspecialchars($machine['machine_number']); ?></strong>
-                                            <br>
-                                            <small><?php echo htmlspecialchars($machine['brand_name'] ?? 'No Brand'); ?> - <?php echo htmlspecialchars($machine['type_name'] ?? 'No Type'); ?></small>
-                                        </div>
-                                    </label>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php endif; ?>
+                <!-- Group Information Section -->
+                <div class="form-section">
+                    <h4>Group Information</h4>
+                    <div class="form-group">
+                        <label for="name">Group Name *</label>
+                        <input type="text" id="name" name="name" class="form-control" value="<?php echo htmlspecialchars($name); ?>" required>
                     </div>
-                    <div id="selection-count" class="selection-info">
-                        Selected: <span id="count">0</span> machines
+
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" name="description" class="form-control" rows="3" placeholder="Optional description of the group..."><?php echo htmlspecialchars($description); ?></textarea>
                     </div>
                 </div>
 
-                <div class="form-group">
+                <!-- Machine Selection Section -->
+                <div class="form-section">
+                    <h4>Machine Selection</h4>
+                    <p class="form-description">Select at least 2 machines for this group (minimum required).</p>
+                    
+                    <div class="form-group">
+                        <label>Select Machines * (minimum 2 required)</label>
+                        <div class="machine-selection">
+                            <?php if (empty($machines)): ?>
+                                <p class="text-muted">No machines available</p>
+                            <?php else: ?>
+                                <div class="machine-grid">
+                                    <?php foreach ($machines as $machine): ?>
+                                        <label class="machine-checkbox">
+                                            <input type="checkbox" name="machine_ids[]" value="<?php echo $machine['id']; ?>" 
+                                                   <?php echo in_array($machine['id'], $machine_ids) ? 'checked' : ''; ?>>
+                                            <div class="machine-info">
+                                                <strong><?php echo htmlspecialchars($machine['machine_number']); ?></strong>
+                                                <br>
+                                                <small><?php echo htmlspecialchars($machine['brand_name'] ?? 'No Brand'); ?> - <?php echo htmlspecialchars($machine['type_name'] ?? 'No Type'); ?></small>
+                                            </div>
+                                        </label>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        <div id="selection-count" class="selection-info">
+                            Selected: <span id="count">0</span> machines
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Update Group</button>
                     <a href="index.php?page=machine_groups" class="btn btn-danger">Cancel</a>
                 </div>
