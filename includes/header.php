@@ -80,6 +80,10 @@ define('ICON_PATH', 'assets/icons'); // Make sure this matches your actual folde
                 <span class="menu-icon"><img src="<?= icon('report-chart') ?>" alt="custom_report" /></span>
                 <span class="menu-text">Custom Report</span>
             </a></li>
+            <li><a href="index.php?page=guest_tracking" class="<?= $page == 'guest_tracking' ? 'active' : '' ?>">
+                <span class="menu-icon"><img src="<?= icon('users') ?>" alt="guest_tracking" /></span>
+                <span class="menu-text">Guest Tracking</span>
+            </a></li>
             <li><a href="index.php?page=profile" class="<?= $page == 'profile' ? 'active' : '' ?>">
                 <span class="menu-icon"><img src="<?= icon('profile') ?>" alt="profile" /></span>
                 <span class="menu-text">My Profile</span>
@@ -123,7 +127,7 @@ define('ICON_PATH', 'assets/icons'); // Make sure this matches your actual folde
             
             <main class="content">
                 <div class="page-header">
-                    <h2><?php echo ucfirst($page == 'custom_report' ? 'Custom Report' : ($page == 'general_report' ? 'General Report' : $page)); ?></h2>
+                    <h2><?php echo ucfirst($page == 'custom_report' ? 'Custom Report' : ($page == 'general_report' ? 'General Report' : ($page == 'guest_tracking' ? 'Guest Tracking' : $page))); ?></h2>
                 </div>
                 <div class="page-content">
 				
