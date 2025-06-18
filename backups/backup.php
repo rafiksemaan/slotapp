@@ -7,7 +7,7 @@
 // Database credentials
 $host = 'localhost';
 $user = 'root'; // Default WAMP MySQL user
-$pass = ''; // Default WAMP MySQL password is empty
+$pass = 'Mcmxcix7//6'; // Default WAMP MySQL password is empty
 $dbname = 'slotapp'; // Your database name
 
 // Backup directory (outside web root for security)
