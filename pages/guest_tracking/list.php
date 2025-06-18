@@ -103,6 +103,27 @@ try {
     $total_drop = $total_result = $total_visits = $total_guests = 0;
 }
 
+// Build export URLs
+$export_params = [
+    'page' => 'guest_tracking',
+    'action' => 'export',
+    'sort' => $sort_column,
+    'order' => $sort_order,
+    'date_range_type' => $date_range_type,
+    'guest_search' => $guest_search
+];
+
+if ($date_range_type === 'range') {
+    $export_params['date_from'] = $date_from;
+    $export_params['date_to'] = $date_to;
+} elseif ($date_range_type === 'month') {
+    $export_params['month'] = $month;
+}
+
+$export_url_base = 'index.php?' . http_build_query($export_params);
+$pdf_export_url = $export_url_base . '&export=pdf';
+$excel_export_url = $export_url_base . '&export=excel';
+
 // Check if we have filter parameters
 $has_filters = $date_range_type !== 'all_time' || !empty($guest_search);
 ?>
@@ -196,8 +217,13 @@ $has_filters = $date_range_type !== 'all_time' || !empty($guest_search);
                 <a href="index.php?page=guest_tracking&action=upload" class="btn btn-primary">Upload Excel Data</a>
             <?php endif; ?>
         </div>
-        <div>
-            <a href="index.php?page=guest_tracking&action=export&<?= http_build_query($_GET) ?>" class="btn btn-secondary">Export to Excel</a>
+        <div class="export-buttons">
+            <a href="<?= htmlspecialchars($pdf_export_url) ?>" class="btn btn-secondary" target="_blank">
+                📄 Export to PDF
+            </a>
+            <a href="<?= htmlspecialchars($excel_export_url) ?>" class="btn btn-secondary">
+                📊 Export to Excel
+            </a>
         </div>
     </div>
 
@@ -220,6 +246,30 @@ $has_filters = $date_range_type !== 'all_time' || !empty($guest_search);
             <div class="stat-value text-lg font-bold"><?php echo number_format($total_visits); ?></div>
         </div>
     </div>
+
+    <!-- Export Note -->
+    <?php if (!empty($guests)): ?>
+        <div class="export-actions mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Export Options</h4>
+                </div>
+                <div class="card-body">
+                    <div class="export-buttons">
+                        <a href="<?= htmlspecialchars($pdf_export_url) ?>" class="btn btn-secondary" target="_blank">
+                            📄 Export to PDF
+                        </a>
+                        <a href="<?= htmlspecialchars($excel_export_url) ?>" class="btn btn-secondary">
+                            📊 Export to Excel
+                        </a>
+                    </div>
+                    <p class="export-note">
+                        <small>PDF will open in a new tab. Excel file will be downloaded automatically.</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
 
     <!-- Guests Table -->
     <div class="card overflow-hidden">
