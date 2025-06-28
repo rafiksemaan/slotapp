@@ -97,7 +97,7 @@ try {
                         <dt>User</dt>
                         <dd><?php echo htmlspecialchars($transaction['username']); ?></dd>
 
-                        <dt>Role</dt>
+                        <dt>Name</dt>
                         <dd><?php echo htmlspecialchars($transaction['user_name']); ?></dd>
 
                         <dt>Created At</dt>
