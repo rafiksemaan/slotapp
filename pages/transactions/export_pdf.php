@@ -152,7 +152,7 @@ header('Pragma: no-cache');
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($custom_filename) ?></title>
     <style>
-        /* Professional PDF Export Styles */
+        /* Professional PDF Export Styles - Ultra Compact */
         :root {
             --primary-color: #1a2b4d;
             --secondary-color: #c4933f;
@@ -178,8 +178,9 @@ header('Pragma: no-cache');
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #ffffff;
             color: var(--text-dark);
-            line-height: 1.6;
-            padding: 20px;
+            line-height: 1.2;
+            padding: 15px;
+            font-size: 11px;
         }
 
         /* Loading Message Styles */
@@ -208,94 +209,95 @@ header('Pragma: no-cache');
             font-weight: normal;
         }
 
-        /* Report Header Styles */
+        /* Report Header Styles - Compact */
         .report-header {
             background: linear-gradient(135deg, var(--primary-color), #2c3e50);
             color: white;
-            padding: 30px;
-            margin-bottom: 20px;
+            padding: 15px;
+            margin-bottom: 12px;
             text-align: center;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            border: 3px solid var(--secondary-color);
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 2px solid var(--secondary-color);
         }
 
         .report-header h1 {
-            font-size: 28px;
+            font-size: 20px;
             font-weight: bold;
             color: var(--secondary-color);
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            margin-bottom: 6px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
         }
 
         .report-header h2 {
-            font-size: 20px;
+            font-size: 14px;
             font-weight: 500;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
             color: #ffffff;
         }
 
         .report-header .date-range {
-            font-size: 18px;
+            font-size: 13px;
             font-weight: 500;
             color: #ffffff;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
 
         .report-header .generated-at {
-            font-size: 14px;
+            font-size: 10px;
             color: #cccccc;
             font-style: italic;
         }
 
-        /* Summary Stats - Compact Single Line Layout */
+        /* Summary Stats - Ultra Compact Single Line Layout */
         .summary-stats {
             display: flex;
             justify-content: space-between;
-            gap: 8px;
-            margin-bottom: 20px;
-            padding: 12px;
+            gap: 6px;
+            margin-bottom: 12px;
+            padding: 8px;
             background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-            border: 2px solid var(--secondary-color);
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--secondary-color);
+            border-radius: 4px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
         }
 
         .stat-box {
             flex: 1;
             text-align: center;
-            padding: 8px 6px;
+            padding: 4px 3px;
             background: white;
-            border-radius: 4px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            min-width: 0; /* Allow flex items to shrink */
+            border-radius: 3px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            min-width: 0;
         }
 
         .stat-box .stat-title {
-            font-size: 10px;
+            font-size: 8px;
             color: var(--text-muted);
-            margin-bottom: 3px;
+            margin-bottom: 2px;
             text-transform: uppercase;
             font-weight: 600;
-            line-height: 1.2;
+            line-height: 1.1;
         }
 
         .stat-box .stat-value {
-            font-size: 14px;
+            font-size: 11px;
             font-weight: bold;
             color: var(--primary-color);
-            line-height: 1.2;
+            line-height: 1.1;
         }
 
-        /* Table Styles */
+        /* Table Styles - Ultra Compact */
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 30px;
+            margin-bottom: 15px;
             background-color: white;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
             overflow: hidden;
+            font-size: 9px;
         }
 
         thead {
@@ -305,25 +307,28 @@ header('Pragma: no-cache');
         th {
             background-color: var(--primary-color);
             color: white;
-            padding: 15px 12px;
+            padding: 6px 4px;
             text-align: left;
             font-weight: bold;
-            font-size: 14px;
-            border-bottom: 2px solid var(--secondary-color);
+            font-size: 9px;
+            border-bottom: 1px solid var(--secondary-color);
+            line-height: 1.1;
         }
 
         td {
-            padding: 12px;
+            padding: 3px 4px;
             border-bottom: 1px solid #eee;
-            font-size: 13px;
+            font-size: 8px;
+            line-height: 1.2;
+            vertical-align: top;
         }
 
         tr:nth-child(even) {
-            background-color: #f8f9fa;
+            background-color: #f9f9f9;
         }
 
         tr:hover {
-            background-color: #e8f4f8;
+            background-color: #f0f0f0;
         }
 
         .currency {
@@ -340,7 +345,7 @@ header('Pragma: no-cache');
             color: var(--danger-color);
         }
 
-        /* Totals Row */
+        /* Totals Row - Compact */
         .totals-row {
             background: linear-gradient(135deg, var(--primary-color), #2c3e50) !important;
             color: white !important;
@@ -348,9 +353,9 @@ header('Pragma: no-cache');
         }
 
         .totals-row td {
-            border-top: 3px solid var(--secondary-color);
-            padding: 15px 12px;
-            font-size: 14px;
+            border-top: 2px solid var(--secondary-color);
+            padding: 6px 4px;
+            font-size: 9px;
         }
 
         .totals-row .currency {
@@ -360,34 +365,35 @@ header('Pragma: no-cache');
         /* No Data Message */
         .no-data {
             text-align: center;
-            padding: 40px;
-            color: var(--text-muted);
-            font-size: 16px;
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            border: 2px dashed #ddd;
-        }
-
-        /* Footer */
-        .footer {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 2px solid var(--border-color);
-            text-align: center;
+            padding: 20px;
             color: var(--text-muted);
             font-size: 12px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border: 1px dashed #ddd;
+        }
+
+        /* Footer - Compact */
+        .footer {
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 8px;
         }
 
         .footer p {
-            margin-bottom: 5px;
+            margin-bottom: 3px;
         }
 
-        /* Print Styles */
+        /* Print Styles - Ultra Compact */
         @media print {
             body {
-                padding: 0;
+                padding: 8px;
                 background: white;
-                font-size: 11px;
+                font-size: 8px;
+                line-height: 1.1;
             }
 
             .loading-message {
@@ -400,44 +406,45 @@ header('Pragma: no-cache');
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
                 page-break-inside: avoid;
-                margin-bottom: 15px;
-                padding: 20px;
+                margin-bottom: 8px;
+                padding: 10px;
             }
 
             .report-header h1 {
                 color: var(--secondary-color) !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
-                font-size: 24px;
+                font-size: 16px;
             }
 
             .summary-stats {
                 background: #f8f9fa !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
-                margin-bottom: 15px;
-                padding: 8px;
-                gap: 6px;
+                margin-bottom: 8px;
+                padding: 4px;
+                gap: 3px;
             }
 
             .stat-box {
                 background: white !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
-                padding: 6px 4px;
+                padding: 3px 2px;
             }
 
             .stat-box .stat-title {
-                font-size: 9px;
+                font-size: 7px;
             }
 
             .stat-box .stat-value {
-                font-size: 12px;
+                font-size: 9px;
             }
 
             table {
                 page-break-inside: auto;
-                font-size: 10px;
+                font-size: 7px;
+                margin-bottom: 8px;
             }
 
             thead {
@@ -451,8 +458,14 @@ header('Pragma: no-cache');
                 color: white !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
-                padding: 10px 8px;
-                font-size: 11px;
+                padding: 4px 3px;
+                font-size: 7px;
+            }
+
+            td {
+                padding: 2px 3px;
+                font-size: 7px;
+                line-height: 1.1;
             }
 
             .totals-row {
@@ -460,6 +473,8 @@ header('Pragma: no-cache');
                 color: white !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
+                padding: 4px 3px;
+                font-size: 7px;
             }
 
             tr {
@@ -468,50 +483,54 @@ header('Pragma: no-cache');
 
             .footer {
                 page-break-inside: avoid;
+                font-size: 6px;
+                margin-top: 10px;
+                padding-top: 5px;
             }
         }
 
         /* Mobile Responsive */
         @media (max-width: 768px) {
             body {
-                padding: 10px;
+                padding: 8px;
+                font-size: 10px;
             }
 
             .report-header {
-                padding: 20px;
+                padding: 12px;
             }
 
             .report-header h1 {
-                font-size: 22px;
+                font-size: 16px;
             }
 
             .report-header h2 {
-                font-size: 16px;
+                font-size: 12px;
             }
 
             .summary-stats {
                 flex-direction: column;
-                gap: 8px;
+                gap: 4px;
             }
 
             .stat-box {
-                padding: 10px;
+                padding: 6px;
             }
 
             .stat-box .stat-title {
-                font-size: 11px;
+                font-size: 9px;
             }
 
             .stat-box .stat-value {
-                font-size: 16px;
+                font-size: 12px;
             }
 
             table {
-                font-size: 11px;
+                font-size: 8px;
             }
 
             th, td {
-                padding: 8px 6px;
+                padding: 4px 3px;
             }
         }
     </style>
@@ -573,7 +592,7 @@ header('Pragma: no-cache');
             <div class="generated-at">Generated at: <?= cairo_time('d M Y – H:i:s') ?></div>
         </div>
 
-        <!-- Summary Statistics - Compact Single Line Layout -->
+        <!-- Summary Statistics - Ultra Compact Single Line Layout -->
         <div class="summary-stats">
             <div class="stat-box">
                 <div class="stat-title">Transactions</div>
