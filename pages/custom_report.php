@@ -620,7 +620,17 @@ try {
 									<?php foreach ($results as $row): ?>
 										<tr>
 											<?php foreach ($selected_columns as $column): ?>
-												<td>
+												<td<?php 
+													// Apply special classes for specific columns
+													if ($column === 'result') {
+														$result_value = (float)($row[$column] ?? 0);
+														echo ' class="highlight-result ' . ($result_value >= 0 ? 'positive' : 'negative') . '"';
+													} elseif ($column === 'total_out') {
+														echo ' class="highlight-out-table"';
+													} elseif ($column === 'total_drop') {
+														echo ' class="highlight-drop-table"';
+													}
+												?>>
 													<?php
 													$value = $row[$column] ?? 'N/A';
 													
@@ -640,7 +650,17 @@ try {
 									<?php if (!empty($totals)): ?>
 										<tr class="totals-row bg-gray-800 text-white font-bold">
 											<?php foreach ($selected_columns as $column): ?>
-												<td>
+												<td<?php 
+													// Apply special classes for totals row
+													if ($column === 'result' && isset($totals[$column])) {
+														$result_value = (float)$totals[$column];
+														echo ' class="highlight-result ' . ($result_value >= 0 ? 'positive' : 'negative') . '"';
+													} elseif ($column === 'total_out' && isset($totals[$column])) {
+														echo ' class="highlight-out-table"';
+													} elseif ($column === 'total_drop' && isset($totals[$column])) {
+														echo ' class="highlight-drop-table"';
+													}
+												?>>
 													<?php if ($column === 'machine_number'): ?>
 														<strong>TOTALS</strong>
 													<?php elseif ($column === 'credit_value'): ?>
