@@ -28,14 +28,13 @@ if ($date_range_type === 'range') {
 try {
     $params = ["{$start_date} 00:00:00", "{$end_date} 23:59:59"];
     
-    $query = "SELECT t.*, m.machine_number, tt.name AS transaction_type, tt.category, u.username,
+    $query = "SELECT t.*, m.machine_number, tt.name AS transaction_type, tt.category,
                      b.name as brand_name
               FROM transactions t
               JOIN machines m ON t.machine_id = m.id
               LEFT JOIN brands b ON m.brand_id = b.id
               JOIN transaction_types tt ON t.transaction_type_id = tt.id
-              JOIN users u ON t.user_id = u.id
-              WHERE t.timestamp BETWEEN ? AND ?";
+              WHERE t.operation_date BETWEEN ? AND ?";
     
     // Apply filters
     if ($machine !== 'all') {
@@ -54,14 +53,14 @@ try {
     
     // Add sorting
     $sort_map = [
-        'timestamp' => 't.timestamp',
+        'operation_date' => 't.operation_date',
         'machine_number' => 'm.machine_number',
         'transaction_type' => 'tt.name',
         'amount' => 't.amount',
         'username' => 'u.username'
     ];
     
-    $actual_sort_column = $sort_map[$sort_column] ?? 't.timestamp';
+    $actual_sort_column = $sort_map[$sort_column] ?? 't.operation_date';
     $query .= " ORDER BY $actual_sort_column $sort_order";
     
     $stmt = $conn->prepare($query);
@@ -249,33 +248,38 @@ header('Pragma: no-cache');
             font-style: italic;
         }
 
-        /* Summary Stats */
+        /* Summary Stats - Single Line Layout */
         .summary-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
             margin-bottom: 30px;
-        }
-
-        .stat-box {
+            padding: 20px;
             background: linear-gradient(135deg, #f8f9fa, #e9ecef);
             border: 2px solid var(--secondary-color);
             border-radius: 8px;
-            padding: 20px;
-            text-align: center;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
+        .stat-box {
+            flex: 1;
+            text-align: center;
+            padding: 15px 10px;
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
         .stat-box .stat-title {
-            font-size: 14px;
+            font-size: 12px;
             color: var(--text-muted);
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             text-transform: uppercase;
             font-weight: 600;
         }
 
         .stat-box .stat-value {
-            font-size: 24px;
+            font-size: 18px;
             font-weight: bold;
             color: var(--primary-color);
         }
@@ -401,8 +405,14 @@ header('Pragma: no-cache');
                 print-color-adjust: exact;
             }
 
-            .stat-box {
+            .summary-stats {
                 background: #f8f9fa !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .stat-box {
+                background: white !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
@@ -459,16 +469,17 @@ header('Pragma: no-cache');
                 font-size: 16px;
             }
 
+            .summary-stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+
             table {
                 font-size: 11px;
             }
 
             th, td {
                 padding: 8px 6px;
-            }
-
-            .summary-stats {
-                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -530,7 +541,7 @@ header('Pragma: no-cache');
             <div class="generated-at">Generated at: <?= cairo_time('d M Y – H:i:s') ?></div>
         </div>
 
-        <!-- Summary Statistics -->
+        <!-- Summary Statistics - Single Line Layout -->
         <div class="summary-stats">
             <div class="stat-box">
                 <div class="stat-title">Total Transactions</div>
@@ -554,24 +565,22 @@ header('Pragma: no-cache');
             <table>
                 <thead>
                     <tr>
-                        <th>Date & Time</th>
+                        <th>Date</th>
                         <th>Machine</th>
                         <th>Transaction Type</th>
                         <th class="currency">Amount</th>
                         <th>Category</th>
-                        <th>User</th>
                         <th>Notes</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($transactions as $t): ?>
                         <tr>
-                            <td><?= htmlspecialchars(format_datetime($t['timestamp'], 'd M Y - H:i:s')) ?></td>
+                            <td><?= htmlspecialchars(format_date($t['operation_date'])) ?></td>
                             <td><?= htmlspecialchars($t['machine_number']) ?></td>
                             <td><?= htmlspecialchars($t['transaction_type']) ?></td>
                             <td class="currency"><?= '$' . number_format($t['amount'], 2) ?></td>
                             <td><?= htmlspecialchars($t['category']) ?></td>
-                            <td><?= htmlspecialchars($t['username']) ?></td>
                             <td><?= htmlspecialchars($t['notes'] ?? '') ?></td>
                         </tr>
                     <?php endforeach; ?>
@@ -580,7 +589,7 @@ header('Pragma: no-cache');
                     <tr class="totals-row">
                         <td colspan="3"><strong>TOTALS</strong></td>
                         <td class="currency"><strong><?= '$' . number_format($total_drop + $total_out, 2) ?></strong></td>
-                        <td colspan="3"></td>
+                        <td colspan="2"></td>
                     </tr>
                 </tbody>
             </table>
