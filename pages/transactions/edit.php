@@ -47,8 +47,6 @@ try {
     exit;
 }
 
-
-
 // Get all transaction types
 try {
     $types_stmt = $conn->query("SELECT id, name, category FROM transaction_types ORDER BY category, name");
@@ -85,14 +83,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "Please fill out all required fields.";
     } else {
         try {
-            // Update transaction
+            // Update transaction with edited_by field
             $stmt = $conn->prepare("
                 UPDATE transactions SET
                     machine_id = ?,
                     transaction_type_id = ?,
                     amount = ?,
                     notes = ?,
-                    timestamp = ?
+                    timestamp = ?,
+                    edited_by = ?,
+                    updated_at = CURRENT_TIMESTAMP
                 WHERE id = ?
             ");
 
@@ -102,6 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $amount,
                 $notes ?: null,
                 $timestamp,
+                $_SESSION['user_id'], // Set edited_by to current user
                 $transaction_id
             ]);
 

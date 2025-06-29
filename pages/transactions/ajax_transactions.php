@@ -58,6 +58,7 @@ try {
     $filter_date_to = $_GET['date_to'] ?? date('Y-m-t');
     $filter_month = $_GET['month'] ?? date('Y-m');
     $filter_category = $_GET['category'] ?? '';
+    $filter_transaction_type = $_GET['transaction_type'] ?? 'all';
 
     // Calculate start and end dates
     if ($date_range_type === 'range') {
@@ -88,6 +89,10 @@ try {
         $query .= " AND tt.category = 'OUT'";
     } elseif ($filter_category === 'DROP') {
         $query .= " AND tt.category = 'DROP'";
+    }
+    if ($filter_transaction_type !== 'all') {
+        $query .= " AND t.transaction_type_id = ?";
+        $params[] = $filter_transaction_type;
     }
 
     // Get total count for pagination

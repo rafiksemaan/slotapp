@@ -28,6 +28,7 @@ $filter_date_from = $_GET['date_from'] ?? date('Y-m-01');
 $filter_date_to = $_GET['date_to'] ?? date('Y-m-t');
 $filter_month = $_GET['month'] ?? date('Y-m');
 $filter_category = $_GET['category'] ?? '';
+$filter_transaction_type = $_GET['transaction_type'] ?? 'all';
 
 // Calculate start and end dates
 if ($date_range_type === 'range') {
@@ -60,6 +61,10 @@ try {
         $query .= " AND tt.category = 'OUT'";
     } elseif ($filter_category === 'DROP') {
         $query .= " AND tt.category = 'DROP'";
+    }
+    if ($filter_transaction_type !== 'all') {
+        $query .= " AND t.transaction_type_id = ?";
+        $params[] = $filter_transaction_type;
     }
 
     // Get total count for pagination
@@ -102,11 +107,16 @@ try {
     $types_stmt = $conn->query("SELECT DISTINCT category FROM transaction_types WHERE category IN ('OUT', 'DROP')");
     $categories = $types_stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    // Get all transaction types for transaction type filter
+    $all_types_stmt = $conn->query("SELECT id, name, category FROM transaction_types ORDER BY category, name");
+    $all_transaction_types = $all_types_stmt->fetchAll(PDO::FETCH_ASSOC);
+
 } catch (Exception $e) {
     echo "<div class='alert alert-danger'>Database error: " . htmlspecialchars($e->getMessage()) . "</div>";
     $transactions = [];
     $machines = [];
     $categories = [];
+    $all_transaction_types = [];
     $total_out = $total_drop = $total_result = 0;
     $has_more = false;
 }
@@ -135,6 +145,10 @@ try {
         $totals_query .= " AND tt.category = 'OUT'";
     } elseif ($filter_category === 'DROP') {
         $totals_query .= " AND tt.category = 'DROP'";
+    }
+    if ($filter_transaction_type !== 'all') {
+        $totals_query .= " AND t.transaction_type_id = ?";
+        $totals_params[] = $filter_transaction_type;
     }
     
     $totals_stmt = $conn->prepare($totals_query);
@@ -166,8 +180,31 @@ try {
 
 $total_result = $total_drop - $total_out;
 
+// Build export URLs
+$export_params = [
+    'page' => 'transactions',
+    'action' => 'export',
+    'sort' => $sort_column,
+    'order' => $sort_order,
+    'date_range_type' => $date_range_type,
+    'machine' => $filter_machine,
+    'category' => $filter_category,
+    'transaction_type' => $filter_transaction_type
+];
+
+if ($date_range_type === 'range') {
+    $export_params['date_from'] = $filter_date_from;
+    $export_params['date_to'] = $filter_date_to;
+} else {
+    $export_params['month'] = $filter_month;
+}
+
+$export_url_base = 'index.php?' . http_build_query($export_params);
+$pdf_export_url = $export_url_base . '&export=pdf';
+$excel_export_url = $export_url_base . '&export=excel';
+
 // Check if we have filter parameters (indicating a report was generated)
-$has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !empty($_GET['date_from']) || !empty($_GET['date_to']) || !empty($_GET['month']) || !empty($filter_category);
+$has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !empty($_GET['date_from']) || !empty($_GET['date_to']) || !empty($_GET['month']) || !empty($filter_category) || $filter_transaction_type !== 'all';
 ?>
 
 <div class="transactions-page fade-in">
@@ -227,7 +264,7 @@ $has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !emp
                     </div>
                 </div>
 
-                <!-- Machine & Category Selection -->
+                <!-- Filter Options Section -->
                 <div class="form-section">
                     <h4>Filter Options</h4>
                     <div class="row">
@@ -261,6 +298,33 @@ $has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !emp
                                 </select>
                             </div>
                         </div>
+                        
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="transaction_type">Transaction Type</label>
+                                <select name="transaction_type" id="transaction_type" class="form-control">
+                                    <option value="all" <?= $filter_transaction_type === 'all' ? 'selected' : '' ?>>All Types</option>
+                                    <optgroup label="OUT">
+                                        <?php foreach ($all_transaction_types as $type): ?>
+                                            <?php if ($type['category'] === 'OUT'): ?>
+                                                <option value="<?= $type['id'] ?>" <?= $filter_transaction_type == $type['id'] ? 'selected' : '' ?>>
+                                                    <?= htmlspecialchars($type['name']) ?>
+                                                </option>
+                                            <?php endif; ?>
+                                        <?php endforeach; ?>
+                                    </optgroup>
+                                    <optgroup label="DROP">
+                                        <?php foreach ($all_transaction_types as $type): ?>
+                                            <?php if ($type['category'] === 'DROP'): ?>
+                                                <option value="<?= $type['id'] ?>" <?= $filter_transaction_type == $type['id'] ? 'selected' : '' ?>>
+                                                    <?= htmlspecialchars($type['name']) ?>
+                                                </option>
+                                            <?php endif; ?>
+                                        <?php endforeach; ?>
+                                    </optgroup>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -274,20 +338,30 @@ $has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !emp
     </div>
 
     <!-- Action Buttons -->
-    <?php if ($can_edit): ?>
-        <div class="action-buttons mb-6 flex justify-end">
-            <a href="index.php?page=transactions&action=create" class="btn btn-primary">
-                Add New Transaction
+    <div class="action-buttons mb-6 flex justify-between">
+        <div>
+            <?php if ($can_edit): ?>
+                <a href="index.php?page=transactions&action=create" class="btn btn-primary">
+                    Add New Transaction
+                </a>
+            <?php endif; ?>
+        </div>
+        <div class="export-buttons">
+            <a href="<?= htmlspecialchars($pdf_export_url) ?>" class="btn btn-secondary" target="_blank">
+                📄 Export to PDF
+            </a>
+            <a href="<?= htmlspecialchars($excel_export_url) ?>" class="btn btn-secondary">
+                📊 Export to Excel
             </a>
         </div>
-    <?php endif; ?>
+    </div>
 
     <!-- Report Header -->
     <div class="report-header text-center py-4 px-6 rounded-lg bg-gradient-to-r from-gray-800 to-black shadow-md mb-6">
         <h3 class="text-xl font-bold text-secondary-color">Transactions for:</h3>
         <p class="date-range text-lg font-medium text-white mt-2 mb-1">
             <?php if ($filter_machine === 'all'): ?>
-                All Machines <?php echo $filter_category; ?>
+                All Machines
             <?php else: ?>
                 <?php
                 $selected_machine = null;
@@ -301,9 +375,24 @@ $has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !emp
                 if ($selected_machine['brand_name']) {
                     echo " (" . htmlspecialchars($selected_machine['brand_name']) . ")";
                 }
-                echo " " . $filter_category;
                 ?>
             <?php endif; ?>
+            
+            <?php if ($filter_transaction_type !== 'all'): ?>
+                <?php
+                $selected_type = null;
+                foreach ($all_transaction_types as $type) {
+                    if ($type['id'] == $filter_transaction_type) {
+                        $selected_type = $type;
+                        break;
+                    }
+                }
+                echo " - " . htmlspecialchars($selected_type['name'] ?? 'Unknown Type');
+                ?>
+            <?php elseif (!empty($filter_category)): ?>
+                - <?= ucfirst($filter_category) ?>
+            <?php endif; ?>
+            
             |
             <?php if ($date_range_type === 'range'): ?>
                 <?php echo htmlspecialchars(date('d M Y', strtotime($filter_date_from)) . ' – ' . date('d M Y', strtotime($filter_date_to))); ?>
@@ -356,6 +445,30 @@ $has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !emp
             </div>
         </div>
     </div>
+
+    <!-- Export Note -->
+    <?php if (!empty($transactions)): ?>
+        <div class="export-actions mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Export Options</h4>
+                </div>
+                <div class="card-body">
+                    <div class="export-buttons">
+                        <a href="<?= htmlspecialchars($pdf_export_url) ?>" class="btn btn-secondary" target="_blank">
+                            📄 Export to PDF
+                        </a>
+                        <a href="<?= htmlspecialchars($excel_export_url) ?>" class="btn btn-secondary">
+                            📊 Export to Excel
+                        </a>
+                    </div>
+                    <p class="export-note">
+                        <small>PDF will open in a new tab. Excel file will be downloaded automatically.</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
 
     <!-- Transactions Table -->
     <div class="card overflow-hidden">
@@ -462,6 +575,7 @@ const currentFilters = {
     date_to: '<?php echo $filter_date_to; ?>',
     month: '<?php echo $filter_month; ?>',
     category: '<?php echo $filter_category; ?>',
+    transaction_type: '<?php echo $filter_transaction_type; ?>',
     sort: '<?php echo $sort_column; ?>',
     order: '<?php echo $sort_order; ?>'
 };

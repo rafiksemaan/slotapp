@@ -12,20 +12,22 @@ if (!isset($_GET['id'])) {
 $transaction_id = $_GET['id'];
 
 try {
-    // Get transaction details with related information
+    // Get transaction details with related information including edited_by user
     $stmt = $conn->prepare("
         SELECT t.*, 
                m.machine_number, m.model,
                mt.name as machine_type,
                b.name as brand_name,
                tt.name as transaction_type, tt.category,
-               u.username, u.name as user_name
+               u.username, u.name as user_name,
+               eu.username as edited_by_username, eu.name as edited_by_name
         FROM transactions t
         JOIN machines m ON t.machine_id = m.id
         LEFT JOIN machine_types mt ON m.type_id = mt.id
         LEFT JOIN brands b ON m.brand_id = b.id
         JOIN transaction_types tt ON t.transaction_type_id = tt.id
         JOIN users u ON t.user_id = u.id
+        LEFT JOIN users eu ON t.edited_by = eu.id
         WHERE t.id = ?
     ");
     $stmt->execute([$transaction_id]);
@@ -94,11 +96,19 @@ try {
                 <div class="col">
                     <h4 class="section-title">User Information</h4>
                     <dl class="detail-list">
-                        <dt>User</dt>
+                        <dt>Created By</dt>
                         <dd><?php echo htmlspecialchars($transaction['username']); ?></dd>
 
-                        <dt>Name</dt>
+                        <dt>Creator Name</dt>
                         <dd><?php echo htmlspecialchars($transaction['user_name']); ?></dd>
+
+                        <?php if ($transaction['edited_by']): ?>
+                            <dt>Last Edited By</dt>
+                            <dd><?php echo htmlspecialchars($transaction['edited_by_username']); ?></dd>
+
+                            <dt>Editor Name</dt>
+                            <dd><?php echo htmlspecialchars($transaction['edited_by_name']); ?></dd>
+                        <?php endif; ?>
 
                         <dt>Created At</dt>
                         <dd><?php echo format_datetime($transaction['created_at'], 'd M Y H:i:s'); ?></dd>
