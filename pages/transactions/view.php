@@ -99,15 +99,15 @@ try {
                         <dt>Created By</dt>
                         <dd><?php echo htmlspecialchars($transaction['username']); ?></dd>
 
-                        <dt>Creator Name</dt>
-                        <dd><?php echo htmlspecialchars($transaction['user_name']); ?></dd>
+                        <!-- <dt>Creator Name</dt>
+                        <dd><?php echo htmlspecialchars($transaction['user_name']); ?></dd> -->
 
                         <?php if ($transaction['edited_by']): ?>
                             <dt>Last Edited By</dt>
                             <dd><?php echo htmlspecialchars($transaction['edited_by_username']); ?></dd>
 
-                            <dt>Editor Name</dt>
-                            <dd><?php echo htmlspecialchars($transaction['edited_by_name']); ?></dd>
+                           <!-- <dt>Editor Name</dt>
+                            <dd><?php echo htmlspecialchars($transaction['edited_by_name']); ?></dd> -->
                         <?php endif; ?>
 
                         <dt>Created At</dt>
