@@ -14,6 +14,7 @@ ini_set('display_errors', 0); // Don't display errors in output
 // Set JSON header immediately
 header('Content-Type: application/json');
 header('Cache-Control: no-cache, must-revalidate');
+header('Pragma: no-cache');
 
 // Start session and include required files
 session_start();
@@ -37,13 +38,13 @@ try {
     $offset = ($page_num - 1) * $per_page;
 
     // Sorting parameters
-    $sort_column = $_GET['sort'] ?? 'timestamp';
+    $sort_column = $_GET['sort'] ?? 'operation_date';
     $sort_order = $_GET['order'] ?? 'DESC';
 
     // Validate sort column
-    $allowed_columns = ['timestamp', 'machine_number', 'transaction_type', 'amount', 'username'];
+    $allowed_columns = ['operation_date', 'machine_number', 'transaction_type', 'amount', 'username'];
     if (!in_array($sort_column, $allowed_columns)) {
-        $sort_column = 'timestamp';
+        $sort_column = 'operation_date';
     }
 
     // Validate sort order
@@ -70,7 +71,7 @@ try {
         $end_date = date("Y-m-t", strtotime($start_date));
     }
 
-    // Build query
+    // Build query - using operation_date for filtering
     $params = ["{$start_date} 00:00:00", "{$end_date} 23:59:59"];
     
     $query = "SELECT t.*, m.machine_number, tt.name AS transaction_type, tt.category, u.username
@@ -78,7 +79,7 @@ try {
               JOIN machines m ON t.machine_id = m.id
               JOIN transaction_types tt ON t.transaction_type_id = tt.id
               JOIN users u ON t.user_id = u.id
-              WHERE t.timestamp BETWEEN ? AND ?";
+              WHERE t.operation_date BETWEEN ? AND ?";
     
     // Apply filters
     if ($filter_machine !== 'all') {
@@ -105,14 +106,14 @@ try {
 
     // Map sort columns to actual database columns
     $sort_map = [
-        'timestamp' => 't.timestamp',
+        'operation_date' => 't.operation_date',
         'machine_number' => 'm.machine_number',
         'transaction_type' => 'tt.name',
         'amount' => 't.amount',
         'username' => 'u.username'
     ];
     
-    $actual_sort_column = $sort_map[$sort_column] ?? 't.timestamp';
+    $actual_sort_column = $sort_map[$sort_column] ?? 't.operation_date';
 
     // Add sorting and pagination to main query
     $query .= " ORDER BY $actual_sort_column $sort_order LIMIT $per_page OFFSET $offset";
@@ -138,7 +139,7 @@ try {
     foreach ($transactions as $t) {
         $response['transactions'][] = [
             'id' => $t['id'],
-            'timestamp' => htmlspecialchars(format_datetime($t['timestamp'], 'd M Y - H:i:s')),
+            'operation_date' => htmlspecialchars(format_date($t['operation_date'])),
             'machine_number' => htmlspecialchars($t['machine_number']),
             'transaction_type' => htmlspecialchars($t['transaction_type']),
             'amount' => format_currency($t['amount']),

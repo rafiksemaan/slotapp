@@ -9,13 +9,13 @@ $page_num = 1; // Always start with page 1 for initial load
 $per_page = 20;
 
 // Sorting parameters
-$sort_column = $_GET['sort'] ?? 'timestamp';
+$sort_column = $_GET['sort'] ?? 'operation_date';
 $sort_order = $_GET['order'] ?? 'DESC';
 
 // Validate sort column
-$allowed_columns = ['timestamp', 'machine_number', 'transaction_type', 'amount', 'username'];
+$allowed_columns = ['operation_date', 'machine_number', 'transaction_type', 'amount', 'username'];
 if (!in_array($sort_column, $allowed_columns)) {
-    $sort_column = 'timestamp';
+    $sort_column = 'operation_date';
 }
 
 // Validate sort order
@@ -44,13 +44,13 @@ if ($date_range_type === 'range') {
 try {
     $params = ["{$start_date} 00:00:00", "{$end_date} 23:59:59"];
     
-    // Base query
+    // Base query - using operation_date for filtering instead of timestamp
     $query = "SELECT t.*, m.machine_number, tt.name AS transaction_type, tt.category, u.username
               FROM transactions t
               JOIN machines m ON t.machine_id = m.id
               JOIN transaction_types tt ON t.transaction_type_id = tt.id
               JOIN users u ON t.user_id = u.id
-              WHERE t.timestamp BETWEEN ? AND ?";
+              WHERE t.operation_date BETWEEN ? AND ?";
     
     // Apply filters
     if ($filter_machine !== 'all') {
@@ -77,14 +77,14 @@ try {
 
     // Map sort columns to actual database columns
     $sort_map = [
-        'timestamp' => 't.timestamp',
+        'operation_date' => 't.operation_date',
         'machine_number' => 'm.machine_number',
         'transaction_type' => 'tt.name',
         'amount' => 't.amount',
         'username' => 'u.username'
     ];
     
-    $actual_sort_column = $sort_map[$sort_column] ?? 't.timestamp';
+    $actual_sort_column = $sort_map[$sort_column] ?? 't.operation_date';
 
     // Add sorting and pagination to main query
     $query .= " ORDER BY $actual_sort_column $sort_order LIMIT $per_page OFFSET 0";
@@ -128,12 +128,12 @@ $transaction_breakdown = [
     'OUT' => []
 ];
 
-// Get totals for all transactions (not just current page)
+// Get totals for all transactions (not just current page) - using operation_date
 try {
     $totals_query = "SELECT t.*, tt.name AS transaction_type, tt.category
                      FROM transactions t
                      JOIN transaction_types tt ON t.transaction_type_id = tt.id
-                     WHERE t.timestamp BETWEEN ? AND ?";
+                     WHERE t.operation_date BETWEEN ? AND ?";
     
     $totals_params = ["{$start_date} 00:00:00", "{$end_date} 23:59:59"];
     
@@ -485,8 +485,8 @@ $has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !emp
                     <thead class="bg-gray-800 text-white">
                         <tr>
                             <th class="px-4 py-2 text-left">
-                                <a href="#" onclick="sortTransactions('timestamp', '<?php echo $toggle_order; ?>')">
-                                    Date & Time <?php if ($sort_column == 'timestamp') echo $sort_order == 'ASC' ? '▲' : '▼'; ?>
+                                <a href="#" onclick="sortTransactions('operation_date', '<?php echo $toggle_order; ?>')">
+                                    Date <?php if ($sort_column == 'operation_date') echo $sort_order == 'ASC' ? '▲' : '▼'; ?>
                                 </a>
                             </th>
                             <th class="px-4 py-2 text-left">
@@ -518,7 +518,7 @@ $has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !emp
                         <?php else: ?>
                             <?php foreach ($transactions as $t): ?>
                                 <tr class="hover:bg-gray-800 transition duration-150">
-                                    <td class="px-4 py-2"><?php echo htmlspecialchars(format_datetime($t['timestamp'], 'd M Y - H:i:s')); ?></td>
+                                    <td class="px-4 py-2"><?php echo htmlspecialchars(format_date($t['operation_date'])); ?></td>
                                     <td class="px-4 py-2"><?php echo htmlspecialchars($t['machine_number']); ?></td>
                                     <td class="px-4 py-2"><?php echo htmlspecialchars($t['transaction_type']); ?></td>
                                     <td class="px-4 py-2 text-right"><?php echo format_currency($t['amount']); ?></td>
@@ -668,7 +668,7 @@ function appendTransactions(transactions) {
         const row = document.createElement('tr');
         row.className = 'hover:bg-gray-800 transition duration-150';
         row.innerHTML = `
-            <td class="px-4 py-2">${t.timestamp}</td>
+            <td class="px-4 py-2">${t.operation_date}</td>
             <td class="px-4 py-2">${t.machine_number}</td>
             <td class="px-4 py-2">${t.transaction_type}</td>
             <td class="px-4 py-2 text-right">${t.amount}</td>
