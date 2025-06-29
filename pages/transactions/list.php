@@ -183,7 +183,6 @@ $total_result = $total_drop - $total_out;
 // Build export URLs
 $export_params = [
     'page' => 'transactions',
-    'action' => 'export',
     'sort' => $sort_column,
     'order' => $sort_order,
     'date_range_type' => $date_range_type,
