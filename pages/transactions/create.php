@@ -8,12 +8,23 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Get current operation day
+try {
+    $op_stmt = $conn->prepare("SELECT operation_date FROM operation_day ORDER BY id DESC LIMIT 1");
+    $op_stmt->execute();
+    $current_operation_day = $op_stmt->fetch(PDO::FETCH_ASSOC);
+    $operation_date = $current_operation_day ? $current_operation_day['operation_date'] : date('Y-m-d');
+} catch (PDOException $e) {
+    $operation_date = date('Y-m-d');
+}
+
 // Initialize transaction data
 $transaction = [
     'machine_id' => '',
     'transaction_type_id' => $_POST['transaction_type_id'] ?? '', // ✅ Preserve transaction type
     'amount' => '',
     'timestamp' => cairo_time('Y-m-d H:i:s'),
+    'operation_date' => $operation_date,
     'notes' => ''
 ];
 
@@ -27,11 +38,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $transaction['transaction_type_id'] = sanitize_input($_POST['transaction_type_id'] ?? '');
     $transaction['amount'] = sanitize_input($_POST['amount'] ?? '');
     $transaction['timestamp'] = sanitize_input($_POST['timestamp'] ?? date('Y-m-d H:i:s'));
+    $transaction['operation_date'] = sanitize_input($_POST['operation_date'] ?? $operation_date);
     $transaction['notes'] = sanitize_input($_POST['notes'] ?? '');
     
     // Validate required fields
     if (empty($transaction['machine_id']) || empty($transaction['transaction_type_id']) || 
-        empty($transaction['amount']) || empty($transaction['timestamp'])) {
+        empty($transaction['amount']) || empty($transaction['timestamp']) || empty($transaction['operation_date'])) {
         $error = "Please fill out all required fields.";
     }
     // Validate amount is positive
@@ -40,10 +52,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     else {
         try {
-            // Insert new transaction
+            // Insert new transaction with operation_date
             $stmt = $conn->prepare("
-                INSERT INTO transactions (machine_id, transaction_type_id, amount, timestamp, user_id, notes)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO transactions (machine_id, transaction_type_id, amount, timestamp, operation_date, user_id, notes)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
             ");
             
             $stmt->execute([
@@ -51,6 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $transaction['transaction_type_id'], 
                 $transaction['amount'], 
                 $transaction['timestamp'],
+                $transaction['operation_date'],
                 $_SESSION['user_id'],
                 $transaction['notes'] ?: null
             ]);
@@ -66,12 +79,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $machine_number = $machine_stmt->fetch()['machine_number'] ?? 'Unknown';
             
             // Log action
-            log_action('create_transaction', "Created {$type_name} transaction for machine {$machine_number}: " . format_currency($transaction['amount']));
+            log_action('create_transaction', "Created {$type_name} transaction for machine {$machine_number}: " . format_currency($transaction['amount']) . " (Operation Date: {$transaction['operation_date']})");
             
             // Set success message
-            $message = "Transaction created successfully";
+            $message = "Transaction created successfully for operation date: " . format_date($transaction['operation_date']);
             
-            // Clear only machine and amount for re-entry
+            // Clear only machine and amount for re-entry, keep operation date
             $transaction['machine_id'] = '';
             $transaction['amount'] = '';
             
@@ -118,6 +131,12 @@ try {
             <?php if (!empty($message)): ?>
                 <div class="alert alert-success"><?php echo $message; ?></div>
             <?php endif; ?>
+            
+            <!-- Operation Day Notice -->
+            <div class="alert alert-info">
+                <strong>📅 Current Operation Day:</strong> <?php echo format_date($operation_date); ?>
+                <br><small>This transaction will be recorded for the above operation day. Only administrators can change the operation day.</small>
+            </div>
             
             <form action="<?php echo $_SERVER['PHP_SELF'] ?>?page=transactions&action=create" method="POST" onsubmit="return validateForm(this)">
                 <!-- Transaction Details Section -->
@@ -188,7 +207,23 @@ try {
                                 <input type="datetime-local" id="timestamp" name="timestamp" class="form-control" 
                                        value="<?php echo htmlspecialchars($transaction['timestamp'] ?? cairo_time('Y-m-d\TH:i')); ?>" 
                                        required>
+                                <small class="form-text">Actual timestamp when transaction occurred</small>
                             </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="operation_date">Operation Date *</label>
+                                <input type="date" id="operation_date" name="operation_date" class="form-control" 
+                                       value="<?php echo htmlspecialchars($transaction['operation_date']); ?>" 
+                                       required readonly>
+                                <small class="form-text">Casino operation day (set by administrator)</small>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <!-- Empty column for layout balance -->
                         </div>
                     </div>
                 </div>

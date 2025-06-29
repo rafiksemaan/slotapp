@@ -91,13 +91,17 @@ define('ICON_PATH', 'assets/icons'); // Make sure this matches your actual folde
 
             <!-- Admin Only: Settings Section -->
             <?php if ($_SESSION['user_role'] == 'admin'): ?>
-			<li class="settings-menu <?= in_array($page, ['machines', 'brands', 'machine_types', 'machine_groups', 'users']) ? 'open active' : '' ?>">
+			<li class="settings-menu <?= in_array($page, ['machines', 'brands', 'machine_types', 'machine_groups', 'users', 'operation_day']) ? 'open active' : '' ?>">
                 <a href="#" class="settings-toggle">
                     <span class="menu-icon"><img src="<?= icon('settings') ?>" alt="Settings" /></span>
                     <span class="menu-text">Settings</span>
                     <span class="submenu-arrow">▾</span>
                 </a>
                 <ul class="submenu">
+                    <li><a href="index.php?page=operation_day" class="<?= $page == 'operation_day' ? 'active' : '' ?>">
+                        <span class="submenu-icon"><img src="<?= icon('calendar') ?>" alt="operation_day" /></span>
+                        <span class="menu-text">Operation Day</span>
+                    </a></li>
                     <li><a href="index.php?page=machines" class="<?= $page == 'machines' ? 'active' : '' ?>">
                         <span class="submenu-icon"><img src="<?= icon('machines') ?>" alt="machines" /></span>
                         <span class="menu-text">Machines</span>
@@ -127,7 +131,7 @@ define('ICON_PATH', 'assets/icons'); // Make sure this matches your actual folde
             
             <main class="content">
                 <div class="page-header">
-                    <h2><?php echo ucfirst($page == 'custom_report' ? 'Custom Report' : ($page == 'general_report' ? 'General Report' : ($page == 'guest_tracking' ? 'Guest Tracking' : $page))); ?></h2>
+                    <h2><?php echo ucfirst($page == 'custom_report' ? 'Custom Report' : ($page == 'general_report' ? 'General Report' : ($page == 'guest_tracking' ? 'Guest Tracking' : ($page == 'operation_day' ? 'Operation Day' : $page)))); ?></h2>
                 </div>
                 <div class="page-content">
 				
@@ -202,7 +206,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const targetPage = url.searchParams.get('page');
 
                 // Collapse if not a settings subpage
-                if (!['machines', 'brands', 'machine_types', 'machine_groups', 'users'].includes(targetPage)) {
+                if (!['machines', 'brands', 'machine_types', 'machine_groups', 'users', 'operation_day'].includes(targetPage)) {
                     if (settingsMenu) {
                         settingsMenu.classList.remove('open');
                         localStorage.setItem('settingsMenuOpen', 'false');
