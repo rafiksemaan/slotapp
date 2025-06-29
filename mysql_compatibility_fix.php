@@ -7,7 +7,7 @@
 // Database configuration
 $db_host = 'localhost';
 $db_user = 'root';
-$db_pass = '';
+$db_pass = 'Mcmxcix7//6';
 
 echo "<!DOCTYPE html>
 <html lang='en'>
