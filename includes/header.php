@@ -52,10 +52,6 @@ define('ICON_PATH', 'assets/icons'); // Make sure this matches your actual folde
 			</div>
 			
 			<div class="user-info">
-                <div class="user-details">
-                    <span class="username"><?php echo $_SESSION['username']; ?></span>
-                    <span class="role"><?php echo $user_roles[$_SESSION['user_role']]; ?></span>
-                </div>
                 <div class="operation-day-display">
                     <span class="operation-day-label">Operation Day:</span>
                     <span class="operation-day-date"><?php echo format_date($header_operation_date); ?></span>
@@ -65,7 +61,11 @@ define('ICON_PATH', 'assets/icons'); // Make sure this matches your actual folde
                         </a>
                     <?php endif; ?>
                 </div>
-                <div class="user-actions">
+                <div class="user-details">
+                    <span class="username"><?php echo $_SESSION['username']; ?></span>
+                    <span class="role"><?php echo $user_roles[$_SESSION['user_role']]; ?></span>
+                </div>
+				<div class="user-actions">
                     <a href="index.php?page=profile" class="profile-btn" title="My Profile">
                         <span class="menu-icon"><img src="<?= icon('profile') ?>" alt="Profile" /></span>
                     </a>
