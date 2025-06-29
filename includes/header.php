@@ -4,6 +4,16 @@
 date_default_timezone_set('Africa/Cairo');
 $page = $_GET['page'] ?? 'dashboard';
 
+// Get current operation day for header display
+try {
+    $op_stmt = $conn->prepare("SELECT operation_date FROM operation_day ORDER BY id DESC LIMIT 1");
+    $op_stmt->execute();
+    $current_operation_day = $op_stmt->fetch(PDO::FETCH_ASSOC);
+    $header_operation_date = $current_operation_day ? $current_operation_day['operation_date'] : date('Y-m-d');
+} catch (PDOException $e) {
+    $header_operation_date = date('Y-m-d');
+}
+
 // Buffer output to prevent headers sent error
 ob_start();
 ?>
@@ -45,6 +55,15 @@ define('ICON_PATH', 'assets/icons'); // Make sure this matches your actual folde
                 <div class="user-details">
                     <span class="username"><?php echo $_SESSION['username']; ?></span>
                     <span class="role"><?php echo $user_roles[$_SESSION['user_role']]; ?></span>
+                </div>
+                <div class="operation-day-display">
+                    <span class="operation-day-label">Operation Day:</span>
+                    <span class="operation-day-date"><?php echo format_date($header_operation_date); ?></span>
+                    <?php if ($_SESSION['user_role'] === 'admin'): ?>
+                        <a href="index.php?page=operation_day" class="operation-day-link" title="Manage Operation Day">
+                            <span class="menu-icon"><img src="<?= icon('calendar') ?>" alt="Calendar" /></span>
+                        </a>
+                    <?php endif; ?>
                 </div>
                 <div class="user-actions">
                     <a href="index.php?page=profile" class="profile-btn" title="My Profile">
