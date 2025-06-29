@@ -155,7 +155,7 @@ try {
                         <div class="col">
                             <div class="form-group">
                                 <label for="brand_id">Brand</label>
-                                <select id="brand_id" name="brand_id" class="form-control">
+                                <select id="brand_id" name="brand_id" class="form-control" required>
                                     <option value="">Select Brand</option>
                                     <?php foreach ($brands as $brand): ?>
                                         <option value="<?php echo $brand['id']; ?>" <?php echo $machine['brand_id'] == $brand['id'] ? 'selected' : ''; ?>>
@@ -177,9 +177,8 @@ try {
                         
                         <div class="col">
                             <div class="form-group">
-                                <label for="game">Game</label>
-                                <input type="text" id="game" name="game" class="form-control" value="<?php echo htmlspecialchars($machine['game']); ?>" placeholder="e.g., Buffalo Gold, Lightning Link">
-                                <small class="form-text">Name of the game installed on this machine</small>
+                                <label for="game">Game *</label>
+                                <input type="text" id="game" name="game" class="form-control" value="<?php echo htmlspecialchars($machine['game']); ?>" required>
                             </div>
                         </div>
                     </div>
