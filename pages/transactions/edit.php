@@ -70,6 +70,9 @@ try {
     $machines = [];
 }
 
+// Check if user is admin (for operation date editing)
+$is_admin = ($_SESSION['user_role'] === 'admin');
+
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $machine_id = sanitize_input($_POST['machine_id'] ?? '');
@@ -77,37 +80,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $amount = sanitize_input($_POST['amount'] ?? '');
     $notes = sanitize_input($_POST['notes'] ?? '');
     $timestamp = sanitize_input($_POST['timestamp'] ?? '');
+    $operation_date = sanitize_input($_POST['operation_date'] ?? '');
 
     // Validate required fields
     if (empty($machine_id) || empty($transaction_type_id) || empty($amount) || empty($timestamp)) {
         $error = "Please fill out all required fields.";
+    } elseif ($is_admin && empty($operation_date)) {
+        $error = "Operation date is required.";
     } else {
         try {
-            // Update transaction with edited_by field
-            $stmt = $conn->prepare("
-                UPDATE transactions SET
-                    machine_id = ?,
-                    transaction_type_id = ?,
-                    amount = ?,
-                    notes = ?,
-                    timestamp = ?,
-                    edited_by = ?,
-                    updated_at = CURRENT_TIMESTAMP
-                WHERE id = ?
-            ");
-
-            $result = $stmt->execute([
-                $machine_id,
-                $transaction_type_id,
-                $amount,
-                $notes ?: null,
-                $timestamp,
-                $_SESSION['user_id'], // Set edited_by to current user
-                $transaction_id
-            ]);
+            // Prepare update query based on user role
+            if ($is_admin) {
+                // Admin can update operation_date
+                $stmt = $conn->prepare("
+                    UPDATE transactions SET
+                        machine_id = ?,
+                        transaction_type_id = ?,
+                        amount = ?,
+                        notes = ?,
+                        timestamp = ?,
+                        operation_date = ?,
+                        edited_by = ?,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE id = ?
+                ");
+                
+                $result = $stmt->execute([
+                    $machine_id,
+                    $transaction_type_id,
+                    $amount,
+                    $notes ?: null,
+                    $timestamp,
+                    $operation_date,
+                    $_SESSION['user_id'], // Set edited_by to current user
+                    $transaction_id
+                ]);
+            } else {
+                // Non-admin cannot update operation_date
+                $stmt = $conn->prepare("
+                    UPDATE transactions SET
+                        machine_id = ?,
+                        transaction_type_id = ?,
+                        amount = ?,
+                        notes = ?,
+                        timestamp = ?,
+                        edited_by = ?,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE id = ?
+                ");
+                
+                $result = $stmt->execute([
+                    $machine_id,
+                    $transaction_type_id,
+                    $amount,
+                    $notes ?: null,
+                    $timestamp,
+                    $_SESSION['user_id'], // Set edited_by to current user
+                    $transaction_id
+                ]);
+            }
 
             if ($result) {
-                log_action('update_transaction', "Updated transaction ID: {$transaction_id}");
+                $log_details = "Updated transaction ID: {$transaction_id}";
+                if ($is_admin && $operation_date !== $transaction['operation_date']) {
+                    $log_details .= " (Operation date changed from {$transaction['operation_date']} to {$operation_date})";
+                }
+                log_action('update_transaction', $log_details);
                 $success = true;
 
                 // Redirect after successful update
@@ -137,6 +175,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
             <?php endif; ?>
 
+            <?php if ($is_admin): ?>
+                <div class="alert alert-info">
+                    <strong>👑 Admin Privileges:</strong> You can modify both the timestamp and operation date for this transaction.
+                </div>
+            <?php endif; ?>
+
             <form method="POST" class="transaction-form">
                 <!-- Transaction Details Section -->
                 <div class="form-section">
@@ -147,6 +191,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <label for="timestamp">Date & Time *</label>
                                 <input type="datetime-local" id="timestamp" name="timestamp" class="form-control"
                                        value="<?php echo date('Y-m-d\TH:i', strtotime($transaction['timestamp'])); ?>" required>
+                                <small class="form-text">Actual timestamp when transaction occurred</small>
                             </div>
                         </div>
                         <div class="col">
@@ -173,11 +218,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <label for="transaction_type_id">Transaction Type *</label>
                                 <select id="transaction_type_id" name="transaction_type_id" class="form-control" required>
                                     <option value="">Select Type</option>
-                                    <?php foreach ($transaction_types as $type): ?>
-                                        <option value="<?php echo $type['id']; ?>" <?php echo $type['id'] == $transaction['transaction_type_id'] ? 'selected' : ''; ?>>
-                                            <?php echo htmlspecialchars($type['name']); ?> (<?php echo $type['category']; ?>)
-                                        </option>
-                                    <?php endforeach; ?>
+                                    <optgroup label="OUT">
+                                        <?php foreach ($transaction_types as $type): ?>
+                                            <?php if ($type['category'] == 'OUT'): ?>
+                                                <option value="<?php echo $type['id']; ?>" <?php echo $type['id'] == $transaction['transaction_type_id'] ? 'selected' : ''; ?>>
+                                                    <?php echo htmlspecialchars($type['name']); ?>
+                                                </option>
+                                            <?php endif; ?>
+                                        <?php endforeach; ?>
+                                    </optgroup>
+                                    <optgroup label="DROP">
+                                        <?php foreach ($transaction_types as $type): ?>
+                                            <?php if ($type['category'] == 'DROP'): ?>
+                                                <option value="<?php echo $type['id']; ?>" <?php echo $type['id'] == $transaction['transaction_type_id'] ? 'selected' : ''; ?>>
+                                                    <?php echo htmlspecialchars($type['name']); ?>
+                                                </option>
+                                            <?php endif; ?>
+                                        <?php endforeach; ?>
+                                    </optgroup>
                                 </select>
                             </div>
                         </div>
@@ -188,6 +246,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Operation Date Section - Only for Admins -->
+                    <?php if ($is_admin): ?>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="operation_date">Operation Date *</label>
+                                    <input type="date" id="operation_date" name="operation_date" class="form-control" 
+                                           value="<?php echo htmlspecialchars($transaction['operation_date'] ?? date('Y-m-d')); ?>" required>
+                                    <small class="form-text">Casino operation day (admin only)</small>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <!-- Empty column for layout balance -->
+                            </div>
+                        </div>
+                    <?php else: ?>
+                        <!-- Show operation date as read-only for non-admins -->
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="operation_date_display">Operation Date</label>
+                                    <input type="text" id="operation_date_display" class="form-control" 
+                                           value="<?php echo format_date($transaction['operation_date'] ?? date('Y-m-d')); ?>" readonly>
+                                    <small class="form-text">Casino operation day (admin only can modify)</small>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <!-- Empty column for layout balance -->
+                            </div>
+                        </div>
+                    <?php endif; ?>
                 </div>
 
                 <!-- Additional Information Section -->
@@ -207,4 +297,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </form>
         </div>
     </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    <?php if ($is_admin): ?>
+    // Add confirmation for operation date changes (admin only)
+    document.querySelector('.transaction-form').addEventListener('submit', function(e) {
+        const originalOperationDate = '<?php echo $transaction['operation_date'] ?? date('Y-m-d'); ?>';
+        const newOperationDate = document.getElementById('operation_date').value;
+        
+        if (originalOperationDate !== newOperationDate) {
+            const confirmMessage = `You are changing the operation date from ${originalOperationDate} to ${newOperationDate}.\n\nThis will affect how this transaction appears in reports and statistics.\n\nAre you sure you want to continue?`;
+            
+            if (!confirm(confirmMessage)) {
+                e.preventDefault();
+                return false;
+            }
+        }
+    });
+    <?php endif; ?>
+});
+</script>
 </div>
