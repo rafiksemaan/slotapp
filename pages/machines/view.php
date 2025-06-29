@@ -69,22 +69,36 @@ try {
                         </div>
                         <div class="col-6">
                             <div class="detail-group">
-                                <strong>Type:</strong>
-                                <span><?php echo htmlspecialchars($machine['type_name']); ?></span>
+                                <strong>Game:</strong>
+                                <span><?php echo htmlspecialchars($machine['game'] ?? 'N/A'); ?></span>
                             </div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-6">
                             <div class="detail-group">
-                                <strong>Credit Value:</strong>
-                                <span><?php echo format_currency($machine['credit_value']); ?></span>
+                                <strong>Type:</strong>
+                                <span><?php echo htmlspecialchars($machine['type_name']); ?></span>
                             </div>
                         </div>
                         <div class="col-6">
                             <div class="detail-group">
+                                <strong>Credit Value:</strong>
+                                <span><?php echo format_currency($machine['credit_value']); ?></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="detail-group">
                                 <strong>Manufacturing Year:</strong>
                                 <span><?php echo htmlspecialchars($machine['manufacturing_year'] ?: 'N/A'); ?></span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="detail-group">
+                                <strong>Serial Number:</strong>
+                                <span><?php echo htmlspecialchars($machine['serial_number'] ?: 'N/A'); ?></span>
                             </div>
                         </div>
                     </div>
@@ -105,17 +119,14 @@ try {
                     <div class="row">
                         <div class="col-6">
                             <div class="detail-group">
-                                <strong>Serial Number:</strong>
-                                <span><?php echo htmlspecialchars($machine['serial_number'] ?: 'N/A'); ?></span>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="detail-group">
                                 <strong>Status:</strong>
                                 <span class="status status-<?php echo strtolower(htmlspecialchars($machine['status'])); ?>">
                                     <?php echo htmlspecialchars($machine['status']); ?>
                                 </span>
                             </div>
+                        </div>
+                        <div class="col-6">
+                            <!-- Empty for layout balance -->
                         </div>
                     </div>
                     <!-- Actions -->

@@ -10,6 +10,7 @@ $machine = [
     'machine_number' => '',
     'brand_id' => '',
     'model' => '',
+    'game' => '',
     'type_id' => '',
     'credit_value' => '',
     'manufacturing_year' => '',
@@ -24,6 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $machine['machine_number'] = sanitize_input($_POST['machine_number'] ?? '');
     $machine['brand_id'] = sanitize_input($_POST['brand_id'] ?? '');
     $machine['model'] = sanitize_input($_POST['model'] ?? '');
+    $machine['game'] = sanitize_input($_POST['game'] ?? '');
     $machine['type_id'] = sanitize_input($_POST['type_id'] ?? '');
     $machine['credit_value'] = sanitize_input($_POST['credit_value'] ?? '');
     $machine['manufacturing_year'] = sanitize_input($_POST['manufacturing_year'] ?? '');
@@ -67,9 +69,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 if (empty($error)) {
                     // Insert new machine
                     $stmt = $conn->prepare("
-                        INSERT INTO machines (machine_number, brand_id, model, type_id, credit_value, 
+                        INSERT INTO machines (machine_number, brand_id, model, game, type_id, credit_value, 
                         manufacturing_year, ip_address, mac_address, serial_number, status)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ");
                     
                     // Handle empty brand_id
@@ -81,6 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         $machine['machine_number'], 
                         $machine['brand_id'], 
                         $machine['model'], 
+                        $machine['game'] ?: null,
                         $machine['type_id'], 
                         $machine['credit_value'], 
                         $machine['manufacturing_year'] ?: null, 
@@ -91,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     ]);
                     
                     // Log action
-                    log_action('create_machine', "Created machine: {$machine['machine_number']}");
+                    log_action('create_machine', "Created machine: {$machine['machine_number']} - {$machine['game']}");
                     
                     // Redirect to machine list
                     header("Location: index.php?page=machines&message=Machine created successfully");
@@ -174,12 +177,35 @@ try {
                         
                         <div class="col">
                             <div class="form-group">
+                                <label for="game">Game</label>
+                                <input type="text" id="game" name="game" class="form-control" value="<?php echo htmlspecialchars($machine['game']); ?>" placeholder="e.g., Buffalo Gold, Lightning Link">
+                                <small class="form-text">Name of the game installed on this machine</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
                                 <label for="type_id">Type *</label>
                                 <select id="type_id" name="type_id" class="form-control" required>
                                     <option value="">Select Type</option>
                                     <?php foreach ($machine_types as $type): ?>
                                         <option value="<?php echo $type['id']; ?>" <?php echo $machine['type_id'] == $type['id'] ? 'selected' : ''; ?>>
                                             <?php echo htmlspecialchars($type['name']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="status">Status *</label>
+                                <select id="status" name="status" class="form-control" required>
+                                    <?php foreach ($machine_statuses as $status): ?>
+                                        <option value="<?php echo $status; ?>" <?php echo $machine['status'] == $status ? 'selected' : ''; ?>>
+                                            <?php echo $status; ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
@@ -216,16 +242,7 @@ try {
                         </div>
                         
                         <div class="col">
-                            <div class="form-group">
-                                <label for="status">Status *</label>
-                                <select id="status" name="status" class="form-control" required>
-                                    <?php foreach ($machine_statuses as $status): ?>
-                                        <option value="<?php echo $status; ?>" <?php echo $machine['status'] == $status ? 'selected' : ''; ?>>
-                                            <?php echo $status; ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
+                            <!-- Empty column for layout balance -->
                         </div>
                     </div>
                 </div>

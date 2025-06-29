@@ -8,7 +8,7 @@ $sort_column = isset($_GET['sort']) ? $_GET['sort'] : 'machine_number';
 $sort_order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
 
 // Validate sort column
-$allowed_columns = ['machine_number', 'brand_id', 'type_id', 'credit_value', 'status'];
+$allowed_columns = ['machine_number', 'brand_id', 'game', 'type_id', 'credit_value', 'status'];
 if (!in_array($sort_column, $allowed_columns)) {
     $sort_column = 'machine_number';
 }
@@ -25,6 +25,7 @@ $toggle_order = $sort_order == 'ASC' ? 'DESC' : 'ASC';
 $filter_brand = isset($_GET['brand']) ? $_GET['brand'] : '';
 $filter_type = isset($_GET['type']) ? $_GET['type'] : '';
 $filter_status = isset($_GET['status']) ? $_GET['status'] : '';
+$filter_game = isset($_GET['game']) ? $_GET['game'] : '';
 
 // Build query
 $query = "
@@ -53,8 +54,13 @@ if (!empty($filter_status)) {
     $params[] = $filter_status;
 }
 
+if (!empty($filter_game)) {
+    $query .= " AND m.game LIKE ?";
+    $params[] = "%$filter_game%";
+}
+
 // Add sorting
-$query .= " ORDER BY " . ($sort_column == 'brand_id' ? 'b.name' : "m.$sort_column") . " $sort_order";
+$query .= " ORDER BY " . ($sort_column == 'brand_id' ? 'b.name' : ($sort_column == 'type_id' ? 'mt.name' : "m.$sort_column")) . " $sort_order";
 
 // Get machines
 try {
@@ -69,11 +75,16 @@ try {
     // Get machine types for filter dropdown
     $types_stmt = $conn->query("SELECT id, name FROM machine_types ORDER BY name");
     $types = $types_stmt->fetchAll();
+    
+    // Get unique games for filter dropdown
+    $games_stmt = $conn->query("SELECT DISTINCT game FROM machines WHERE game IS NOT NULL AND game != '' ORDER BY game");
+    $games = $games_stmt->fetchAll();
 } catch (PDOException $e) {
     echo "Database error: " . $e->getMessage();
     $machines = [];
     $brands = [];
     $types = [];
+    $games = [];
 }
 ?>
 
@@ -120,6 +131,15 @@ try {
                         
                         <div class="col">
                             <div class="form-group">
+                                <label for="game">Game</label>
+                                <input type="text" name="game" id="game" class="form-control" 
+                                       value="<?php echo htmlspecialchars($filter_game); ?>" 
+                                       placeholder="Search by game name">
+                            </div>
+                        </div>
+                        
+                        <div class="col">
+                            <div class="form-group">
                                 <label for="status">Status</label>
                                 <select name="status" id="status" class="form-control">
                                     <option value="">All Statuses</option>
@@ -161,7 +181,7 @@ try {
                     <thead>
                         <tr>
                             <th>
-                                <a href="index.php?page=machines&sort=machine_number&order=<?php echo $sort_column == 'machine_number' ? $toggle_order : 'ASC'; ?><?php echo !empty($filter_brand) ? '&brand=' . $filter_brand : ''; ?><?php echo !empty($filter_type) ? '&type=' . $filter_type : ''; ?><?php echo !empty($filter_status) ? '&status=' . $filter_status : ''; ?>">
+                                <a href="index.php?page=machines&sort=machine_number&order=<?php echo $sort_column == 'machine_number' ? $toggle_order : 'ASC'; ?><?php echo !empty($filter_brand) ? '&brand=' . $filter_brand : ''; ?><?php echo !empty($filter_type) ? '&type=' . $filter_type : ''; ?><?php echo !empty($filter_status) ? '&status=' . $filter_status : ''; ?><?php echo !empty($filter_game) ? '&game=' . urlencode($filter_game) : ''; ?>">
                                     Machine #
                                     <?php if ($sort_column == 'machine_number'): ?>
                                         <span class="sort-indicator"><?php echo $sort_order == 'ASC' ? '▲' : '▼'; ?></span>
@@ -169,7 +189,7 @@ try {
                                 </a>
                             </th>
                             <th>
-                                <a href="index.php?page=machines&sort=brand_id&order=<?php echo $sort_column == 'brand_id' ? $toggle_order : 'ASC'; ?><?php echo !empty($filter_brand) ? '&brand=' . $filter_brand : ''; ?><?php echo !empty($filter_type) ? '&type=' . $filter_type : ''; ?><?php echo !empty($filter_status) ? '&status=' . $filter_status : ''; ?>">
+                                <a href="index.php?page=machines&sort=brand_id&order=<?php echo $sort_column == 'brand_id' ? $toggle_order : 'ASC'; ?><?php echo !empty($filter_brand) ? '&brand=' . $filter_brand : ''; ?><?php echo !empty($filter_type) ? '&type=' . $filter_type : ''; ?><?php echo !empty($filter_status) ? '&status=' . $filter_status : ''; ?><?php echo !empty($filter_game) ? '&game=' . urlencode($filter_game) : ''; ?>">
                                     Brand
                                     <?php if ($sort_column == 'brand_id'): ?>
                                         <span class="sort-indicator"><?php echo $sort_order == 'ASC' ? '▲' : '▼'; ?></span>
@@ -178,7 +198,15 @@ try {
                             </th>
                             <th>Model</th>
                             <th>
-                                <a href="index.php?page=machines&sort=type_id&order=<?php echo $sort_column == 'type_id' ? $toggle_order : 'ASC'; ?><?php echo !empty($filter_brand) ? '&brand=' . $filter_brand : ''; ?><?php echo !empty($filter_type) ? '&type=' . $filter_type : ''; ?><?php echo !empty($filter_status) ? '&status=' . $filter_status : ''; ?>">
+                                <a href="index.php?page=machines&sort=game&order=<?php echo $sort_column == 'game' ? $toggle_order : 'ASC'; ?><?php echo !empty($filter_brand) ? '&brand=' . $filter_brand : ''; ?><?php echo !empty($filter_type) ? '&type=' . $filter_type : ''; ?><?php echo !empty($filter_status) ? '&status=' . $filter_status : ''; ?><?php echo !empty($filter_game) ? '&game=' . urlencode($filter_game) : ''; ?>">
+                                    Game
+                                    <?php if ($sort_column == 'game'): ?>
+                                        <span class="sort-indicator"><?php echo $sort_order == 'ASC' ? '▲' : '▼'; ?></span>
+                                    <?php endif; ?>
+                                </a>
+                            </th>
+                            <th>
+                                <a href="index.php?page=machines&sort=type_id&order=<?php echo $sort_column == 'type_id' ? $toggle_order : 'ASC'; ?><?php echo !empty($filter_brand) ? '&brand=' . $filter_brand : ''; ?><?php echo !empty($filter_type) ? '&type=' . $filter_type : ''; ?><?php echo !empty($filter_status) ? '&status=' . $filter_status : ''; ?><?php echo !empty($filter_game) ? '&game=' . urlencode($filter_game) : ''; ?>">
                                     Type
                                     <?php if ($sort_column == 'type_id'): ?>
                                         <span class="sort-indicator"><?php echo $sort_order == 'ASC' ? '▲' : '▼'; ?></span>
@@ -186,7 +214,7 @@ try {
                                 </a>
                             </th>
                             <th>
-                                <a href="index.php?page=machines&sort=credit_value&order=<?php echo $sort_column == 'credit_value' ? $toggle_order : 'ASC'; ?><?php echo !empty($filter_brand) ? '&brand=' . $filter_brand : ''; ?><?php echo !empty($filter_type) ? '&type=' . $filter_type : ''; ?><?php echo !empty($filter_status) ? '&status=' . $filter_status : ''; ?>">
+                                <a href="index.php?page=machines&sort=credit_value&order=<?php echo $sort_column == 'credit_value' ? $toggle_order : 'ASC'; ?><?php echo !empty($filter_brand) ? '&brand=' . $filter_brand : ''; ?><?php echo !empty($filter_type) ? '&type=' . $filter_type : ''; ?><?php echo !empty($filter_status) ? '&status=' . $filter_status : ''; ?><?php echo !empty($filter_game) ? '&game=' . urlencode($filter_game) : ''; ?>">
                                     Credit Value
                                     <?php if ($sort_column == 'credit_value'): ?>
                                         <span class="sort-indicator"><?php echo $sort_order == 'ASC' ? '▲' : '▼'; ?></span>
@@ -194,7 +222,7 @@ try {
                                 </a>
                             </th>
                             <th>
-                                <a href="index.php?page=machines&sort=status&order=<?php echo $sort_column == 'status' ? $toggle_order : 'ASC'; ?><?php echo !empty($filter_brand) ? '&brand=' . $filter_brand : ''; ?><?php echo !empty($filter_type) ? '&type=' . $filter_type : ''; ?><?php echo !empty($filter_status) ? '&status=' . $filter_status : ''; ?>">
+                                <a href="index.php?page=machines&sort=status&order=<?php echo $sort_column == 'status' ? $toggle_order : 'ASC'; ?><?php echo !empty($filter_brand) ? '&brand=' . $filter_brand : ''; ?><?php echo !empty($filter_type) ? '&type=' . $filter_type : ''; ?><?php echo !empty($filter_status) ? '&status=' . $filter_status : ''; ?><?php echo !empty($filter_game) ? '&game=' . urlencode($filter_game) : ''; ?>">
                                     Status
                                     <?php if ($sort_column == 'status'): ?>
                                         <span class="sort-indicator"><?php echo $sort_order == 'ASC' ? '▲' : '▼'; ?></span>
@@ -207,7 +235,7 @@ try {
                     <tbody>
                         <?php if (empty($machines)): ?>
                             <tr>
-                                <td colspan="7" class="text-center">No machines found</td>
+                                <td colspan="8" class="text-center">No machines found</td>
                             </tr>
                         <?php else: ?>
                             <?php foreach ($machines as $machine): ?>
@@ -215,6 +243,7 @@ try {
                                     <td><?php echo htmlspecialchars($machine['machine_number']); ?></td>
                                     <td><?php echo htmlspecialchars($machine['brand_name'] ?? 'N/A'); ?></td>
                                     <td><?php echo htmlspecialchars($machine['model']); ?></td>
+                                    <td><?php echo htmlspecialchars($machine['game'] ?? 'N/A'); ?></td>
                                     <td><?php echo htmlspecialchars($machine['type_name']); ?></td>
                                     <td><?php echo format_currency($machine['credit_value']); ?></td>
                                     <td>

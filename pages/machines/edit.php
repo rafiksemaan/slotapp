@@ -54,6 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $machine_number = sanitize_input($_POST['machine_number'] ?? '');
     $brand_id = sanitize_input($_POST['brand_id'] ?? '');
     $model = sanitize_input($_POST['model'] ?? '');
+    $game = sanitize_input($_POST['game'] ?? '');
     $type_id = sanitize_input($_POST['type_id'] ?? '');
     $credit_value = sanitize_input($_POST['credit_value'] ?? '');
     $manufacturing_year = sanitize_input($_POST['manufacturing_year'] ?? '');
@@ -97,6 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         machine_number = ?,
                         brand_id = ?,
                         model = ?,
+                        game = ?,
                         type_id = ?,
                         credit_value = ?,
                         manufacturing_year = ?,
@@ -110,6 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $machine_number,
                     $brand_id ?: null,
                     $model,
+                    $game ?: null,
                     $type_id,
                     $credit_value,
                     $manufacturing_year ?: null,
@@ -120,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $machine_id
                 ]);
 
-                log_action('update_machine', "Updated machine: {$machine_number}");
+                log_action('update_machine', "Updated machine: {$machine_number} - {$game}");
                 $success = true;
 
                 // Redirect after successful update
@@ -183,12 +186,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                         <div class="col">
                             <div class="form-group">
+                                <label for="game">Game</label>
+                                <input type="text" id="game" name="game" class="form-control" value="<?php echo htmlspecialchars($machine['game'] ?? ''); ?>" placeholder="e.g., Buffalo Gold, Lightning Link">
+                                <small class="form-text">Name of the game installed on this machine</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
                                 <label for="type_id">Type *</label>
                                 <select id="type_id" name="type_id" class="form-control" required>
                                     <option value="">Select Type</option>
                                     <?php foreach ($machine_types as $type): ?>
                                         <option value="<?php echo $type['id']; ?>" <?php echo $machine['type_id'] == $type['id'] ? 'selected' : ''; ?>>
                                             <?php echo htmlspecialchars($type['name']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="status">Status *</label>
+                                <select id="status" name="status" class="form-control" required>
+                                    <?php foreach ($machine_statuses as $status_opt): ?>
+                                        <option value="<?php echo $status_opt; ?>" <?php echo $machine['status'] == $status_opt ? 'selected' : ''; ?>>
+                                            <?php echo $status_opt; ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
@@ -223,16 +248,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                         </div>
                         <div class="col">
-                            <div class="form-group">
-                                <label for="status">Status *</label>
-                                <select id="status" name="status" class="form-control" required>
-                                    <?php foreach ($machine_statuses as $status_opt): ?>
-                                        <option value="<?php echo $status_opt; ?>" <?php echo $machine['status'] == $status_opt ? 'selected' : ''; ?>>
-                                            <?php echo $status_opt; ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
+                            <!-- Empty column for layout balance -->
                         </div>
                     </div>
                 </div>
