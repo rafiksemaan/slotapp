@@ -14,7 +14,17 @@
     --warning-color: #f39c12;
     --danger-color: #e74c3c;
     --border-color: #444444;
-    
+
+    /* Enhanced Win/Loss Colors */
+    --win-color: #27ae60;
+    --win-color-light: #2ecc71;
+    --loss-color: #e74c3c;
+    --loss-color-light: #ec7063;
+    --neutral-color: #95a5a6;
+    --drop-color: #3498db;
+    --out-color: #e67e22;
+
+
     /* Spacing */
     --spacing-xs: 0.25rem;
     --spacing-sm: 0.5rem;
