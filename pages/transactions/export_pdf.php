@@ -213,7 +213,7 @@ header('Pragma: no-cache');
             background: linear-gradient(135deg, var(--primary-color), #2c3e50);
             color: white;
             padding: 30px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             text-align: center;
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -248,13 +248,13 @@ header('Pragma: no-cache');
             font-style: italic;
         }
 
-        /* Summary Stats - Single Line Layout */
+        /* Summary Stats - Compact Single Line Layout */
         .summary-stats {
             display: flex;
             justify-content: space-between;
-            gap: 15px;
-            margin-bottom: 30px;
-            padding: 20px;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding: 12px;
             background: linear-gradient(135deg, #f8f9fa, #e9ecef);
             border: 2px solid var(--secondary-color);
             border-radius: 8px;
@@ -264,24 +264,27 @@ header('Pragma: no-cache');
         .stat-box {
             flex: 1;
             text-align: center;
-            padding: 15px 10px;
+            padding: 8px 6px;
             background: white;
-            border-radius: 6px;
+            border-radius: 4px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            min-width: 0; /* Allow flex items to shrink */
         }
 
         .stat-box .stat-title {
-            font-size: 12px;
+            font-size: 10px;
             color: var(--text-muted);
-            margin-bottom: 5px;
+            margin-bottom: 3px;
             text-transform: uppercase;
             font-weight: 600;
+            line-height: 1.2;
         }
 
         .stat-box .stat-value {
-            font-size: 18px;
+            font-size: 14px;
             font-weight: bold;
             color: var(--primary-color);
+            line-height: 1.2;
         }
 
         /* Table Styles */
@@ -397,24 +400,39 @@ header('Pragma: no-cache');
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
                 page-break-inside: avoid;
+                margin-bottom: 15px;
+                padding: 20px;
             }
 
             .report-header h1 {
                 color: var(--secondary-color) !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
+                font-size: 24px;
             }
 
             .summary-stats {
                 background: #f8f9fa !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
+                margin-bottom: 15px;
+                padding: 8px;
+                gap: 6px;
             }
 
             .stat-box {
                 background: white !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
+                padding: 6px 4px;
+            }
+
+            .stat-box .stat-title {
+                font-size: 9px;
+            }
+
+            .stat-box .stat-value {
+                font-size: 12px;
             }
 
             table {
@@ -433,6 +451,8 @@ header('Pragma: no-cache');
                 color: white !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
+                padding: 10px 8px;
+                font-size: 11px;
             }
 
             .totals-row {
@@ -471,7 +491,19 @@ header('Pragma: no-cache');
 
             .summary-stats {
                 flex-direction: column;
-                gap: 10px;
+                gap: 8px;
+            }
+
+            .stat-box {
+                padding: 10px;
+            }
+
+            .stat-box .stat-title {
+                font-size: 11px;
+            }
+
+            .stat-box .stat-value {
+                font-size: 16px;
             }
 
             table {
@@ -541,23 +573,23 @@ header('Pragma: no-cache');
             <div class="generated-at">Generated at: <?= cairo_time('d M Y – H:i:s') ?></div>
         </div>
 
-        <!-- Summary Statistics - Single Line Layout -->
+        <!-- Summary Statistics - Compact Single Line Layout -->
         <div class="summary-stats">
             <div class="stat-box">
-                <div class="stat-title">Total Transactions</div>
+                <div class="stat-title">Transactions</div>
                 <div class="stat-value"><?= number_format(count($transactions)) ?></div>
             </div>
             <div class="stat-box">
                 <div class="stat-title">Total DROP</div>
-                <div class="stat-value"><?= '$' . number_format($total_drop, 2) ?></div>
+                <div class="stat-value"><?= '$' . number_format($total_drop, 0) ?></div>
             </div>
             <div class="stat-box">
                 <div class="stat-title">Total OUT</div>
-                <div class="stat-value"><?= '$' . number_format($total_out, 2) ?></div>
+                <div class="stat-value"><?= '$' . number_format($total_out, 0) ?></div>
             </div>
             <div class="stat-box">
                 <div class="stat-title">Result</div>
-                <div class="stat-value <?= $total_result >= 0 ? 'positive' : 'negative' ?>"><?= '$' . number_format($total_result, 2) ?></div>
+                <div class="stat-value <?= $total_result >= 0 ? 'positive' : 'negative' ?>"><?= '$' . number_format($total_result, 0) ?></div>
             </div>
         </div>
 
