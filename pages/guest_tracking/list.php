@@ -2,10 +2,11 @@
 /**
  * Guest Tracking List Page
  * Shows aggregated guest data with filtering options
+ * Default view shows only the latest uploaded file data
  */
 
 // Get filter values
-$date_range_type = $_GET['date_range_type'] ?? 'all_time';
+$date_range_type = $_GET['date_range_type'] ?? 'latest_upload';
 $date_from = $_GET['date_from'] ?? date('Y-m-01');
 $date_to = $_GET['date_to'] ?? date('Y-m-t');
 $month = $_GET['month'] ?? date('Y-m');
@@ -29,11 +30,29 @@ if (!in_array($sort_order, ['ASC', 'DESC'])) {
 
 $toggle_order = $sort_order === 'ASC' ? 'DESC' : 'ASC';
 
+// Get the latest upload date for default filtering
+try {
+    $latest_upload_stmt = $conn->query("
+        SELECT MAX(upload_date) as latest_date 
+        FROM guest_uploads 
+        ORDER BY upload_date DESC 
+        LIMIT 1
+    ");
+    $latest_upload = $latest_upload_stmt->fetch(PDO::FETCH_ASSOC);
+    $latest_upload_date = $latest_upload['latest_date'] ?? date('Y-m-d');
+} catch (PDOException $e) {
+    $latest_upload_date = date('Y-m-d');
+}
+
 // Calculate date range for filtering
 $date_filter = '';
 $date_params = [];
 
-if ($date_range_type === 'range') {
+if ($date_range_type === 'latest_upload') {
+    // Show only data from the latest upload
+    $date_filter = " AND gd.upload_date = ?";
+    $date_params = [$latest_upload_date];
+} elseif ($date_range_type === 'range') {
     $date_filter = " AND gd.upload_date BETWEEN ? AND ?";
     $date_params = [$date_from, $date_to];
 } elseif ($date_range_type === 'month') {
@@ -43,6 +62,7 @@ if ($date_range_type === 'range') {
     $date_filter = " AND gd.upload_date BETWEEN ? AND ?";
     $date_params = [$start_date, $end_date];
 }
+// If 'all_time' is selected, no date filter is applied
 
 // Build query for aggregated guest data
 try {
@@ -125,7 +145,19 @@ $pdf_export_url = $export_url_base . '&export=pdf';
 $excel_export_url = $export_url_base . '&export=excel';
 
 // Check if we have filter parameters
-$has_filters = $date_range_type !== 'all_time' || !empty($guest_search);
+$has_filters = $date_range_type !== 'latest_upload' || !empty($guest_search);
+
+// Generate filter description for display
+$filter_description = '';
+if ($date_range_type === 'latest_upload') {
+    $filter_description = "Latest Upload (" . format_date($latest_upload_date) . ")";
+} elseif ($date_range_type === 'range') {
+    $filter_description = date('d M Y', strtotime($date_from)) . ' – ' . date('d M Y', strtotime($date_to));
+} elseif ($date_range_type === 'month') {
+    $filter_description = date('F Y', strtotime($month));
+} else {
+    $filter_description = "All Time";
+}
 ?>
 
 <div class="guest-tracking-page fade-in">
@@ -153,6 +185,7 @@ $has_filters = $date_range_type !== 'all_time' || !empty($guest_search);
                             <div class="form-group">
                                 <label for="date_range_type">Date Range Type</label>
                                 <select name="date_range_type" id="date_range_type" class="form-control">
+                                    <option value="latest_upload" <?= $date_range_type === 'latest_upload' ? 'selected' : '' ?>>Latest Upload Only</option>
                                     <option value="all_time" <?= $date_range_type === 'all_time' ? 'selected' : '' ?>>All Time</option>
                                     <option value="month" <?= $date_range_type === 'month' ? 'selected' : '' ?>>Specific Month</option>
                                     <option value="range" <?= $date_range_type === 'range' ? 'selected' : '' ?>>Custom Range</option>
@@ -204,7 +237,7 @@ $has_filters = $date_range_type !== 'all_time' || !empty($guest_search);
                 <!-- Submit Buttons -->
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Apply Filters</button>
-                    <a href="index.php?page=guest_tracking" class="btn btn-danger">Reset</a>
+                    <a href="index.php?page=guest_tracking" class="btn btn-danger">Reset to Latest</a>
                 </div>
             </form>
         </div>
@@ -225,6 +258,17 @@ $has_filters = $date_range_type !== 'all_time' || !empty($guest_search);
                 📊 Export to Excel
             </a>
         </div>
+    </div>
+
+    <!-- Current View Info -->
+    <div class="alert alert-info mb-4">
+        <strong>📊 Current View:</strong> Showing data for <?= htmlspecialchars($filter_description) ?>
+        <?php if (!empty($guest_search)): ?>
+            | Search: "<?= htmlspecialchars($guest_search) ?>"
+        <?php endif; ?>
+        <?php if ($date_range_type === 'latest_upload' && !empty($uploads)): ?>
+            <br><small>Latest upload contains data from: <?= htmlspecialchars($uploads[0]['upload_filename'] ?? 'Unknown file') ?></small>
+        <?php endif; ?>
     </div>
 
     <!-- Summary Stats -->
@@ -321,7 +365,13 @@ $has_filters = $date_range_type !== 'all_time' || !empty($guest_search);
                     <tbody class="divide-y divide-gray-700">
                         <?php if (empty($guests)): ?>
                             <tr>
-                                <td colspan="7" class="text-center px-4 py-6">No guest data found</td>
+                                <td colspan="7" class="text-center px-4 py-6">
+                                    <?php if ($date_range_type === 'latest_upload'): ?>
+                                        No guest data found in the latest upload
+                                    <?php else: ?>
+                                        No guest data found for the selected criteria
+                                    <?php endif; ?>
+                                </td>
                             </tr>
                         <?php else: ?>
                             <?php foreach ($guests as $guest): ?>
@@ -362,14 +412,22 @@ $has_filters = $date_range_type !== 'all_time' || !empty($guest_search);
                             <tr>
                                 <th class="px-4 py-2 text-left">Upload Date</th>
                                 <th class="px-4 py-2 text-left">Filename</th>
+                                <th class="px-4 py-2 text-center">Status</th>
                                 <th class="px-4 py-2 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($uploads as $upload): ?>
+                            <?php foreach ($uploads as $index => $upload): ?>
                                 <tr>
                                     <td class="px-4 py-2"><?php echo format_date($upload['upload_date']); ?></td>
                                     <td class="px-4 py-2"><?php echo htmlspecialchars($upload['upload_filename']); ?></td>
+                                    <td class="px-4 py-2 text-center">
+                                        <?php if ($index === 0): ?>
+                                            <span class="status status-active">Latest</span>
+                                        <?php else: ?>
+                                            <span class="status status-inactive">Historical</span>
+                                        <?php endif; ?>
+                                    </td>
                                     <td class="px-4 py-2 text-right">
                                         <a href="index.php?page=guest_tracking&action=delete_upload&upload_date=<?php echo urlencode($upload['upload_date']); ?>" 
                                            class="action-btn delete-btn" data-tooltip="Delete Upload" 
