@@ -91,7 +91,7 @@ try {
         $params[] = $brand_id;
     }
 
-    $query .= " ORDER BY m.machine_number";
+    $query .= " ORDER BY CAST(m.machine_number AS UNSIGNED)";
 
     $machines_stmt = $conn->prepare($query);
     $machines_stmt->execute($params);
