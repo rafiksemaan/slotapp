@@ -1783,3 +1783,158 @@ input[disabled] {
         transform: translateY(0);
     }
 }
+
+/* New/Adjusted styles for win/loss indicators */
+
+/* For general positive/negative results */
+.positive {
+    color: var(--success-color);
+}
+.negative {
+    color: var(--danger-color);
+}
+
+/* For highlighting drop/out columns in tables */
+.highlight-drop {
+    font-weight: bold;
+    color: var(--success-color);
+}
+.highlight-out {
+    font-weight: bold;
+    color: var(--danger-color);
+}
+
+/* For specific text colors */
+.text-success-color {
+    color: var(--success-color);
+}
+.text-danger-color {
+    color: var(--danger-color);
+}
+
+/* For transaction categories */
+.category-drop {
+    color: var(--success-color);
+    font-weight: bold;
+}
+.category-out {
+    color: var(--danger-color);
+    font-weight: bold;
+}
+
+/* Form Validation Error Message */
+.error-message {
+    color: var(--danger-color);
+    font-size: var(--font-sm);
+    margin-top: var(--spacing-xs);
+}
+/* Tooltips */
+.tooltip {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 5px 10px;
+    border-radius: var(--border-radius);
+    font-size: var(--font-sm);
+    white-space: nowrap;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none; /* Allow clicks through */
+}
+
+.tooltip.visible {
+    opacity: 1;
+}
+
+/* Loading Indicator */
+.loading {
+    text-align: center;
+    padding: var(--spacing-md);
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* Pagination */
+.pagination {
+    margin-top: var(--spacing-lg);
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-sm);
+}
+
+.pagination li a {
+    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: var(--light-bg);
+    border-radius: var(--border-radius);
+    transition: background-color var(--transition-speed);
+}
+
+.pagination li a.active,
+.pagination li a:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* Tables */
+#transactions-table,
+#table-container table {
+    min-width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+    /* Add border-color from variables */
+    border-color: var(--border-color);
+}
+
+/* Ensure thead and tbody have proper borders */
+#transactions-table thead,
+#table-container table thead {
+    background-color: var(--light-bg); /* Or a slightly darker shade */
+}
+
+#transactions-table th,
+#table-container table th,
+#transactions-table td,
+#table-container table td {
+    padding: var(--spacing-sm) var(--spacing-md);
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* Dashboard Stats */
+.stat-card {
+    background-color: var(--light-bg); /* Default background */
+    /* ... existing styles ... */
+}
+
+.stat-card.in {
+    border-left-color: var(--success-color);
+    background-color: rgba(46, 204, 113, 0.1); /* Light green background */
+}
+
+.stat-card.out {
+    border-left-color: var(--danger-color);
+    background-color: rgba(231, 76, 60, 0.1); /* Light red background */
+}
+
+/* For guest tracking stats, using specific colors */
+.stats-container .stat-card.bg-opacity-10.bg-primary-color {
+    background-color: rgba(58, 95, 138, 0.1); /* Using --primary-color */
+}
+.stats-container .stat-card.bg-opacity-10.bg-success-color {
+    background-color: rgba(46, 204, 113, 0.1); /* Using --success-color */
+}
+.stats-container .stat-card.bg-opacity-10.bg-danger-color {
+    background-color: rgba(231, 76, 60, 0.1); /* Using --danger-color */
+}
+.stats-container .stat-card.bg-opacity-10.bg-warning-color {
+    background-color: rgba(243, 156, 18, 0.1); /* Using --warning-color */
+}
+
+/* Section Titles */
+.section-title {
+    color: var(--secondary-color);
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-xs);
+    border-bottom: 1px solid var(--border-color);
+}
