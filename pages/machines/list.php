@@ -60,8 +60,13 @@ if (!empty($filter_game)) {
 }
 
 // Add sorting
-$query .= " ORDER BY " . ($sort_column == 'brand_id' ? 'b.name' : ($sort_column == 'type_id' ? 'mt.name' : "m.$sort_column")) . " $sort_order";
-
+$query .= " ORDER BY " . 
+    ($sort_column == 'brand_id' ? 'b.name' : 
+    ($sort_column == 'type_id' ? 'mt.name' : 
+    ($sort_column == 'machine_number' ? 'CAST(m.machine_number AS UNSIGNED)' : "m.$sort_column"))) . 
+    " $sort_order";
+	
+	
 // Get machines
 try {
     $stmt = $conn->prepare($query);
