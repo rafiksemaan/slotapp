@@ -9,7 +9,7 @@ $sort_column = $_GET['sort'] ?? 'tracking_date';
 $sort_order = $_GET['order'] ?? 'DESC';
 
 // Validate sort column
-$allowed_columns = ['tracking_date', 'total_drop', 'total_out', 'total_result', 'total_result_percentage'];
+$allowed_columns = ['tracking_date'];
 if (!in_array($sort_column, $allowed_columns)) {
     $sort_column = 'tracking_date';
 }
@@ -212,45 +212,22 @@ if ($date_range_type === 'range') {
                             <th class="px-4 py-2 text-right">Slots Drop</th>
                             <th class="px-4 py-2 text-right">Slots Out</th>
                             <th class="px-4 py-2 text-right">Slots Result</th>
-                            <th class="px-4 py-2 text-right">Slots %</th>
                             <!-- Gambee -->
                             <th class="px-4 py-2 text-right">Gambee Drop</th>
                             <th class="px-4 py-2 text-right">Gambee Out</th>
                             <th class="px-4 py-2 text-right">Gambee Result</th>
-                            <th class="px-4 py-2 text-right">Gambee %</th>
                             <!-- Coins -->
                             <th class="px-4 py-2 text-right">Coins Drop</th>
                             <th class="px-4 py-2 text-right">Coins Out</th>
                             <th class="px-4 py-2 text-right">Coins Result</th>
-                            <th class="px-4 py-2 text-right">Coins %</th>
                             <!-- Totals -->
-                            <th class="px-4 py-2 text-right highlight-drop">
-                                <a href="?page=daily_tracking&sort=total_drop&order=<?php echo $sort_column == 'total_drop' ? $toggle_order : 'ASC'; ?>&<?= http_build_query(array_diff_key($_GET, ['sort' => '', 'order' => ''])) ?>">
-                                    Total Drop <?php if ($sort_column == 'total_drop') echo $sort_order == 'ASC' ? '▲' : '▼'; ?>
-                                </a>
-                            </th>
-                            <th class="px-4 py-2 text-right highlight-out">
-                                <a href="?page=daily_tracking&sort=total_out&order=<?php echo $sort_column == 'total_out' ? $toggle_order : 'ASC'; ?>&<?= http_build_query(array_diff_key($_GET, ['sort' => '', 'order' => ''])) ?>">
-                                    Total Out <?php if ($sort_column == 'total_out') echo $sort_order == 'ASC' ? '▲' : '▼'; ?>
-                                </a>
-                            </th>
-                            <th class="px-4 py-2 text-right highlight-result">
-                                <a href="?page=daily_tracking&sort=total_result&order=<?php echo $sort_column == 'total_result' ? $toggle_order : 'ASC'; ?>&<?= http_build_query(array_diff_key($_GET, ['sort' => '', 'order' => ''])) ?>">
-                                    Total Result <?php if ($sort_column == 'total_result') echo $sort_order == 'ASC' ? '▲' : '▼'; ?>
-                                </a>
-                            </th>
-                            <th class="px-4 py-2 text-right">
-                                <a href="?page=daily_tracking&sort=total_result_percentage&order=<?php echo $sort_column == 'total_result_percentage' ? $toggle_order : 'ASC'; ?>&<?= http_build_query(array_diff_key($_GET, ['sort' => '', 'order' => ''])) ?>">
-                                    Total % <?php if ($sort_column == 'total_result_percentage') echo $sort_order == 'ASC' ? '▲' : '▼'; ?>
-                                </a>
-                            </th>
                             <th class="px-4 py-2 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-700">
                         <?php if (empty($tracking_data)): ?>
                             <tr>
-                                <td colspan="18" class="text-center px-4 py-6">No daily tracking data found for the selected period</td>
+                                <td colspan="11" class="text-center px-4 py-6">No daily tracking data found for the selected period</td>
                             </tr>
                         <?php else: ?>
                             <?php foreach ($tracking_data as $data): ?>
@@ -261,25 +238,16 @@ if ($date_range_type === 'range') {
                                     <td class="px-4 py-2 text-right"><?php echo format_currency($data['slots_drop']); ?></td>
                                     <td class="px-4 py-2 text-right"><?php echo format_currency($data['slots_out']); ?></td>
                                     <td class="px-4 py-2 text-right <?php echo $data['slots_result'] >= 0 ? 'positive' : 'negative'; ?>"><?php echo format_currency($data['slots_result']); ?></td>
-                                    <td class="px-4 py-2 text-right"><?php echo number_format($data['slots_percentage'], 2); ?>%</td>
                                     
                                     <!-- Gambee -->
                                     <td class="px-4 py-2 text-right"><?php echo format_currency($data['gambee_drop']); ?></td>
                                     <td class="px-4 py-2 text-right"><?php echo format_currency($data['gambee_out']); ?></td>
                                     <td class="px-4 py-2 text-right <?php echo $data['gambee_result'] >= 0 ? 'positive' : 'negative'; ?>"><?php echo format_currency($data['gambee_result']); ?></td>
-                                    <td class="px-4 py-2 text-right"><?php echo number_format($data['gambee_percentage'], 2); ?>%</td>
                                     
                                     <!-- Coins -->
                                     <td class="px-4 py-2 text-right"><?php echo format_currency($data['coins_drop']); ?></td>
                                     <td class="px-4 py-2 text-right"><?php echo format_currency($data['coins_out']); ?></td>
                                     <td class="px-4 py-2 text-right <?php echo $data['coins_result'] >= 0 ? 'positive' : 'negative'; ?>"><?php echo format_currency($data['coins_result']); ?></td>
-                                    <td class="px-4 py-2 text-right"><?php echo number_format($data['coins_percentage'], 2); ?>%</td>
-                                    
-                                    <!-- Totals -->
-                                    <td class="px-4 py-2 text-right highlight-drop"><strong><?php echo format_currency($data['total_drop']); ?></strong></td>
-                                    <td class="px-4 py-2 text-right highlight-out"><strong><?php echo format_currency($data['total_out']); ?></strong></td>
-                                    <td class="px-4 py-2 text-right highlight-result <?php echo $data['total_result'] >= 0 ? 'positive' : 'negative'; ?>"><strong><?php echo format_currency($data['total_result']); ?></strong></td>
-                                    <td class="px-4 py-2 text-right"><strong><?php echo number_format($data['total_result_percentage'], 2); ?>%</strong></td>
                                     
                                     <td class="px-4 py-2 text-right">
                                         <a href="index.php?page=daily_tracking&action=edit&id=<?php echo $data['id']; ?>" class="action-btn edit-btn" data-tooltip="Edit"><span class="menu-icon"><img src="<?= icon('edit') ?>"/></span></a>
