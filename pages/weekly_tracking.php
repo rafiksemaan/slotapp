@@ -220,28 +220,36 @@ $current_iso_year = date('Y');
                 <table class="min-w-full divide-y divide-gray-700 separated-columns">
                     <thead class="bg-gray-800 text-white">
     <tr>
-        <th class="px-4 py-2 text-left">Week</th>
-        <th class="px-4 py-2 text-left">Start Date</th>
-        <th class="px-4 py-2 text-left category-section-border-right">End Date</th> <!-- Added class -->
+        <th colspan="3" class="px-4 py-2 text-center category-section-border-right">Week Info</th>
+        <th colspan="3" class="px-4 py-2 text-center category-section-border-right">Slots Performance</th>
+        <th colspan="3" class="px-4 py-2 text-center category-section-border-right">Gambee Performance</th>
+        <th colspan="3" class="px-4 py-2 text-center category-section-border-right">Coins Performance</th>
+        <th colspan="4" class="px-4 py-2 text-center">Overall Totals</th>
+    </tr>
+    <tr>
+        <th class="px-4 py-2 text-center">Week</th>
+        <th class="px-4 py-2 text-center">Start Date</th>
+        <th class="px-4 py-2 text-center category-section-border-right">End Date</th>
         <!-- Slots -->
-        <th class="px-4 py-2 text-right">Slots Drop</th>
-        <th class="px-4 py-2 text-right">Slots Result</th>
-        <th class="px-4 py-2 text-right category-section-border-right">Slots %</th> <!-- Added class -->
+        <th class="px-4 py-2 text-center">Drop</th>
+        <th class="px-4 py-2 text-center">Result</th>
+        <th class="px-4 py-2 text-center category-section-border-right">%</th>
         <!-- Gambee -->
-        <th class="px-4 py-2 text-right">Gambee Drop</th>
-        <th class="px-4 py-2 text-right">Gambee Result</th>
-        <th class="px-4 py-2 text-right category-section-border-right">Gambee %</th> <!-- Added class -->
+        <th class="px-4 py-2 text-center">Drop</th>
+        <th class="px-4 py-2 text-center">Result</th>
+        <th class="px-4 py-2 text-center category-section-border-right">%</th>
         <!-- Coins -->
-        <th class="px-4 py-2 text-right">Coins Drop</th>
-        <th class="px-4 py-2 text-right">Coins Result</th>
-        <th class="px-4 py-2 text-right category-section-border-right">Coins %</th> <!-- Added class -->
+        <th class="px-4 py-2 text-center">Drop</th>
+        <th class="px-4 py-2 text-center">Result</th>
+        <th class="px-4 py-2 text-center category-section-border-right">%</th>
         <!-- Totals -->
-        <th class="px-4 py-2 text-right highlight-drop">Total Drop</th>
-        <th class="px-4 py-2 text-right highlight-out">Total Out</th>
-        <th class="px-4 py-2 text-right highlight-result">Total Result</th>
-        <th class="px-4 py-2 text-right">Total %</th>
+        <th class="px-4 py-2 text-center highlight-drop">Drop</th>
+        <th class="px-4 py-2 text-center highlight-out">Out</th>
+        <th class="px-4 py-2 text-center highlight-result">Result</th>
+        <th class="px-4 py-2 text-center">%</th>
     </tr>
 </thead>
+
 
                     <tbody class="divide-y divide-gray-700">
     <?php if (empty($weekly_data)): ?>
@@ -249,9 +257,10 @@ $current_iso_year = date('Y');
             <td colspan="16" class="text-center px-4 py-6">No weekly tracking data found for <?= htmlspecialchars($filter_year) ?></td>
         </tr>
     <?php else: ?>
+
         <?php foreach ($weekly_data as $week_entry): ?>
-            <tr class="hover:bg-gray-800 transition duration-150">
-                <td class="px-4 py-2 font-medium<?php echo $week_entry['is_cross_year'] ? ' cross-year-week' : ''; ?>">
+            <tr class="hover:bg-gray-800 transition duration-150 ">
+                <td class="px-4 py-2 font-medium<?php echo $week_entry['is_cross_year'] ? ' cross-year-week' : ''; ?><?php echo ($week_entry['week_number'] == $current_iso_week && $filter_year == $current_iso_year) ? ' current-week-highlight' : ''; ?>">
                     <?php echo htmlspecialchars($week_entry['week_number']); ?>
                 </td>
                 <td class="px-4 py-2"><?php echo format_date($week_entry['start_date']); ?></td>
@@ -281,6 +290,7 @@ $current_iso_year = date('Y');
         <?php endforeach; ?>
     <?php endif; ?>
 </tbody>
+
 
                 </table>
             </div>
