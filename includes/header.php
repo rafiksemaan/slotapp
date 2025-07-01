@@ -87,6 +87,10 @@ define('ICON_PATH', 'assets/icons'); // Make sure this matches your actual folde
                 <span class="menu-icon"><img src="<?= icon('dollar-sign') ?>" alt="transactions" /></span>
                 <span class="menu-text">Transactions</span>
             </a></li>
+            <li><a href="index.php?page=daily_tracking" class="<?= $page == 'daily_tracking' ? 'active' : '' ?>">
+                <span class="menu-icon"><img src="<?= icon('calendar') ?>" alt="daily_tracking" /></span>
+                <span class="menu-text">Daily Tracking</span>
+            </a></li>
             <li><a href="index.php?page=general_report" class="<?= $page == 'general_report' ? 'active' : '' ?>">
                 <span class="menu-icon"><img src="<?= icon('report') ?>" alt="general_report" /></span>
                 <span class="menu-text">General Report</span>
@@ -150,7 +154,7 @@ define('ICON_PATH', 'assets/icons'); // Make sure this matches your actual folde
             
             <main class="content">
                 <div class="page-header">
-                    <h2><?php echo ucfirst($page == 'custom_report' ? 'Custom Report' : ($page == 'general_report' ? 'General Report' : ($page == 'guest_tracking' ? 'Guest Tracking' : ($page == 'operation_day' ? 'Operation Day' : $page)))); ?></h2>
+                    <h2><?php echo ucfirst($page == 'custom_report' ? 'Custom Report' : ($page == 'general_report' ? 'General Report' : ($page == 'guest_tracking' ? 'Guest Tracking' : ($page == 'operation_day' ? 'Operation Day' : ($page == 'daily_tracking' ? 'Daily Tracking' : $page))))); ?></h2>
                 </div>
                 <div class="page-content">
 				
