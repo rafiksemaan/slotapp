@@ -74,21 +74,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Insert new daily tracking entry
                 $stmt = $conn->prepare("
                     INSERT INTO daily_tracking (
-                        tracking_date, slots_drop, slots_out, slots_result, slots_percentage,
-                        gambee_drop, gambee_out, gambee_result, gambee_percentage,
-                        coins_drop, coins_out, coins_result, coins_percentage,
-                        total_drop, total_out, total_result, total_result_percentage,
+                        tracking_date, slots_drop, slots_out, gambee_drop, gambee_out, coins_drop, coins_out, 
                         notes, created_by, created_at
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ");
                 
                 $stmt->execute([
                     $tracking_data['tracking_date'],
-                    $slots_drop, $slots_out, $slots_result, $slots_percentage,
-                    $gambee_drop, $gambee_out, $gambee_result, $gambee_percentage,
-                    $coins_drop, $coins_out, $coins_result, $coins_percentage,
-                    $total_drop, $total_out, $total_result, $total_result_percentage,
-                    $tracking_data['notes'] ?: null,
+                    $slots_drop, $slots_out, $gambee_drop, $gambee_out, $coins_drop, $coins_out, $tracking_data['notes'] ?: null,
                     $_SESSION['user_id'],
                     date('Y-m-d H:i:s')
                 ]);

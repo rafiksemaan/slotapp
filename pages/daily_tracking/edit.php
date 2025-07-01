@@ -76,21 +76,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Update daily tracking entry
                 $stmt = $conn->prepare("
                     UPDATE daily_tracking SET
-                        tracking_date = ?, slots_drop = ?, slots_out = ?, slots_result = ?, slots_percentage = ?,
-                        gambee_drop = ?, gambee_out = ?, gambee_result = ?, gambee_percentage = ?,
-                        coins_drop = ?, coins_out = ?, coins_result = ?, coins_percentage = ?,
-                        total_drop = ?, total_out = ?, total_result = ?, total_result_percentage = ?,
-                        notes = ?, updated_by = ?, updated_at = ?
+                        tracking_date = ?, slots_drop = ?, slots_out = ?, gambee_drop = ?, gambee_out = ?, coins_drop = ?, coins_out = ?, notes = ?, updated_by = ?, updated_at = ?
                     WHERE id = ?
                 ");
                 
                 $result = $stmt->execute([
                     $tracking_date,
-                    $slots_drop, $slots_out, $slots_result, $slots_percentage,
-                    $gambee_drop, $gambee_out, $gambee_result, $gambee_percentage,
-                    $coins_drop, $coins_out, $coins_result, $coins_percentage,
-                    $total_drop, $total_out, $total_result, $total_result_percentage,
-                    $notes ?: null,
+                    $slots_drop, $slots_out, $gambee_drop, $gambee_out, $coins_drop, $coins_out, $notes ?: null,
                     $_SESSION['user_id'],
                     date('Y-m-d H:i:s'),
                     $tracking_id

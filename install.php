@@ -109,6 +109,35 @@ function createTables($conn) {
             INDEX idx_timestamp (timestamp),
             INDEX idx_machine_timestamp (machine_id, timestamp)
         )");
+
+        // Create daily_tracking table
+        $conn->exec("CREATE TABLE IF NOT EXISTS daily_tracking (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            tracking_date DATE NOT NULL UNIQUE,
+            slots_drop DECIMAL(10,2) DEFAULT 0.00,
+            slots_out DECIMAL(10,2) DEFAULT 0.00,
+            slots_result DECIMAL(10,2) DEFAULT 0.00,
+            slots_percentage DECIMAL(5,2) DEFAULT 0.00,
+            gambee_drop DECIMAL(10,2) DEFAULT 0.00,
+            gambee_out DECIMAL(10,2) DEFAULT 0.00,
+            gambee_result DECIMAL(10,2) DEFAULT 0.00,
+            gambee_percentage DECIMAL(5,2) DEFAULT 0.00,
+            coins_drop DECIMAL(10,2) DEFAULT 0.00,
+            coins_out DECIMAL(10,2) DEFAULT 0.00,
+            coins_result DECIMAL(10,2) DEFAULT 0.00,
+            coins_percentage DECIMAL(5,2) DEFAULT 0.00,
+            total_drop DECIMAL(10,2) DEFAULT 0.00,
+            total_out DECIMAL(10,2) DEFAULT 0.00,
+            total_result DECIMAL(10,2) DEFAULT 0.00,
+            total_result_percentage DECIMAL(5,2) DEFAULT 0.00,
+            notes TEXT,
+            created_by INT,
+            updated_by INT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+            FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL
+        )");
         
         // Create logs table
         $conn->exec("CREATE TABLE IF NOT EXISTS logs (
@@ -147,6 +176,49 @@ function createTables($conn) {
             INDEX idx_event_type (event_type),
             INDEX idx_severity (severity),
             INDEX idx_created_at (created_at)
+        )");
+
+        // Create guest_uploads table
+        $conn->exec("CREATE TABLE IF NOT EXISTS guest_uploads (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            upload_date DATE NOT NULL UNIQUE,
+            upload_filename VARCHAR(255) NOT NULL,
+            uploaded_by INT,
+            uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (uploaded_by) REFERENCES users(id) ON DELETE SET NULL
+        )");
+
+        // Create guests table
+        $conn->exec("CREATE TABLE IF NOT EXISTS guests (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            guest_code_id VARCHAR(50) NOT NULL UNIQUE,
+            guest_name VARCHAR(255) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        )");
+
+        // Create guest_data table
+        $conn->exec("CREATE TABLE IF NOT EXISTS guest_data (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            guest_code_id VARCHAR(50) NOT NULL,
+            upload_date DATE NOT NULL,
+            drop_amount DECIMAL(10,2) NOT NULL,
+            result_amount DECIMAL(10,2) NOT NULL,
+            visits INT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (guest_code_id) REFERENCES guests(guest_code_id) ON DELETE CASCADE,
+            UNIQUE KEY unique_guest_data (guest_code_id, upload_date)
+        )");
+
+        // Create operation_day table
+        $conn->exec("CREATE TABLE IF NOT EXISTS operation_day (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            operation_date DATE NOT NULL UNIQUE,
+            set_by_user_id INT,
+            set_by_username VARCHAR(100),
+            notes TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (set_by_user_id) REFERENCES users(id) ON DELETE SET NULL
         )");
         
         return true;
@@ -335,7 +407,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         </div>
                         
                         <div class="form-group">
-                            <button type="submit" class="btn btn-primary btn-block" id="installBtn">
+                            <button type="submit" class="btn btn-primary">
                                 🚀 Install System
                             </button>
                         </div>
