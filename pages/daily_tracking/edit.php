@@ -70,4 +70,202 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 $total_drop = $slots_drop + $gambee_drop + $coins_drop;
                 $total_out = $slots_out + $gambee_out + $coins_out;
-                $total_result
+                $total_result = $total_drop - $total_out;
+                $total_result_percentage = $total_drop > 0 ? (($total_result / $total_drop) * 100) : 0;
+
+                // Update daily tracking entry
+                $stmt = $conn->prepare("
+                    UPDATE daily_tracking SET
+                        tracking_date = ?, slots_drop = ?, slots_out = ?, slots_result = ?, slots_percentage = ?,
+                        gambee_drop = ?, gambee_out = ?, gambee_result = ?, gambee_percentage = ?,
+                        coins_drop = ?, coins_out = ?, coins_result = ?, coins_percentage = ?,
+                        total_drop = ?, total_out = ?, total_result = ?, total_result_percentage = ?,
+                        notes = ?, updated_by = ?, updated_at = ?
+                    WHERE id = ?
+                ");
+                
+                $result = $stmt->execute([
+                    $tracking_date,
+                    $slots_drop, $slots_out, $slots_result, $slots_percentage,
+                    $gambee_drop, $gambee_out, $gambee_result, $gambee_percentage,
+                    $coins_drop, $coins_out, $coins_result, $coins_percentage,
+                    $total_drop, $total_out, $total_result, $total_result_percentage,
+                    $notes ?: null,
+                    $_SESSION['user_id'],
+                    date('Y-m-d H:i:s'),
+                    $tracking_id
+                ]);
+
+                if ($result) {
+                    // Log action
+                    log_action('update_daily_tracking', "Updated daily tracking entry for: {$tracking_date}");
+                    header("Location: index.php?page=daily_tracking&message=Daily tracking entry updated successfully");
+                    exit;
+                } else {
+                    $error = "Failed to update daily tracking entry.";
+                }
+            }
+        } catch (PDOException $e) {
+            $error = "Database error: " . $e->getMessage();
+        }
+    }
+}
+?>
+
+<div class="daily-tracking-edit fade-in">
+    <div class="card">
+        <div class="card-header">
+            <h3>Edit Daily Tracking Entry</h3>
+        </div>
+        <div class="card-body">
+            <?php if (!empty($error)): ?>
+                <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
+            <?php endif; ?>
+
+            <?php if (!empty($success)): ?>
+                <div class="alert alert-success"><?php echo htmlspecialchars($success); ?></div>
+            <?php endif; ?>
+
+            <div class="alert alert-info">
+                <strong>📊 Daily Tracking:</strong> Edit the daily performance data for each machine type. Results and percentages will be calculated automatically.
+            </div>
+
+            <form method="POST" class="daily-tracking-form" onsubmit="return validateTrackingForm(this)">
+                <!-- Date Section -->
+                <div class="form-section">
+                    <h4>Tracking Information</h4>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="tracking_date">Tracking Date *</label>
+                                <input type="date" id="tracking_date" name="tracking_date" class="form-control" 
+                                       value="<?php echo htmlspecialchars($tracking_data['tracking_date']); ?>" required>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <!-- Empty column for layout balance -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slots Section -->
+                <div class="form-section">
+                    <h4>Slots Performance</h4>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="slots_drop">Slots Drop</label>
+                                <input type="number" id="slots_drop" name="slots_drop" class="form-control" 
+                                       value="<?php echo htmlspecialchars($tracking_data['slots_drop']); ?>" 
+                                       step="0.01" min="0" placeholder="0.00">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="slots_out">Slots Out</label>
+                                <input type="number" id="slots_out" name="slots_out" class="form-control" 
+                                       value="<?php echo htmlspecialchars($tracking_data['slots_out']); ?>" 
+                                       step="0.01" min="0" placeholder="0.00">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gambee Section -->
+                <div class="form-section">
+                    <h4>Gambee Performance</h4>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="gambee_drop">Gambee Drop</label>
+                                <input type="number" id="gambee_drop" name="gambee_drop" class="form-control" 
+                                       value="<?php echo htmlspecialchars($tracking_data['gambee_drop']); ?>" 
+                                       step="0.01" min="0" placeholder="0.00">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="gambee_out">Gambee Out</label>
+                                <input type="number" id="gambee_out" name="gambee_out" class="form-control" 
+                                       value="<?php echo htmlspecialchars($tracking_data['gambee_out']); ?>" 
+                                       step="0.01" min="0" placeholder="0.00">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Coins Section -->
+                <div class="form-section">
+                    <h4>Coins Performance</h4>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="coins_drop">Coins Drop</label>
+                                <input type="number" id="coins_drop" name="coins_drop" class="form-control" 
+                                       value="<?php echo htmlspecialchars($tracking_data['coins_drop']); ?>" 
+                                       step="0.01" min="0" placeholder="0.00">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="coins_out">Coins Out</label>
+                                <input type="number" id="coins_out" name="coins_out" class="form-control" 
+                                       value="<?php echo htmlspecialchars($tracking_data['coins_out']); ?>" 
+                                       step="0.01" min="0" placeholder="0.00">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notes Section -->
+                <div class="form-section">
+                    <h4>Additional Information</h4>
+                    <div class="form-group">
+                        <label for="notes">Notes</label>
+                        <textarea id="notes" name="notes" class="form-control" rows="3" 
+                                  placeholder="Optional notes about this day's performance..."><?php echo htmlspecialchars($tracking_data['notes']); ?></textarea>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Update Daily Tracking</button>
+                    <a href="index.php?page=daily_tracking" class="btn btn-danger">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function validateTrackingForm(form) {
+    const trackingDate = form.tracking_date.value;
+    
+    if (!trackingDate) {
+        alert('Please select a tracking date.');
+        return false;
+    }
+    
+    // Check if at least one field has data
+    const fields = ['slots_drop', 'slots_out', 'gambee_drop', 'gambee_out', 'coins_drop', 'coins_out'];
+    let hasData = false;
+    
+    for (let field of fields) {
+        if (form[field].value && parseFloat(form[field].value) > 0) {
+            hasData = true;
+            break;
+        }
+    }
+    
+    if (!hasData) {
+        return confirm('No performance data entered. Are you sure you want to update an entry with all zeros?');
+    }
+    
+    return true;
+}
+
+// Auto-focus first field
+document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('tracking_date').focus();
+});
+</script>

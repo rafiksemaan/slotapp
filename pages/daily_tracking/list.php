@@ -258,4 +258,87 @@ if ($date_range_type === 'range') {
                                     <td class="px-4 py-2 font-medium"><?php echo format_date($data['tracking_date']); ?></td>
                                     
                                     <!-- Slots -->
-                                    <td class="px-4 py-2 text-right"><?php echo fo
+                                    <td class="px-4 py-2 text-right"><?php echo format_currency($data['slots_drop']); ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo format_currency($data['slots_out']); ?></td>
+                                    <td class="px-4 py-2 text-right <?php echo $data['slots_result'] >= 0 ? 'positive' : 'negative'; ?>"><?php echo format_currency($data['slots_result']); ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo number_format($data['slots_percentage'], 2); ?>%</td>
+                                    
+                                    <!-- Gambee -->
+                                    <td class="px-4 py-2 text-right"><?php echo format_currency($data['gambee_drop']); ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo format_currency($data['gambee_out']); ?></td>
+                                    <td class="px-4 py-2 text-right <?php echo $data['gambee_result'] >= 0 ? 'positive' : 'negative'; ?>"><?php echo format_currency($data['gambee_result']); ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo number_format($data['gambee_percentage'], 2); ?>%</td>
+                                    
+                                    <!-- Coins -->
+                                    <td class="px-4 py-2 text-right"><?php echo format_currency($data['coins_drop']); ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo format_currency($data['coins_out']); ?></td>
+                                    <td class="px-4 py-2 text-right <?php echo $data['coins_result'] >= 0 ? 'positive' : 'negative'; ?>"><?php echo format_currency($data['coins_result']); ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo number_format($data['coins_percentage'], 2); ?>%</td>
+                                    
+                                    <!-- Totals -->
+                                    <td class="px-4 py-2 text-right highlight-drop"><strong><?php echo format_currency($data['total_drop']); ?></strong></td>
+                                    <td class="px-4 py-2 text-right highlight-out"><strong><?php echo format_currency($data['total_out']); ?></strong></td>
+                                    <td class="px-4 py-2 text-right highlight-result <?php echo $data['total_result'] >= 0 ? 'positive' : 'negative'; ?>"><strong><?php echo format_currency($data['total_result']); ?></strong></td>
+                                    <td class="px-4 py-2 text-right"><strong><?php echo number_format($data['total_result_percentage'], 2); ?>%</strong></td>
+                                    
+                                    <td class="px-4 py-2 text-right">
+                                        <a href="index.php?page=daily_tracking&action=edit&id=<?php echo $data['id']; ?>" class="action-btn edit-btn" data-tooltip="Edit"><span class="menu-icon"><img src="<?= icon('edit') ?>"/></span></a>
+                                        <a href="index.php?page=daily_tracking&action=delete&id=<?php echo $data['id']; ?>" class="action-btn delete-btn" data-tooltip="Delete" data-confirm="Are you sure you want to delete this daily tracking entry?"><span class="menu-icon"><img src="<?= icon('delete') ?>"/></span></a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for form interactions and toggle filters -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const dateRangeType = document.getElementById('date_range_type');
+    const dateFrom = document.getElementById('date_from');
+    const dateTo = document.getElementById('date_to');
+    const monthSelect = document.getElementById('month');
+
+    function toggleDateInputs() {
+        const type = dateRangeType.value;
+        
+        dateFrom.disabled = type !== 'range';
+        dateTo.disabled = type !== 'range';
+        monthSelect.disabled = type !== 'month';
+    }
+
+    dateRangeType.addEventListener('change', toggleDateInputs);
+    toggleDateInputs(); // Initial call
+});
+
+// Toggle filters function
+function toggleFilters() {
+    const filtersBody = document.getElementById('filters-body');
+    const toggleIcon = document.getElementById('filter-toggle-icon');
+    
+    if (filtersBody.style.display === 'none') {
+        filtersBody.style.display = 'block';
+        toggleIcon.textContent = '▲';
+        // Add smooth animation
+        filtersBody.style.opacity = '0';
+        filtersBody.style.transform = 'translateY(-10px)';
+        setTimeout(() => {
+            filtersBody.style.transition = 'all 0.3s ease';
+            filtersBody.style.opacity = '1';
+            filtersBody.style.transform = 'translateY(0)';
+        }, 10);
+    } else {
+        filtersBody.style.transition = 'all 0.3s ease';
+        filtersBody.style.opacity = '0';
+        filtersBody.style.transform = 'translateY(-10px)';
+        setTimeout(() => {
+            filtersBody.style.display = 'none';
+            toggleIcon.textContent = '▼';
+        }, 300);
+    }
+}
+</script>
