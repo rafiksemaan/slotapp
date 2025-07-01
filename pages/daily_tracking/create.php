@@ -76,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     INSERT INTO daily_tracking (
                         tracking_date, slots_drop, slots_out, gambee_drop, gambee_out, coins_drop, coins_out, 
                         notes, created_by, created_at
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ");
                 
                 $stmt->execute([
