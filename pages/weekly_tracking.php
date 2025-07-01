@@ -9,20 +9,32 @@ $filter_year = $_GET['year'] ?? date('Y');
 
 // Validate year
 if (!is_numeric($filter_year) || $filter_year < 2000 || $filter_year > 2100) {
-    $filter_year = date('Y');
+    $filter_year = date('Y');$filter_year = $_GET['year'] ?? date('Y');
+$filter_week_number = $_GET['week_number'] ?? ''; // Add this line
+
 }
 
 // Get all daily tracking data for the selected year
 $daily_data = [];
 try {
-    $query = "SELECT * FROM daily_tracking WHERE YEAR(tracking_date) = ? ORDER BY tracking_date ASC";
+    $query = "SELECT * FROM daily_tracking WHERE YEAR(tracking_date) = ?";
+    $params = [$filter_year];
+
+    if (!empty($filter_week_number)) {
+        // Change WEEK(tracking_date, 1) to WEEK(tracking_date, 3)
+        $query .= " AND WEEK(tracking_date, 3) = ?";
+        $params[] = $filter_week_number;
+    }
+
+    $query .= " ORDER BY tracking_date ASC";
     $stmt = $conn->prepare($query);
-    $stmt->execute([$filter_year]);
+    $stmt->execute($params);
     $daily_data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     $error = "Database error: " . $e->getMessage();
     $daily_data = [];
 }
+
 
 $weekly_data = [];
 $grand_total_drop = 0;
@@ -107,6 +119,12 @@ if (empty($available_years)) {
 // Calculate grand total percentage
 $grand_total_percentage = $grand_total_drop > 0 ? (($grand_total_result / $grand_total_drop) * 100) : 0;
 
+// --- NEW CODE START ---
+// Get current ISO week and year
+$current_iso_week = date('W');
+$current_iso_year = date('Y');
+// --- NEW CODE END ---
+
 ?>
 
 <div class="weekly-tracking-page fade-in">
@@ -118,16 +136,28 @@ $grand_total_percentage = $grand_total_drop > 0 ? (($grand_total_result / $grand
         <div class="card-body">
             <form action="index.php" method="GET">
                 <input type="hidden" name="page" value="weekly_tracking">
-                <div class="form-group">
-                    <label for="year">Select Year</label>
-                    <select name="year" id="year" class="form-control">
-                        <?php foreach ($available_years as $year_option): ?>
-                            <option value="<?= $year_option ?>" <?= $filter_year == $year_option ? 'selected' : '' ?>>
-                                <?= $year_option ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
+               <div class="form-group">
+    <label for="year">Select Year</label>
+    <select name="year" id="year" class="form-control">
+        <?php foreach ($available_years as $year_option): ?>
+            <option value="<?= $year_option ?>" <?= $filter_year == $year_option ? 'selected' : '' ?>>
+                <?= $year_option ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+</div>
+<div class="form-group">
+    <label for="week_number">Select Week Number</label>
+    <select name="week_number" id="week_number" class="form-control">
+        <option value="">All Weeks</option>
+        <?php for ($i = 1; $i <= 53; $i++): ?>
+            <option value="<?= $i ?>" <?= (isset($_GET['week_number']) && $_GET['week_number'] == $i) ? 'selected' : '' ?>>
+                Week <?= $i ?>
+            </option>
+        <?php endfor; ?>
+    </select>
+</div>
+
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Apply Filter</button>
                     <a href="index.php?page=weekly_tracking" class="btn btn-danger">Reset</a>
@@ -177,69 +207,72 @@ $grand_total_percentage = $grand_total_drop > 0 ? (($grand_total_result / $grand
             <div class="table-container overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-700 separated-columns">
                     <thead class="bg-gray-800 text-white">
-                        <tr>
-                            <th class="px-4 py-2 text-left">Week</th>
-                            <th class="px-4 py-2 text-left">Start Date</th>
-                            <th class="px-4 py-2 text-left">End Date</th>
-                            <!-- Slots -->
-                            <th class="px-4 py-2 text-right">Slots Drop</th>
-                            <th class="px-4 py-2 text-right">Slots Result</th>
-                            <th class="px-4 py-2 text-right">Slots %</th>
-                            <!-- Gambee -->
-                            <th class="px-4 py-2 text-right">Gambee Drop</th>
-                            <th class="px-4 py-2 text-right">Gambee Result</th>
-                            <th class="px-4 py-2 text-right">Gambee %</th>
-                            <!-- Coins -->
-                            <th class="px-4 py-2 text-right">Coins Drop</th>
-                            <th class="px-4 py-2 text-right">Coins Result</th>
-                            <th class="px-4 py-2 text-right">Coins %</th>
-                            <!-- Totals -->
-                            <th class="px-4 py-2 text-right highlight-drop">Total Drop</th>
-                            <th class="px-4 py-2 text-right highlight-out">Total Out</th>
-                            <th class="px-4 py-2 text-right highlight-result">Total Result</th>
-                            <th class="px-4 py-2 text-right">Total %</th>
-                        </tr>
-                    </thead>
+    <tr>
+        <th class="px-4 py-2 text-left">Week</th>
+        <th class="px-4 py-2 text-left">Start Date</th>
+        <th class="px-4 py-2 text-left category-section-border-right">End Date</th> <!-- Added class -->
+        <!-- Slots -->
+        <th class="px-4 py-2 text-right">Slots Drop</th>
+        <th class="px-4 py-2 text-right">Slots Result</th>
+        <th class="px-4 py-2 text-right category-section-border-right">Slots %</th> <!-- Added class -->
+        <!-- Gambee -->
+        <th class="px-4 py-2 text-right">Gambee Drop</th>
+        <th class="px-4 py-2 text-right">Gambee Result</th>
+        <th class="px-4 py-2 text-right category-section-border-right">Gambee %</th> <!-- Added class -->
+        <!-- Coins -->
+        <th class="px-4 py-2 text-right">Coins Drop</th>
+        <th class="px-4 py-2 text-right">Coins Result</th>
+        <th class="px-4 py-2 text-right category-section-border-right">Coins %</th> <!-- Added class -->
+        <!-- Totals -->
+        <th class="px-4 py-2 text-right highlight-drop">Total Drop</th>
+        <th class="px-4 py-2 text-right highlight-out">Total Out</th>
+        <th class="px-4 py-2 text-right highlight-result">Total Result</th>
+        <th class="px-4 py-2 text-right">Total %</th>
+    </tr>
+</thead>
+
                     <tbody class="divide-y divide-gray-700">
-                        <?php if (empty($weekly_data)): ?>
-                            <tr>
-                                <td colspan="16" class="text-center px-4 py-6">No weekly tracking data found for <?= htmlspecialchars($filter_year) ?></td>
-                            </tr>
-                        <?php else: ?>
-                            <?php foreach ($weekly_data as $week_entry): ?>
-                                <tr class="hover:bg-gray-800 transition duration-150">
-                                    <td class="px-4 py-2 font-medium<?php echo $week_entry['is_cross_year'] ? ' cross-year-week' : ''; ?>">
-    <?php echo htmlspecialchars($week_entry['week_number']); ?>
-</td>
-                                    <td class="px-4 py-2"><?php echo format_date($week_entry['start_date']); ?></td>
-                                    <td class="px-4 py-2"><?php echo format_date($week_entry['end_date']); ?></td>
-                                    
-                                    <!-- Slots -->
-                                    <td class="px-4 py-2 text-right"><?php echo format_currency($week_entry['slots_drop']); ?></td>
-                                    <td class="px-4 py-2 text-right <?php echo $week_entry['slots_result'] >= 0 ? 'positive' : 'negative'; ?>"><?php echo format_currency($week_entry['slots_result']); ?></td>
-                                    <td class="px-4 py-2 text-right"><?php echo number_format($week_entry['slots_percentage'], 2); ?>%</td>
-                                    
-                                    <!-- Gambee -->
-                                    <td class="px-4 py-2 text-right"><?php echo format_currency($week_entry['gambee_drop']); ?></td>
-                                    <td class="px-4 py-2 text-right <?php echo $week_entry['gambee_result'] >= 0 ? 'positive' : 'negative'; ?>"><?php echo format_currency($week_entry['gambee_result']); ?></td>
-                                    <td class="px-4 py-2 text-right"><?php echo number_format($week_entry['gambee_percentage'], 2); ?>%</td>
-                                    
-                                    <!-- Coins -->
-                                    <td class="px-4 py-2 text-right"><?php echo format_currency($week_entry['coins_drop']); ?></td>
-                                    <td class="px-4 py-2 text-right <?php echo $week_entry['coins_result'] >= 0 ? 'positive' : 'negative'; ?>"><?php echo format_currency($week_entry['coins_result']); ?></td>
-                                    <td class="px-4 py-2 text-right"><?php echo number_format($week_entry['coins_percentage'], 2); ?>%</td>
-                                    
-                                    <!-- Totals -->
-                                    <td class="px-4 py-2 text-right highlight-drop"><strong><?php echo format_currency($week_entry['total_drop']); ?></strong></td>
-                                    <td class="px-4 py-2 text-right highlight-out"><strong><?php echo format_currency($week_entry['total_out']); ?></strong></td>
-                                    <td class="px-4 py-2 text-right highlight-result <?php echo $week_entry['total_result'] >= 0 ? 'positive' : 'negative'; ?>"><strong><?php echo format_currency($week_entry['total_result']); ?></strong></td>
-                                    <td class="px-4 py-2 text-right"><strong><?php echo number_format($week_entry['total_result_percentage'], 2); ?>%</strong></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </tbody>
+    <?php if (empty($weekly_data)): ?>
+        <tr>
+            <td colspan="16" class="text-center px-4 py-6">No weekly tracking data found for <?= htmlspecialchars($filter_year) ?></td>
+        </tr>
+    <?php else: ?>
+        <?php foreach ($weekly_data as $week_entry): ?>
+            <tr class="hover:bg-gray-800 transition duration-150">
+                <td class="px-4 py-2 font-medium<?php echo $week_entry['is_cross_year'] ? ' cross-year-week' : ''; ?>">
+                    <?php echo htmlspecialchars($week_entry['week_number']); ?>
+                </td>
+                <td class="px-4 py-2"><?php echo format_date($week_entry['start_date']); ?></td>
+                <td class="px-4 py-2 category-section-border-right"><?php echo format_date($week_entry['end_date']); ?></td> <!-- Added class -->
+                
+                <!-- Slots -->
+                <td class="px-4 py-2 text-right"><?php echo format_currency($week_entry['slots_drop']); ?></td>
+                <td class="px-4 py-2 text-right <?php echo $week_entry['slots_result'] >= 0 ? 'positive' : 'negative'; ?>"><?php echo format_currency($week_entry['slots_result']); ?></td>
+                <td class="px-4 py-2 text-right category-section-border-right"><?php echo number_format($week_entry['slots_percentage'], 2); ?>%</td> <!-- Added class -->
+                
+                <!-- Gambee -->
+                <td class="px-4 py-2 text-right"><?php echo format_currency($week_entry['gambee_drop']); ?></td>
+                <td class="px-4 py-2 text-right <?php echo $week_entry['gambee_result'] >= 0 ? 'positive' : 'negative'; ?>"><?php echo format_currency($week_entry['gambee_result']); ?></td>
+                <td class="px-4 py-2 text-right category-section-border-right"><?php echo number_format($week_entry['gambee_percentage'], 2); ?>%</td> <!-- Added class -->
+                
+                <!-- Coins -->
+                <td class="px-4 py-2 text-right"><?php echo format_currency($week_entry['coins_drop']); ?></td>
+                <td class="px-4 py-2 text-right <?php echo $week_entry['coins_result'] >= 0 ? 'positive' : 'negative'; ?>"><?php echo format_currency($week_entry['coins_result']); ?></td>
+                <td class="px-4 py-2 text-right category-section-border-right"><strong><?php echo number_format($week_entry['coins_percentage'], 2); ?>%</strong></td> <!-- Added class -->
+                
+                <!-- Totals -->
+                <td class="px-4 py-2 text-right highlight-drop"><strong><?php echo format_currency($week_entry['total_drop']); ?></strong></td>
+                <td class="px-4 py-2 text-right highlight-out"><strong><?php echo format_currency($week_entry['total_out']); ?></strong></td>
+                <td class="px-4 py-2 text-right highlight-result <?php echo $week_entry['total_result'] >= 0 ? 'positive' : 'negative'; ?>"><strong><?php echo format_currency($week_entry['total_result']); ?></strong></td>
+                <td class="px-4 py-2 text-right"><strong><?php echo number_format($week_entry['total_result_percentage'], 2); ?>%</strong></td>
+            </tr>
+        <?php endforeach; ?>
+    <?php endif; ?>
+</tbody>
+
                 </table>
             </div>
         </div>
     </div>
 </div>
+

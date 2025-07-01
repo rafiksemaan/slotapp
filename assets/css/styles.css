@@ -1941,10 +1941,25 @@ input[disabled] {
 
 /* Highlight for cross-year weeks */
 .cross-year-week {
-    background-color: rgba(208, 160, 64, 0.1); /* Light golden background */
+    background-color: rgba(125, 96, 38, 0.1); /* Desaturated dark golden background */
     box-shadow: 0 0 8px rgba(208, 160, 64, 0.6); /* Golden shadow */
     border: 1px solid var(--secondary-color); /* Golden border */
     border-radius: var(--border-radius);
     padding: 4px 8px; /* Adjust padding as needed */
     display: inline-block; /* Ensure padding and shadow apply correctly */
+}
+
+/* Highlight for current week */
+.current-week-highlight {
+    background-color: rgba(243, 156, 18, 0.1); /* Light orange background */
+    box-shadow: 0 0 8px rgba(243, 156, 18, 0.6); /* Orange shadow */
+    border: 1px solid var(--warning-color); /* Orange border */
+    border-radius: var(--border-radius);
+    padding: 4px 8px; /* Adjust padding as needed */
+    display: inline-block; /* Ensure padding and shadow apply correctly */
+}
+
+/* New class for thicker category borders */
+.category-section-border-right {
+    border-right: 3px solid var(--secondary-color) !important; /* Thicker, distinct color */
 }
