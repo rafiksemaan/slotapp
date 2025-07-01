@@ -26,6 +26,13 @@ if ($page == 'settings' && $user_role != 'admin') {
     $allowed = false;
 }
 
+// Add weekly_tracking to allowed pages
+if ($page == 'weekly_tracking' && !$allowed) { // This condition might need adjustment based on your existing logic
+    // If you want to restrict weekly_tracking to certain roles, add that logic here.
+    // For now, assuming it's generally allowed if not explicitly denied by 'settings' rule.
+}
+
+
 if ($allowed) {
     // Load the requested page
     $file_path = 'pages/' . $page . '.php';

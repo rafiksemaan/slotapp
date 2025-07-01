@@ -91,6 +91,10 @@ define('ICON_PATH', 'assets/icons'); // Make sure this matches your actual folde
                 <span class="menu-icon"><img src="<?= icon('calendar') ?>" alt="daily_tracking" /></span>
                 <span class="menu-text">Daily Tracking</span>
             </a></li>
+            <li><a href="index.php?page=weekly_tracking" class="<?= $page == 'weekly_tracking' ? 'active' : '' ?>">
+                <span class="menu-icon"><img src="<?= icon('calendar') ?>" alt="weekly_tracking" /></span>
+                <span class="menu-text">Weekly Tracking</span>
+            </a></li>
             <li><a href="index.php?page=general_report" class="<?= $page == 'general_report' ? 'active' : '' ?>">
                 <span class="menu-icon"><img src="<?= icon('report') ?>" alt="general_report" /></span>
                 <span class="menu-text">General Report</span>
@@ -154,7 +158,7 @@ define('ICON_PATH', 'assets/icons'); // Make sure this matches your actual folde
             
             <main class="content">
                 <div class="page-header">
-                    <h2><?php echo ucfirst($page == 'custom_report' ? 'Custom Report' : ($page == 'general_report' ? 'General Report' : ($page == 'guest_tracking' ? 'Guest Tracking' : ($page == 'operation_day' ? 'Operation Day' : ($page == 'daily_tracking' ? 'Daily Tracking' : $page))))); ?></h2>
+                    <h2><?php echo ucfirst($page == 'custom_report' ? 'Custom Report' : ($page == 'general_report' ? 'General Report' : ($page == 'guest_tracking' ? 'Guest Tracking' : ($page == 'operation_day' ? 'Operation Day' : ($page == 'daily_tracking' ? 'Daily Tracking' : ($page == 'weekly_tracking' ? 'Weekly Tracking' : $page)))))); ?></h2>
                 </div>
                 <div class="page-content">
 				
@@ -228,8 +232,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 const url = new URL(href, window.location.href);
                 const targetPage = url.searchParams.get('page');
 
-                // Collapse if not a settings subpage
-                if (!['machines', 'brands', 'machine_types', 'machine_groups', 'users', 'operation_day'].includes(targetPage)) {
+                // Collapse if not a settings subpage or weekly_tracking
+                if (!['machines', 'brands', 'machine_types', 'machine_groups', 'users', 'operation_day', 'weekly_tracking'].includes(targetPage)) {
                     if (settingsMenu) {
                         settingsMenu.classList.remove('open');
                         localStorage.setItem('settingsMenuOpen', 'false');

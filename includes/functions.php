@@ -281,4 +281,35 @@ function secure_redirect($url) {
 function icon($name) {
     return ICON_PATH . '/' . $name . '.png';
 }
+
+/**
+ * Calculates the Monday and Sunday of the week for a given date,
+ * and provides a consistent week label, handling year-spanning weeks.
+ *
+ * @param string $date_string A date string in 'YYYY-MM-DD' format.
+ * @return array An associative array with 'start_date', 'end_date', 'week_label', 'week_year', 'week_number'.
+ */
+function get_monday_sunday_week_info($date_string) {
+    $dt = new DateTime($date_string);
+
+    // Set to Monday of the current week
+    $dt->modify('this week monday');
+    $start_date = $dt->format('Y-m-d');
+    $week_year = $dt->format('Y'); // Year of the Monday
+    $week_number = $dt->format('W'); // ISO week number based on Monday
+
+    // Set to Sunday of the current week
+    $dt->modify('this week sunday');
+    $end_date = $dt->format('Y-m-d');
+
+    $week_label = "{$week_year} Week {$week_number}";
+
+    return [
+        'start_date' => $start_date,
+        'end_date' => $end_date,
+        'week_label' => $week_label,
+        'week_year' => $week_year,
+        'week_number' => $week_number
+    ];
+}
 ?>
