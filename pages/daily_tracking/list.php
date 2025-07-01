@@ -203,7 +203,7 @@ if ($date_range_type === 'range') {
                 <table class="min-w-full divide-y divide-gray-700 separated-columns">
                     <thead class="bg-gray-800 text-white">
                         <tr>
-                            <th class="px-4 py-2 text-left">
+                            <th class="px-4 py-2 text-left category-section-border-right">
                                 <a href="?page=daily_tracking&sort=tracking_date&order=<?php echo $sort_column == 'tracking_date' ? $toggle_order : 'ASC'; ?>&<?= http_build_query(array_diff_key($_GET, ['sort' => '', 'order' => ''])) ?>">
                                     Date <?php if ($sort_column == 'tracking_date') echo $sort_order == 'ASC' ? '▲' : '▼'; ?>
                                 </a>
@@ -211,15 +211,15 @@ if ($date_range_type === 'range') {
                             <!-- Slots -->
                             <th class="px-4 py-2 text-right">Slots Drop</th>
                             <th class="px-4 py-2 text-right">Slots Out</th>
-                            <th class="px-4 py-2 text-right">Slots Result</th>
+                            <th class="px-4 py-2 text-right category-section-border-right">Slots Result</th>
                             <!-- Gambee -->
                             <th class="px-4 py-2 text-right">Gambee Drop</th>
                             <th class="px-4 py-2 text-right">Gambee Out</th>
-                            <th class="px-4 py-2 text-right">Gambee Result</th>
+                            <th class="px-4 py-2 text-right category-section-border-right">Gambee Result</th>
                             <!-- Coins -->
                             <th class="px-4 py-2 text-right">Coins Drop</th>
                             <th class="px-4 py-2 text-right">Coins Out</th>
-                            <th class="px-4 py-2 text-right">Coins Result</th>
+                            <th class="px-4 py-2 text-right category-section-border-right">Coins Result</th>
                             <!-- Totals -->
                             <th class="px-4 py-2 text-right">Actions</th>
                         </tr>
@@ -232,22 +232,22 @@ if ($date_range_type === 'range') {
                         <?php else: ?>
                             <?php foreach ($tracking_data as $data): ?>
                                 <tr class="hover:bg-gray-800 transition duration-150">
-                                    <td class="px-4 py-2 font-medium"><?php echo format_date($data['tracking_date']); ?></td>
+                                    <td class="px-4 py-2 font-medium category-section-border-right"><?php echo format_date($data['tracking_date']); ?></td>
                                     
                                     <!-- Slots -->
                                     <td class="px-4 py-2 text-right"><?php echo format_currency($data['slots_drop']); ?></td>
                                     <td class="px-4 py-2 text-right"><?php echo format_currency($data['slots_out']); ?></td>
-                                    <td class="px-4 py-2 text-right <?php echo $data['slots_result'] >= 0 ? 'positive' : 'negative'; ?>"><?php echo format_currency($data['slots_result']); ?></td>
+                                    <td class="px-4 py-2 text-right category-section-border-right <?php echo $data['slots_result'] >= 0 ? 'positive' : 'negative'; ?>"><?php echo format_currency($data['slots_result']); ?></td>
                                     
                                     <!-- Gambee -->
                                     <td class="px-4 py-2 text-right"><?php echo format_currency($data['gambee_drop']); ?></td>
                                     <td class="px-4 py-2 text-right"><?php echo format_currency($data['gambee_out']); ?></td>
-                                    <td class="px-4 py-2 text-right <?php echo $data['gambee_result'] >= 0 ? 'positive' : 'negative'; ?>"><?php echo format_currency($data['gambee_result']); ?></td>
+                                    <td class="px-4 py-2 text-right category-section-border-right <?php echo $data['gambee_result'] >= 0 ? 'positive' : 'negative'; ?>"><?php echo format_currency($data['gambee_result']); ?></td>
                                     
                                     <!-- Coins -->
                                     <td class="px-4 py-2 text-right"><?php echo format_currency($data['coins_drop']); ?></td>
                                     <td class="px-4 py-2 text-right"><?php echo format_currency($data['coins_out']); ?></td>
-                                    <td class="px-4 py-2 text-right <?php echo $data['coins_result'] >= 0 ? 'positive' : 'negative'; ?>"><?php echo format_currency($data['coins_result']); ?></td>
+                                    <td class="px-4 py-2 text-right category-section-border-right <?php echo $data['coins_result'] >= 0 ? 'positive' : 'negative'; ?>"><?php echo format_currency($data['coins_result']); ?></td>
                                     
                                     <td class="px-4 py-2 text-right">
                                         <a href="index.php?page=daily_tracking&action=edit&id=<?php echo $data['id']; ?>" class="action-btn edit-btn" data-tooltip="Edit"><span class="menu-icon"><img src="<?= icon('edit') ?>"/></span></a>
