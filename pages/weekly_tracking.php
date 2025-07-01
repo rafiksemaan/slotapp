@@ -9,21 +9,30 @@ $filter_year = $_GET['year'] ?? date('Y');
 
 // Validate year
 if (!is_numeric($filter_year) || $filter_year < 2000 || $filter_year > 2100) {
-    $filter_year = date('Y');$filter_year = $_GET['year'] ?? date('Y');
-$filter_week_number = $_GET['week_number'] ?? ''; // Add this line
-
+    $filter_year = date('Y');
 }
+$filter_week_number = $_GET['week_number'] ?? ''; // This line should be outside the if block
+
 
 // Get all daily tracking data for the selected year
 $daily_data = [];
 try {
     $query = "SELECT * FROM daily_tracking WHERE YEAR(tracking_date) = ?";
-    $params = [$filter_year];
+    $params = [(int)$filter_year]; // Cast year to int for safety
 
     if (!empty($filter_week_number)) {
-        // Change WEEK(tracking_date, 1) to WEEK(tracking_date, 3)
-        $query .= " AND WEEK(tracking_date, 3) = ?";
-        $params[] = $filter_week_number;
+        // Calculate the start and end dates of the selected ISO week
+        $dt_start = new DateTime();
+        $dt_start->setISODate((int)$filter_year, (int)$filter_week_number, 1); // Monday of the ISO week
+        $start_of_week = $dt_start->format('Y-m-d');
+
+        $dt_end = new DateTime();
+        $dt_end->setISODate((int)$filter_year, (int)$filter_week_number, 7); // Sunday of the ISO week
+        $end_of_week = $dt_end->format('Y-m-d');
+
+        $query .= " AND tracking_date BETWEEN ? AND ?";
+        $params[] = $start_of_week;
+        $params[] = $end_of_week;
     }
 
     $query .= " ORDER BY tracking_date ASC";
@@ -34,6 +43,9 @@ try {
     $error = "Database error: " . $e->getMessage();
     $daily_data = [];
 }
+
+
+
 
 
 $weekly_data = [];
@@ -107,7 +119,7 @@ ksort($weekly_data);
 // Get available years from daily_tracking data
 $available_years = [];
 try {
-    $years_stmt = $conn->query("SELECT DISTINCT YEAR(tracking_date) as year FROM daily_tracking ORDER BY year DESC");
+    $years_stmt = $conn->query("SELECT DISTINCT YEAR(tracking_date) as year FROM daily_tracking WHERE YEAR(tracking_date) IS NOT NULL AND YEAR(tracking_date) > 0 ORDER BY year DESC");
     $available_years = $years_stmt->fetchAll(PDO::FETCH_COLUMN);
 } catch (PDOException $e) {
     // Handle error silently
