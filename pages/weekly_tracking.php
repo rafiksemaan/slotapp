@@ -38,6 +38,7 @@ foreach ($daily_data as $day_entry) {
             'week_label' => $week_info['week_label'],
             'start_date' => $week_info['start_date'],
             'end_date' => $week_info['end_date'],
+            'is_cross_year' => $week_info['is_cross_year'], // Capture the new flag here
             'slots_drop' => 0,
             'slots_out' => 0,
             'gambee_drop' => 0,
@@ -207,7 +208,9 @@ $grand_total_percentage = $grand_total_drop > 0 ? (($grand_total_result / $grand
                         <?php else: ?>
                             <?php foreach ($weekly_data as $week_entry): ?>
                                 <tr class="hover:bg-gray-800 transition duration-150">
-                                    <td class="px-4 py-2 font-medium"><?php echo htmlspecialchars($week_entry['week_number']); ?></td>
+                                    <td class="px-4 py-2 font-medium<?php echo $week_entry['is_cross_year'] ? ' cross-year-week' : ''; ?>">
+    <?php echo htmlspecialchars($week_entry['week_number']); ?>
+</td>
                                     <td class="px-4 py-2"><?php echo format_date($week_entry['start_date']); ?></td>
                                     <td class="px-4 py-2"><?php echo format_date($week_entry['end_date']); ?></td>
                                     

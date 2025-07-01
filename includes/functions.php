@@ -304,12 +304,17 @@ function get_monday_sunday_week_info($date_string) {
 
     $week_label = "{$week_year} Week {$week_number}";
 
+    // Determine if the week spans across two different years
+    $is_cross_year = (date('Y', strtotime($start_date)) !== date('Y', strtotime($end_date)));
+
     return [
         'start_date' => $start_date,
         'end_date' => $end_date,
         'week_label' => $week_label,
         'week_year' => $week_year,
-        'week_number' => $week_number
+        'week_number' => $week_number,
+        'is_cross_year' => $is_cross_year // Add this new flag
     ];
 }
+
 ?>

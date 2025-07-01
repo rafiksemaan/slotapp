@@ -1938,3 +1938,13 @@ input[disabled] {
     padding-bottom: var(--spacing-xs);
     border-bottom: 1px solid var(--border-color);
 }
+
+/* Highlight for cross-year weeks */
+.cross-year-week {
+    background-color: rgba(208, 160, 64, 0.1); /* Light golden background */
+    box-shadow: 0 0 8px rgba(208, 160, 64, 0.6); /* Golden shadow */
+    border: 1px solid var(--secondary-color); /* Golden border */
+    border-radius: var(--border-radius);
+    padding: 4px 8px; /* Adjust padding as needed */
+    display: inline-block; /* Ensure padding and shadow apply correctly */
+}
