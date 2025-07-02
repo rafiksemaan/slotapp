@@ -34,7 +34,7 @@ $can_edit = has_permission('editor');
 try {
     // Pagination parameters
     $page_num = isset($_GET['page_num']) ? (int)$_GET['page_num'] : 1;
-    $per_page = 5;
+    $per_page = 100;
     $offset = ($page_num - 1) * $per_page;
 
     // Sorting parameters

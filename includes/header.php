@@ -116,9 +116,9 @@ define('ICON_PATH', 'assets/icons'); // Make sure this matches your actual folde
                 <span class="menu-text">My Profile</span>
             </a></li>
 
-            <!-- Admin Only: Settings Section -->
+                                    <!-- Admin Only: Settings Section -->
             <?php if ($_SESSION['user_role'] == 'admin'): ?>
-			<li class="settings-menu <?= in_array($page, ['machines', 'brands', 'machine_types', 'machine_groups', 'users', 'operation_day']) ? 'open active' : '' ?>">
+			<li class="settings-menu <?= in_array($page, ['machines', 'brands', 'machine_types', 'machine_groups', 'users', 'operation_day', 'import_transactions']) ? 'open active' : '' ?>">
                 <a href="#" class="settings-toggle">
                     <span class="menu-icon"><img src="<?= icon('settings') ?>" alt="Settings" /></span>
                     <span class="menu-text">Settings</span>
@@ -149,9 +149,15 @@ define('ICON_PATH', 'assets/icons'); // Make sure this matches your actual folde
                         <span class="submenu-icon"><img src="<?= icon('users') ?>" alt="users" /></span>
                         <span class="menu-text">Users</span>
                     </a></li>
+                    <!-- NEW: Import Transactions Link -->
+                    <li><a href="index.php?page=import_transactions" class="<?= $page == 'import_transactions' ? 'active' : '' ?>">
+                        <span class="submenu-icon"><img src="<?= icon('transaction') ?>" alt="Import Transactions" /></span>
+                        <span class="menu-text">Import Transactions</span>
+                    </a></li>
                 </ul>
             </li>
             <?php endif; ?>
+
         </ul>
     </nav>
 </aside>
