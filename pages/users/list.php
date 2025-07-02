@@ -43,54 +43,6 @@ try {
 ?>
 
 <div class="users-page fade-in">
-    <!-- Filters -->
-	<!--
-    <div class="filters-container card mb-6">
-        <div class="card-body">
-            <form action="index.php" method="GET">
-                <input type="hidden" name="page" value="users">
-                <input type="hidden" name="sort" value="<?php echo $sort_column; ?>">
-                <input type="hidden" name="order" value="<?php echo $sort_order; ?>">
-
-                <!-- Filter Options Section 
-                <div class="form-section">
-                    <h4>Filter Options</h4>
-                    <div class="row">
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="role">Role</label>
-                                <select name="role" id="role" class="form-control">
-                                    <option value="">All Roles</option>
-                                    <option value="admin" <?php echo ($filter_role === 'admin') ? 'selected' : ''; ?>>Admin</option>
-                                    <option value="editor" <?php echo ($filter_role === 'editor') ? 'selected' : ''; ?>>Editor</option>
-                                    <option value="viewer" <?php echo ($filter_role === 'viewer') ? 'selected' : ''; ?>>Viewer</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="status">Status</label>
-                                <select name="status" id="status" class="form-control">
-                                    <option value="">All Status</option>
-                                    <option value="Active" <?php echo ($filter_status === 'Active') ? 'selected' : ''; ?>>Active</option>
-                                    <option value="Inactive" <?php echo ($filter_status === 'Inactive') ? 'selected' : ''; ?>>Inactive</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Submit Buttons 
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Apply Filters</button>
-                    <a href="index.php?page=users" class="btn btn-danger">Reset</a>
-                </div>
-            </form>
-        </div>
-    </div>
-	 -->
-
     <!-- Action Buttons -->
     <?php if ($can_edit): ?>
         <div class="action-buttons mb-6 flex justify-end">
