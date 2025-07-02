@@ -116,7 +116,7 @@ define('ICON_PATH', 'assets/icons'); // Make sure this matches your actual folde
                 <span class="menu-text">My Profile</span>
             </a></li>
 
-                                    <!-- Admin Only: Settings Section -->
+			<!-- Admin Only: Settings Section -->
             <?php if ($_SESSION['user_role'] == 'admin'): ?>
 			<li class="settings-menu <?= in_array($page, ['machines', 'brands', 'machine_types', 'machine_groups', 'users', 'operation_day', 'import_transactions']) ? 'open active' : '' ?>">
                 <a href="#" class="settings-toggle">
