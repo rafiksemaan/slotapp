@@ -11,7 +11,7 @@ $pass = 'Mcmxcix7//6'; // Default WAMP MySQL password is empty
 $dbname = 'slotapp'; // Your database name
 
 // Backup directory (outside web root for security)
-$backupDir = 'C:/wamp64/www/slotapp/backups/db_daily_backups/';
+$backupDir = 'C:/wamp64/backups/db_daily_backups/';
 $date = date('Y-m-d');
 $filename = $backupDir . "db_backup_{$date}.sql";
 
