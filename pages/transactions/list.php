@@ -78,7 +78,7 @@ try {
     // Map sort columns to actual database columns
     $sort_map = [
         'operation_date' => 't.operation_date',
-        'machine_number' => 'm.machine_number',
+		'machine_number' => 'CAST(m.machine_number AS UNSIGNED)',
         'transaction_type' => 'tt.name',
         'amount' => 't.amount',
         'username' => 'u.username'
