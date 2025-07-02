@@ -217,6 +217,8 @@ try {
             $order_column = 'mt.name';
             break;
         case 'machine_number':
+			$order_column = "CAST(m.machine_number AS UNSIGNED)";
+			break;
         case 'model':
         case 'credit_value':
         case 'serial_number':
