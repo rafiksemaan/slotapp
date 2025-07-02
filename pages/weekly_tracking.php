@@ -298,3 +298,4 @@ $current_iso_year = date('Y');
     </div>
 </div>
 
+<script src="assets/js/weekly_tracking.js"></script>

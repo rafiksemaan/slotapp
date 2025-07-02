@@ -143,3 +143,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $can_edit) {
         </div>
     </div>
 </div>
+
+<script src="assets/js/users_edit.js"></script>

@@ -281,3 +281,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 </div>
+
+<script src="assets/js/machines_edit.js"></script>

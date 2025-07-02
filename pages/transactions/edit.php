@@ -300,4 +300,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <script src="assets/js/transactions_edit.js"></script>
-</div>

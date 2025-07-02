@@ -128,3 +128,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 </div>
+
+<script src="assets/js/users_create.js"></script>

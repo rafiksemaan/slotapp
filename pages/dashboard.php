@@ -179,7 +179,8 @@ foreach ($out_transactions as $transaction) {
                     <h3>Machine Distribution</h3>
                 </div>
                 <div class="card-body">
-                    <div class="chart-container">
+                    <div class="chart-container"
+                         data-stats='<?php echo json_encode($machine_stats); ?>'>
                         <canvas id="machines-chart"></canvas>
                     </div>
                 </div>
@@ -202,6 +203,7 @@ foreach ($out_transactions as $transaction) {
                              data-out-labels='<?php echo json_encode(array_column($out_transactions, 'name')); ?>'
                              data-drop-data='<?php echo json_encode(array_column($drop_transactions, 'total')); ?>'
                              data-drop-labels='<?php echo json_encode(array_column($drop_transactions, 'name')); ?>'>
+
                             <canvas id="transactions-chart"></canvas>
                         </div>
                     <?php endif; ?>
@@ -211,113 +213,4 @@ foreach ($out_transactions as $transaction) {
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Machine distribution chart
-    const machinesCtx = document.getElementById('machines-chart');
-    if (machinesCtx) {
-        new Chart(machinesCtx, {
-            type: 'pie',
-            data: {
-                labels: [
-                    <?php foreach ($machine_stats as $stat): ?>
-                        '<?php echo $stat['status']; ?>',
-                    <?php endforeach; ?>
-                ],
-                datasets: [{
-                    data: [
-                        <?php foreach ($machine_stats as $stat): ?>
-                            <?php echo $stat['count']; ?>,
-                        <?php endforeach; ?>
-                    ],
-                    backgroundColor: [
-                        'rgba(46, 204, 113, 0.7)',
-                        'rgba(231, 76, 60, 0.7)',
-                        'rgba(243, 156, 18, 0.7)',
-                        'rgba(52, 152, 219, 0.7)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            color: '#ffffff'
-                        }
-                    },
-                    title: {
-                        display: true,
-                        text: 'Machines by Status',
-                        color: '#ffffff'
-                    }
-                }
-            }
-        });
-    }
-    
-    // This month's transactions chart
-    const transactionsCtx = document.getElementById('transactions-chart');
-    if (transactionsCtx) {
-        const outData = <?php echo json_encode(array_column($out_transactions, 'total')); ?>;
-        const outLabels = <?php echo json_encode(array_column($out_transactions, 'name')); ?>;
-        const dropData = <?php echo json_encode(array_column($drop_transactions, 'total')); ?>;
-        const dropLabels = <?php echo json_encode(array_column($drop_transactions, 'name')); ?>;
-
-        new Chart(transactionsCtx, {
-            type: 'bar',
-            data: {
-                labels: [...outLabels, ...dropLabels],
-                datasets: [{
-                    label: 'Amount',
-                    data: [...outData, ...dropData],
-                    backgroundColor: [
-                        ...Array(outLabels.length).fill('rgba(231, 76, 60, 0.7)'),
-                        ...Array(dropLabels.length).fill('rgba(46, 204, 113, 0.7)')
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: 'rgba(255, 255, 255, 0.1)'
-                        },
-                        ticks: {
-                            color: '#a0a0a0',
-                            callback: function(value) {
-                                return '$' + value.toLocaleString();
-                            }
-                        }
-                    },
-                    x: {
-                        grid: {
-                            color: 'rgba(255, 255, 255, 0.1)'
-                        },
-                        ticks: {
-                            color: '#a0a0a0'
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    title: {
-                        display: true,
-                        text: 'This Month\'s Transactions',
-                        color: '#ffffff'
-                    }
-                }
-            }
-        });
-    }
-});
-</script>
+<script src="assets/js/dashboard_charts.js"></script>

@@ -275,3 +275,5 @@ try {
         </div>
     </div>
 </div>
+
+<script src="assets/js/machines_create.js"></script>
