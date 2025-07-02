@@ -247,18 +247,4 @@ try {
     </div>
 </div>
 
-<script>
-function validateForm(form) {
-    const amountInput = form.amount;
-    if (amountInput.value <= 0) {
-        alert("Amount must be a positive number.");
-        return false;
-    }
-    return true;
-}
-
-// Optional: Auto-focus first field
-document.addEventListener('DOMContentLoaded', function () {
-    document.getElementById('machine_id').focus();
-});
-</script>
+<script src="assets/js/transactions_create.js"></script>

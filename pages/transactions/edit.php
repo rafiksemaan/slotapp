@@ -253,7 +253,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <div class="col">
                                 <div class="form-group">
                                     <label for="operation_date">Operation Date *</label>
-                                    <input type="date" id="operation_date" name="operation_date" class="form-control" 
+                                    <input type="date" id="operation_date" name="operation_date" class="form-control" data-original-date="<?php echo htmlspecialchars($transaction['operation_date'] ?? date('Y-m-d')); ?>" 
                                            value="<?php echo htmlspecialchars($transaction['operation_date'] ?? date('Y-m-d')); ?>" required>
                                     <small class="form-text">Casino operation day (admin only)</small>
                                 </div>
@@ -299,24 +299,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    <?php if ($is_admin): ?>
-    // Add confirmation for operation date changes (admin only)
-    document.querySelector('.transaction-form').addEventListener('submit', function(e) {
-        const originalOperationDate = '<?php echo $transaction['operation_date'] ?? date('Y-m-d'); ?>';
-        const newOperationDate = document.getElementById('operation_date').value;
-        
-        if (originalOperationDate !== newOperationDate) {
-            const confirmMessage = `You are changing the operation date from ${originalOperationDate} to ${newOperationDate}.\n\nThis will affect how this transaction appears in reports and statistics.\n\nAre you sure you want to continue?`;
-            
-            if (!confirm(confirmMessage)) {
-                e.preventDefault();
-                return false;
-            }
-        }
-    });
-    <?php endif; ?>
-});
-</script>
+<script src="assets/js/transactions_edit.js"></script>
 </div>

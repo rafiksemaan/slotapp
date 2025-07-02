@@ -422,18 +422,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('installForm');
-            const installBtn = document.getElementById('installBtn');
-            
-            if (form) {
-                form.addEventListener('submit', function() {
-                    installBtn.disabled = true;
-                    installBtn.textContent = '⏳ Installing...';
-                });
-            }
-        });
-    </script>
+    <script src="assets/js/install_form.js"></script>
+	
 </body>
 </html>

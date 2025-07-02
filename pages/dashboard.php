@@ -172,7 +172,10 @@ foreach ($out_transactions as $transaction) {
     <div class="dashboard-charts-row">
         <div class="dashboard-chart-card">
             <div class="card">
-                <div class="card-header">
+                <div class="chart-container" 
+                         data-stats='<?php echo json_encode($machine_stats); ?>'
+                         data-out-data='<?php echo json_encode(array_column($out_transactions, 'total')); ?>'
+                         data-out-labels='<?php echo json_encode(array_column($out_transactions, 'name')); ?>'>
                     <h3>Machine Distribution</h3>
                 </div>
                 <div class="card-body">
@@ -194,7 +197,11 @@ foreach ($out_transactions as $transaction) {
                             <p>No transactions recorded this month</p>
                         </div>
                     <?php else: ?>
-                        <div class="chart-container">
+                        <div class="chart-container"
+                             data-out-data='<?php echo json_encode(array_column($out_transactions, 'total')); ?>'
+                             data-out-labels='<?php echo json_encode(array_column($out_transactions, 'name')); ?>'
+                             data-drop-data='<?php echo json_encode(array_column($drop_transactions, 'total')); ?>'
+                             data-drop-labels='<?php echo json_encode(array_column($drop_transactions, 'name')); ?>'>
                             <canvas id="transactions-chart"></canvas>
                         </div>
                     <?php endif; ?>

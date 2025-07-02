@@ -88,7 +88,7 @@ try {
                     
                     <div class="form-group">
                         <label for="operation_date">Operation Date *</label>
-                        <input type="date" id="operation_date" name="operation_date" class="form-control" 
+                        <input type="date" id="operation_date" name="operation_date" class="form-control" data-current-date="<?php echo htmlspecialchars($current_operation_date); ?>" 
                                value="<?php echo htmlspecialchars($operation_date); ?>" required>
                         <small class="form-text">
                             This date will be used for all new transactions as the operation day, 
@@ -126,24 +126,4 @@ try {
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Focus on the date input
-    document.getElementById('operation_date').focus();
-    
-    // Add confirmation for setting operation day
-    document.querySelector('.operation-day-form').addEventListener('submit', function(e) {
-        const selectedDate = document.getElementById('operation_date').value;
-        const currentDate = '<?php echo $current_operation_date; ?>';
-        
-        if (selectedDate !== currentDate) {
-            const confirmMessage = `Are you sure you want to set the operation day to ${selectedDate}?\n\nThis will affect all new transactions created after this change.`;
-            
-            if (!confirm(confirmMessage)) {
-                e.preventDefault();
-                return false;
-            }
-        }
-    });
-});
-</script>
+<script src="assets/js/operation_day_set.js"></script>

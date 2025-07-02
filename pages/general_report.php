@@ -378,7 +378,9 @@ $has_filters = !empty($_GET['machine_id']) || !empty($_GET['brand_id']) || !empt
                         <h3>Result Distribution by Machine Type</h3>
                     </div>
                     <div class="card-body">
-                        <div class="chart-container">
+                        <div class="chart-container" data-stats='<?php echo json_encode($machine_stats); ?>' 
+                         data-out-data='<?php echo json_encode(array_column($out_transactions, 'total')); ?>'
+                         data-out-labels='<?php echo json_encode(array_column($out_transactions, 'name')); ?>'>
                             <canvas id="results-pie-chart"></canvas>
                         </div>
                         
@@ -403,104 +405,8 @@ $has_filters = !empty($_GET['machine_id']) || !empty($_GET['brand_id']) || !empt
     <?php endif; ?>
 </div>
 
-<!-- JavaScript for form interactions, chart, and toggle filters -->
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    // Date range type toggle
-    const dateRangeType = document.getElementById('date_range_type');
-    const dateFrom = document.getElementById('date_from');
-    const dateTo = document.getElementById('date_to');
-    const monthSelect = document.getElementById('month');
-
-    function toggleDateInputs() {
-        const isRange = dateRangeType.value === 'range';
-        
-        dateFrom.disabled = !isRange;
-        dateTo.disabled = !isRange;
-        monthSelect.disabled = isRange;
-    }
-
-    dateRangeType.addEventListener('change', toggleDateInputs);
-    toggleDateInputs(); // Initial call
-
-    // Initialize pie chart
-    <?php if (!empty($chart_data)): ?>
-        const ctx = document.getElementById('results-pie-chart');
-        if (ctx) {
-            // Prepare chart data
-            const chartData = [];
-            const chartLabels = [];
-            const chartColors = [];
-            
-            <?php foreach ($chart_data as $index => $item): ?>
-                chartData.push(<?= $item['abs_result'] ?>);
-                chartLabels.push('<?= addslashes($item['type']) ?>');
-                chartColors.push('<?= getChartColor($index) ?>');
-            <?php endforeach; ?>
-
-            new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: chartLabels,
-                    datasets: [{
-                        data: chartData,
-                        backgroundColor: chartColors,
-                        borderWidth: 2,
-                        borderColor: '#1e1e1e'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false // We'll use custom legend
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.label || '';
-                                    const value = context.parsed;
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = ((value / total) * 100).toFixed(1);
-                                    return `${label}: $${value.toLocaleString()} (${percentage}%)`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-    <?php endif; ?>
-});
-
-// Toggle filters function
-function toggleFilters() {
-    const filtersBody = document.getElementById('filters-body');
-    const toggleIcon = document.getElementById('filter-toggle-icon');
-    
-    if (filtersBody.style.display === 'none') {
-        filtersBody.style.display = 'block';
-        toggleIcon.textContent = '▲';
-        // Add smooth animation
-        filtersBody.style.opacity = '0';
-        filtersBody.style.transform = 'translateY(-10px)';
-        setTimeout(() => {
-            filtersBody.style.transition = 'all 0.3s ease';
-            filtersBody.style.opacity = '1';
-            filtersBody.style.transform = 'translateY(0)';
-        }, 10);
-    } else {
-        filtersBody.style.transition = 'all 0.3s ease';
-        filtersBody.style.opacity = '0';
-        filtersBody.style.transform = 'translateY(-10px)';
-        setTimeout(() => {
-            filtersBody.style.display = 'none';
-            toggleIcon.textContent = '▼';
-        }, 300);
-    }
-}
-</script>
+<script src="assets/js/general_report_filters.js"></script>
+<script src="assets/js/general_report_charts.js"></script>
 
 <?php
 // Helper function to generate chart colors
