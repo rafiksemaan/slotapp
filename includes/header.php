@@ -117,7 +117,7 @@ define('ICON_PATH', 'assets/icons'); // Make sure this matches your actual folde
 
 			<!-- Admin Only: Settings Section -->
             <?php if ($_SESSION['user_role'] == 'admin'): ?>
-			<li class="settings-menu <?= in_array($page, ['machines', 'brands', 'machine_types', 'machine_groups', 'users', 'operation_day', 'import_transactions']) ? 'open active' : '' ?>">
+			<li class="settings-menu <?= in_array($page, ['machines', 'brands', 'machine_types', 'machine_groups', 'users', 'operation_day', 'import_transactions', 'action_logs', 'security_logs']) ? 'open active' : '' ?>">
                 <a href="#" class="settings-toggle">
                     <span class="menu-icon"><img src="<?= icon('settings') ?>" alt="Settings" /></span>
                     <span class="menu-text">Settings</span>
@@ -153,6 +153,16 @@ define('ICON_PATH', 'assets/icons'); // Make sure this matches your actual folde
                         <span class="submenu-icon"><img src="<?= icon('transaction') ?>" alt="Import Transactions" /></span>
                         <span class="menu-text">Import Transactions</span>
                     </a></li>
+                    <!-- NEW: Action Logs Link -->
+                    <li><a href="index.php?page=action_logs" class="<?= $page == 'action_logs' ? 'active' : '' ?>">
+                        <span class="submenu-icon"><img src="<?= icon('report') ?>" alt="Action Logs" /></span>
+                        <span class="menu-text">Action Logs</span>
+                    </a></li>
+                    <!-- NEW: Security Logs Link -->
+                    <li><a href="index.php?page=security_logs" class="<?= $page == 'security_logs' ? 'active' : '' ?>">
+                        <span class="submenu-icon"><img src="<?= icon('settings') ?>" alt="Security Logs" /></span>
+                        <span class="menu-text">Security Logs</span>
+                    </a></li>
                 </ul>
             </li>
             <?php endif; ?>
@@ -163,7 +173,7 @@ define('ICON_PATH', 'assets/icons'); // Make sure this matches your actual folde
             
             <main class="content">
                 <div class="page-header">
-                    <h2><?php echo ucfirst($page == 'custom_report' ? 'Custom Report' : ($page == 'general_report' ? 'General Report' : ($page == 'guest_tracking' ? 'Guest Tracking' : ($page == 'operation_day' ? 'Operation Day' : ($page == 'daily_tracking' ? 'Daily Tracking' : ($page == 'weekly_tracking' ? 'Weekly Tracking' : $page)))))); ?></h2>
+                    <h2><?php echo ucfirst($page == 'custom_report' ? 'Custom Report' : ($page == 'general_report' ? 'General Report' : ($page == 'guest_tracking' ? 'Guest Tracking' : ($page == 'operation_day' ? 'Operation Day' : ($page == 'daily_tracking' ? 'Daily Tracking' : ($page == 'weekly_tracking' ? 'Weekly Tracking' : ($page == 'action_logs' ? 'Action Logs' : ($page == 'security_logs' ? 'Security Logs' : $page)))))))); ?></h2>
                 </div>
                 <div class="page-content">
 				
@@ -238,7 +248,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const targetPage = url.searchParams.get('page');
 
                 // Collapse if not a settings subpage or weekly_tracking
-                if (!['machines', 'brands', 'machine_types', 'machine_groups', 'users', 'operation_day', 'weekly_tracking'].includes(targetPage)) {
+                if (!['machines', 'brands', 'machine_types', 'machine_groups', 'users', 'operation_day', 'weekly_tracking', 'import_transactions', 'action_logs', 'security_logs'].includes(targetPage)) {
                     if (settingsMenu) {
                         settingsMenu.classList.remove('open');
                         localStorage.setItem('settingsMenuOpen', 'false');
@@ -249,3 +259,4 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 </script>
+

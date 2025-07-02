@@ -22,7 +22,9 @@ $page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
 
 // Validate page access based on user role
 $allowed = true;
-if ($page == 'settings' && $user_role != 'admin') {
+$admin_pages = ['machines', 'brands', 'machine_types', 'machine_groups', 'users', 'operation_day', 'import_transactions', 'action_logs', 'security_logs'];
+
+if (in_array($page, $admin_pages) && $user_role != 'admin') {
     $allowed = false;
 }
 
