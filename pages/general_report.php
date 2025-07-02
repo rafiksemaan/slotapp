@@ -378,9 +378,7 @@ $has_filters = !empty($_GET['machine_id']) || !empty($_GET['brand_id']) || !empt
                         <h3>Result Distribution by Machine Type</h3>
                     </div>
                     <div class="card-body">
-                        <div class="chart-container" data-stats='<?php echo json_encode($machine_stats); ?>' 
-                         data-out-data='<?php echo json_encode(array_column($out_transactions, 'total')); ?>'
-                         data-out-labels='<?php echo json_encode(array_column($out_transactions, 'name')); ?>'>
+                        <div class="chart-container" data-chart-data='<?php echo json_encode($chart_data); ?>'>
                             <canvas id="results-pie-chart"></canvas>
                         </div>
                         
