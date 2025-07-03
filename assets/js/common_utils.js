@@ -90,4 +90,24 @@ document.addEventListener('DOMContentLoaded', function () {
             header.dataset.toggleListenerAttached = 'true'; // Mark as attached
         }
     });
+
+    // New logic: Collapse filters on load if filters are applied
+    const filtersBody = document.getElementById('filters-body');
+    const toggleIcon = document.getElementById('filter-toggle-icon');
+    const urlParams = new URLSearchParams(window.location.search);
+    const nonFilterParams = ['page', 'sort', 'order', 'page_num']; // Parameters that don't indicate an active filter
+
+    let hasUserAppliedFilters = false;
+    for (const [key, value] of urlParams.entries()) {
+        if (!nonFilterParams.includes(key)) {
+            hasUserAppliedFilters = true;
+            break;
+        }
+    }
+
+    // If filters are applied, collapse the body
+    if (hasUserAppliedFilters && filtersBody && toggleIcon) {
+        filtersBody.style.display = 'none';
+        toggleIcon.textContent = '▼';
+    }
 });
