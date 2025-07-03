@@ -540,3 +540,89 @@
         padding: 7px 5px; /* Adjust padding for print */
     }
 }
+
+/* Summary Cards Container */
+.summary-cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Responsive grid */
+    gap: 10px; /* Space between cards */
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.summary-card {
+    border: 1px solid var(--border-medium);
+    border-radius: 8px;
+    padding: 10px;
+    background-color: var(--bg-secondary);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    page-break-inside: avoid; /* Keep cards from breaking across pages */
+}
+
+.summary-card .card-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--primary-blue);
+    margin-bottom: 8px;
+    text-align: center;
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 5px;
+}
+
+.summary-card .card-stats {
+    display: flex;
+    justify-content: space-around;
+    gap: 5px;
+}
+
+.summary-card .stat-item {
+    text-align: center;
+    flex: 1;
+}
+
+.summary-card .stat-label {
+    font-size: 8px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.summary-card .stat-value-small {
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+    color: var(--number-primary);
+}
+
+/* Print-specific adjustments for summary cards */
+@media print {
+    .summary-cards-container {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Adjust for print */
+        gap: 8px;
+    }
+    .summary-card {
+        padding: 8px;
+        border: 1px solid var(--border-light) !important;
+        background-color: var(--bg-secondary) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    .summary-card .card-title {
+        font-size: 10px;
+        margin-bottom: 5px;
+        padding-bottom: 3px;
+        color: var(--primary-blue) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    .summary-card .stat-label {
+        font-size: 7px;
+    }
+    .summary-card .stat-value-small {
+        font-size: 9px;
+        color: var(--number-primary) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
