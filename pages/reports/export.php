@@ -4,6 +4,11 @@
  * Handles both PDF and Excel exports
  */
 
+// Temporarily enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+
 // Prevent direct access
 if (!defined('EXPORT_HANDLER')) {
     define('EXPORT_HANDLER', true);
@@ -262,13 +267,15 @@ if ($date_range_type === 'range') {
 }
 
 // Handle export based on type
-if ($export_type === 'pdf') {
-    include 'reports/export_pdf.php';
-} elseif ($export_type === 'excel') {
-    include 'reports/export_excel.php';
-} else {
+if ($export_type === 'pdf' || $export_type === 'excel') {
+        include 'reports/export.php';
+    } else { // Fallback for invalid export type
     // Invalid export type
     header("Location: index.php?page=reports&error=Invalid export type");
     exit;
 }
+
+// Revert error reporting after processing
+ini_set('display_errors', 0);
+error_reporting(E_ERROR | E_WARNING | E_PARSE);
 ?>

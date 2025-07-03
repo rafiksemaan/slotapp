@@ -20,11 +20,9 @@ if (isset($_GET['export'])) {
     $sort_order = $_GET['order'] ?? 'DESC';
     
     // Include the export handler
-    if ($export_type === 'pdf') {
-        include 'export_pdf.php';
-    } elseif ($export_type === 'excel') {
-        include 'export_excel.php';
-    } else {
+    if ($export_type === 'pdf' || $export_type === 'excel') {
+        include 'transactions/export.php';
+    } else { // Fallback for invalid export type
         header("Location: index.php?page=transactions&error=Invalid export type");
     }
     exit;
