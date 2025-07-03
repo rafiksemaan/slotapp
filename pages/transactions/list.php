@@ -484,25 +484,17 @@ $has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !emp
                 <table class="min-w-full divide-y divide-gray-700">
                     <thead class="bg-gray-800 text-white">
                         <tr>
-                            <th class="px-4 py-2 text-left">
-                                <a href="#" onclick="sortTransactions('operation_date', '<?php echo $toggle_order; ?>')">
-                                    Date <?php if ($sort_column == 'operation_date') echo $sort_order == 'ASC' ? '▲' : '▼'; ?>
-                                </a>
+                            <th class="px-4 py-2 text-left sortable-header" data-sort-column="operation_date" data-sort-order="<?php echo $sort_column == 'operation_date' ? $toggle_order : 'ASC'; ?>">
+                                Date <?php if ($sort_column == 'operation_date') echo $sort_order == 'ASC' ? '▲' : '▼'; ?>
                             </th>
-                            <th class="px-4 py-2 text-left">
-                                <a href="#" onclick="sortTransactions('machine_number', '<?php echo $toggle_order; ?>')">
-                                    Machine <?php if ($sort_column == 'machine_number') echo $sort_order == 'ASC' ? '▲' : '▼'; ?>
-                                </a>
+                            <th class="px-4 py-2 text-left sortable-header" data-sort-column="machine_number" data-sort-order="<?php echo $sort_column == 'machine_number' ? $toggle_order : 'ASC'; ?>">
+                                Machine <?php if ($sort_column == 'machine_number') echo $sort_order == 'ASC' ? '▲' : '▼'; ?>
                             </th>
-                            <th class="px-4 py-2 text-left">
-                                <a href="#" onclick="sortTransactions('transaction_type', '<?php echo $toggle_order; ?>')">
-                                    Transaction <?php if ($sort_column == 'transaction_type') echo $sort_order == 'ASC' ? '▲' : '▼'; ?>
-                                </a>
+                            <th class="px-4 py-2 text-left sortable-header" data-sort-column="transaction_type" data-sort-order="<?php echo $sort_column == 'transaction_type' ? $toggle_order : 'ASC'; ?>">
+                                Transaction <?php if ($sort_column == 'transaction_type') echo $sort_order == 'ASC' ? '▲' : '▼'; ?>
                             </th>
-                            <th class="px-4 py-2 text-right">
-                                <a href="#" onclick="sortTransactions('amount', '<?php echo $toggle_order; ?>')">
-                                    Amount <?php if ($sort_column == 'amount') echo $sort_order == 'ASC' ? '▲' : '▼'; ?>
-                                </a>
+                            <th class="px-4 py-2 text-right sortable-header" data-sort-column="amount" data-sort-order="<?php echo $sort_column == 'amount' ? $toggle_order : 'ASC'; ?>">
+                                Amount <?php if ($sort_column == 'amount') echo $sort_order == 'ASC' ? '▲' : '▼'; ?>
                             </th>
                             <th class="px-4 py-2 text-left">Category</th>
                             <th class="px-4 py-2 text-left">User</th>
@@ -542,7 +534,7 @@ $has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !emp
             <!-- Load More Button -->
             <?php if ($has_more): ?>
                 <div class="text-center mt-6">
-                    <button id="load-more-btn" class="btn btn-primary" onclick="loadMoreTransactions()">
+                    <button id="load-more-btn" class="btn btn-primary" >
                         Load More Transactions
                     </button>
                     <div id="loading-indicator" class="hidden mt-2">

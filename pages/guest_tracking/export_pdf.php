@@ -27,6 +27,10 @@ if ($date_range_type === 'range') {
     $end_date = date("Y-m-t", strtotime($start_date));
     $date_filter = " AND gd.upload_date BETWEEN ? AND ?";
     $date_params = [$start_date, $end_date];
+} elseif ($date_range_type === 'latest_upload') {
+    // Apply filter for only the latest upload date
+    $date_filter = " AND gd.upload_date = ?";
+    $date_params = [$latest_upload_date];
 }
 
 // Build query for export data

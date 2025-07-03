@@ -185,3 +185,22 @@ document.addEventListener('DOMContentLoaded', function () {
     // after setting initial currentPage and totalPages from PHP.
     // For now, assuming PHP renders the first page.
 });
+
+
+// Attach event listener to Load More button
+document.addEventListener('DOMContentLoaded', function() {
+    const loadMoreBtn = document.getElementById('load-more-btn');
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', loadMoreTransactions);
+    }
+
+    // Attach event listeners to sortable table headers
+    const sortableHeaders = document.querySelectorAll('.sortable-header');
+    sortableHeaders.forEach(header => {
+        header.addEventListener('click', function() {
+            const column = this.dataset.sortColumn;
+            const order = this.dataset.sortOrder;
+            window.sortTransactions(column, order);
+        });
+    });
+});
