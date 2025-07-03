@@ -95,7 +95,7 @@ try {
         $params[] = $machine_group_id;
     }
 
-    $query .= " GROUP BY mt.id, mt.name ORDER BY mt.name";
+    $query .= " GROUP BY mt.id, mt.name ORDER BY result DESC";
 
     // Execute query
     $stmt = $conn->prepare($query);

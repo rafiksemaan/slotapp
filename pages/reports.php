@@ -3,12 +3,44 @@
  * Reports page
  * Shows comprehensive reports with filtering options
  */
- 
+
 $page = $_GET['page'] ?? 'reports';
+
+// Handle export requests first
+if (isset($_GET['export'])) {
+    $export_type = $_GET['export']; // 'pdf' or 'excel'
+    
+    // Get all the same parameters as the main report
+    $date_range_type = $_GET['date_range_type'] ?? 'month';
+    $date_from = $_GET['date_from'] ?? date('Y-m-01');
+    $date_to = $_GET['date_to'] ?? date('Y-m-t');
+    $month = $_GET['month'] ?? date('Y-m');
+    $machine_id = $_GET['machine_id'] ?? 'all'; // Changed from $machine to $machine_id for consistency
+    $brand_id = $_GET['brand_id'] ?? 'all';
+    $machine_group_id = $_GET['machine_group_id'] ?? 'all'; // New filter parameter
+    $category = $_GET['category'] ?? ''; // This filter is not used in this report, but kept for consistency if needed
+    $transaction_type = $_GET['transaction_type'] ?? 'all'; // This filter is not used in this report, but kept for consistency if needed
+    $sort_column = $_GET['sort'] ?? 'timestamp'; // This report doesn't have a sortable table, but kept for consistency if needed
+    $sort_order = $_GET['order'] ?? 'DESC'; // This report doesn't have a sortable table, but kept for consistency if needed
+    
+    // Define the export handler constant
+    define('EXPORT_HANDLER', true);
+    
+    // Include the export handler
+    if ($export_type === 'pdf') {
+        include 'reports/export_pdf.php';
+    } elseif ($export_type === 'excel') {
+        include 'reports/export_excel.php';
+    } else {
+        header("Location: index.php?page=reports&error=Invalid export type");
+    }
+    exit;
+}
 
 // Get filter values from URL
 $machine_id = $_GET['machine_id'] ?? 'all';
 $brand_id = $_GET['brand_id'] ?? 'all';
+$machine_group_id = $_GET['machine_group_id'] ?? 'all'; // New filter parameter
 $date_range_type = $_GET['date_range_type'] ?? 'month';
 $date_from = $_GET['date_from'] ?? date('Y-m-01');
 $date_to = $_GET['date_to'] ?? date('Y-m-t');
@@ -42,6 +74,14 @@ try {
     $brands = [];
 }
 
+// Get machine groups for filter dropdown
+try {
+    $groups_stmt = $conn->query("SELECT id, name FROM machine_groups ORDER BY name");
+    $machine_groups = $groups_stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $machine_groups = [];
+}
+
 // Build query for report data
 $query = "
     SELECT 
@@ -62,9 +102,27 @@ $query = "
         transaction_types tt ON t.transaction_type_id = tt.id
 ";
 
+$where_clauses = [];
+$query_params = ["{$start_date} 00:00:00", "{$end_date} 23:59:59"];
+
 if ($machine_id != 'all') {
-    $query .= " WHERE m.id = ?";
-    $params[] = $machine_id;
+    $where_clauses[] = "m.id = ?";
+    $query_params[] = $machine_id;
+}
+
+if ($brand_id != 'all') {
+    $where_clauses[] = "m.brand_id = ?";
+    $query_params[] = $brand_id;
+}
+
+if ($machine_group_id != 'all') {
+    $query .= " JOIN machine_group_members mgm ON m.id = mgm.machine_id";
+    $where_clauses[] = "mgm.group_id = ?";
+    $query_params[] = $machine_group_id;
+}
+
+if (!empty($where_clauses)) {
+    $query .= " WHERE " . implode(" AND ", $where_clauses);
 }
 
 $query .= "
@@ -77,7 +135,7 @@ $query .= "
 try {
     // Execute query
     $stmt = $conn->prepare($query);
-    $stmt->execute($params);
+    $stmt->execute($query_params); // Use $query_params here
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Get machines for filter dropdown with brand information
@@ -159,13 +217,33 @@ try {
 }
 
 // Check if we have filter parameters (indicating a report was generated)
-$has_filters = !empty($_GET['machine_id']) || !empty($_GET['brand_id']) || !empty($_GET['date_range_type']) || !empty($_GET['date_from']) || !empty($_GET['date_to']) || !empty($_GET['month']);
+$has_filters = !empty($_GET['machine_id']) || !empty($_GET['brand_id']) || !empty($_GET['machine_group_id']) || !empty($_GET['date_range_type']) || !empty($_GET['date_from']) || !empty($_GET['date_to']) || !empty($_GET['month']);
+
+// Build export URLs
+$export_params = [
+    'page' => 'reports',
+    'date_range_type' => $date_range_type,
+    'machine_id' => $machine_id,
+    'brand_id' => $brand_id,
+    'machine_group_id' => $machine_group_id // Include new filter
+];
+
+if ($date_range_type === 'range') {
+    $export_params['date_from'] = $date_from;
+    $export_params['date_to'] = $date_to;
+} else {
+    $export_params['month'] = $month;
+}
+
+$export_url_base = 'index.php?' . http_build_query($export_params);
+$pdf_export_url = $export_url_base . '&export=pdf';
+$excel_export_url = $export_url_base . '&export=excel';
 ?>
 
 <div class="reports-page fade-in">
     <!-- Collapsible Filters -->
     <div class="filters-container card mb-6">
-        <div class="card-header">
+        <div class="card-header" style="cursor: pointer;" onclick="toggleFilters()">
             <div class="filter-header-content">
                 <h4 style="margin: 0;">Report Filters</h4>
                 <span id="filter-toggle-icon" class="filter-toggle-icon">
@@ -237,6 +315,20 @@ $has_filters = !empty($_GET['machine_id']) || !empty($_GET['brand_id']) || !empt
                         
                         <div class="col">
                             <div class="form-group">
+                                <label for="machine_group_id">Machine Group</label>
+                                <select name="machine_group_id" id="machine_group_id" class="form-control">
+                                    <option value="all" <?= $machine_group_id === 'all' ? 'selected' : '' ?>>All Groups</option>
+                                    <?php foreach ($machine_groups as $group): ?>
+                                        <option value="<?= $group['id'] ?>" <?= $machine_group_id == $group['id'] ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($group['name']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <div class="form-group">
                                 <label for="machine_id">Specific Machine</label>
                                 <select name="machine_id" id="machine_id" class="form-control">
                                     <option value="all" <?= $machine_id === 'all' ? 'selected' : '' ?>>All Machines</option>
@@ -283,6 +375,15 @@ $has_filters = !empty($_GET['machine_id']) || !empty($_GET['brand_id']) || !empt
                 if ($selected_machine['brand_name']) {
                     echo " (" . htmlspecialchars($selected_machine['brand_name']) . ")";
                 }
+            } elseif ($machine_group_id !== 'all') { // New condition for machine group
+                $selected_group = null;
+                foreach ($machine_groups as $g) {
+                    if ($g['id'] == $machine_group_id) {
+                        $selected_group = $g;
+                        break;
+                    }
+                }
+                echo "Group: " . htmlspecialchars($selected_group['name'] ?? 'N/A');
             } elseif ($brand_id !== 'all') {
                 $selected_brand = null;
                 foreach ($brands as $b) {
@@ -329,6 +430,30 @@ $has_filters = !empty($_GET['machine_id']) || !empty($_GET['brand_id']) || !empt
         </div>
     </div>
 
+    <!-- Export Buttons -->
+    <?php if (!empty($filtered_data) && empty($error) === false): ?>
+        <div class="export-actions mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Export Options</h4>
+                </div>
+                <div class="card-body">
+                    <div class="export-buttons">
+                        <a href="<?= htmlspecialchars($pdf_export_url) ?>" class="btn btn-secondary" target="_blank">
+                            📄 Export to PDF
+                        </a>
+                        <a href="<?= htmlspecialchars($excel_export_url) ?>" class="btn btn-secondary">
+                            📊 Export to Excel
+                        </a>
+                    </div>
+                    <p class="export-note">
+                        <small>PDF will open in a new tab. Excel file will be downloaded automatically.</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
+
     <!-- Detailed Report Table -->
     <div class="card overflow-hidden">
         <div class="card-header bg-gray-800 text-white px-6 py-3 border-b border-gray-700">
@@ -336,7 +461,7 @@ $has_filters = !empty($_GET['machine_id']) || !empty($_GET['brand_id']) || !empt
         </div>
         <div class="card-body p-6">
             <div class="table-container overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-700 separated-columns>
+                <table class="min-w-full divide-y divide-gray-700 separated-columns">
                     <thead>
                         <tr class="bg-gray-800 text-white">
                             <th class="px-4 py-2 text-left">Machine #</th>

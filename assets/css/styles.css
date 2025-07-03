@@ -1466,7 +1466,8 @@ option:focus {
 }
 
 .legend-label {
-    font-size: 0.875rem;
+    font-size: 1rem;
+	font-weight: bold;
     color: var(--text-light);
 }
 
@@ -1970,7 +1971,7 @@ input[disabled] {
 	align-items: center;
 	width: 100%;
 }
-
+	
 .filter-toggle-icon {
 	margin-left: var(--spacing-sm); 
 }
