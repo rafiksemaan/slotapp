@@ -59,35 +59,7 @@ header('Pragma: no-cache');
             </div>
         </div>
 
-        <?php if (!empty($filtered_data)): ?>
-            <div class="summary-cards-container">
-                <?php foreach ($filtered_data as $data): ?>
-                    <div class="summary-card">
-                        <div class="card-title">Machine #<?= htmlspecialchars($data['machine_number']) ?> (<?= htmlspecialchars($data['type']) ?>)</div>
-                        <div class="card-stats">
-                            <div class="stat-item">
-                                <div class="stat-label">DROP</div>
-                                <div class="stat-value-small"><?= format_currency($data['total_drop']) ?></div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-label">OUT</div>
-                                <div class="stat-value-small"><?= format_currency($data['total_out']) ?></div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-label">Result</div>
-                                <div class="stat-value-small <?= $data['result'] >= 0 ? 'positive' : 'negative' ?>"><?= format_currency($data['result']) ?></div>
-                            </div>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        <?php else: ?>
-            <div class="no-data">
-                No data found for the selected criteria.
-            </div>
-        <?php endif; ?>
-
-        <div class="footer">
+		<div class="footer">
             <p><strong>Slot Management System - Reports Summary</strong></p>
             <p>Report generated on <?= cairo_time('d M Y - H:i:s') ?> | Total records: <?= count($filtered_data) ?></p>
         </div>
