@@ -544,16 +544,16 @@ $has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !emp
             <?php endif; ?>
             
             <!-- Pagination Info -->
-            <div class="text-center mt-4 text-gray-400 text-sm" id="pagination-info">
-                Page <?php echo $page_num; ?> of <?php echo $total_pages; ?> 
-                (<?php echo $total_transactions; ?> total transactions)
-            </div>
+            <div class="text-center mt-4 text-gray-400 text-sm" id="pagination-info"
+     data-total-pages="<?php echo htmlspecialchars($total_pages); ?>"
+     data-total-transactions="<?php echo htmlspecialchars($total_transactions); ?>">
+    Page <?php echo $page_num; ?> of <?php echo $total_pages; ?>
+    (<?php echo $total_transactions; ?> total transactions)
+</div>
+
         </div>
     </div>
 </div>
-<script>
-    // Pass PHP variables to JavaScript
-    const initialTotalPages = <?php echo json_encode($total_pages); ?>;
-    const initialTotalTransactions = <?php echo json_encode($total_transactions); ?>;
-</script>
+
 <script src="assets/js/transactions_list.js"></script>
+

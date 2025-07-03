@@ -2,8 +2,8 @@
 
 // Initialize with values passed from PHP
 let currentPage = 1; // Always start with page 1 for initial load
-let totalPages = initialTotalPages; // Now initialized from PHP
-let totalTransactions = initialTotalTransactions; // Now initialized from PHP
+let totalPages = window.initialTotalPages;
+let totalTransactions = window.initialTotalTransactions;
 let isLoading = false;
 
 // Current filter parameters (initialized from PHP, will be updated by sort/filter actions)
@@ -179,7 +179,11 @@ document.addEventListener('DOMContentLoaded', function () {
             currentPage = 1;
         });
     }
-
+// Initialize with values passed from PHP via data attributes
+    const paginationInfoElement = document.getElementById('pagination-info');
+    let currentPage = 1; // Always start with page 1 for initial load
+    let totalPages = parseInt(paginationInfoElement.dataset.totalPages);
+    let totalTransactions = parseInt(paginationInfoElement.dataset.totalTransactions);
     // Initial load of transactions (if not already loaded by PHP)
     // This part is typically handled by PHP rendering the first page,
     // but if you want to ensure it's always loaded via JS, you could call loadMoreTransactions() here
