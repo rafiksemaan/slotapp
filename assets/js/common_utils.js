@@ -50,37 +50,44 @@ document.addEventListener('DOMContentLoaded', function () {
     if (monthSelect) monthSelect.addEventListener('change', resetDates);
 
     // Function to toggle filters section
-    window.toggleFilters = function() { // Make it global for now, will refactor to event listener
-        const filtersBody = document.getElementById('filters-body');
-        const toggleIcon = document.getElementById('filter-toggle-icon');
-        
-        if (filtersBody && toggleIcon) {
-            if (filtersBody.style.display === 'none') {
-                filtersBody.style.display = 'block';
-                toggleIcon.textContent = '▲';
-                filtersBody.style.opacity = '0';
-                filtersBody.style.transform = 'translateY(-10px)';
-                setTimeout(() => {
+    // Ensure it's defined only once
+    if (typeof window.toggleFilters === 'undefined') {
+        window.toggleFilters = function() {
+            const filtersBody = document.getElementById('filters-body');
+            const toggleIcon = document.getElementById('filter-toggle-icon');
+            
+            if (filtersBody && toggleIcon) {
+                if (filtersBody.style.display === 'none') {
+                    filtersBody.style.display = 'block';
+                    toggleIcon.textContent = '▲';
+                    filtersBody.style.opacity = '0';
+                    filtersBody.style.transform = 'translateY(-10px)';
+                    setTimeout(() => {
+                        filtersBody.style.transition = 'all 0.3s ease';
+                        filtersBody.style.opacity = '1';
+                        filtersBody.style.transform = 'translateY(0)';
+                    }, 10);
+                } else {
                     filtersBody.style.transition = 'all 0.3s ease';
-                    filtersBody.style.opacity = '1';
-                    filtersBody.style.transform = 'translateY(0)';
-                }, 10);
-            } else {
-                filtersBody.style.transition = 'all 0.3s ease';
-                filtersBody.style.opacity = '0';
-                filtersBody.style.transform = 'translateY(-10px)';
-                setTimeout(() => {
-                    filtersBody.style.display = 'none';
-                    toggleIcon.textContent = '▼';
-                }, 300);
+                    filtersBody.style.opacity = '0';
+                    filtersBody.style.transform = 'translateY(-10px)';
+                    setTimeout(() => {
+                        filtersBody.style.display = 'none';
+                        toggleIcon.textContent = '▼';
+                    }, 300);
+                }
             }
-        }
-    };
+        };
+    }
 
-    // Attach toggleFilters to relevant elements
+    // Attach toggleFilters to relevant elements, ensuring no duplicate listeners
     const filterToggleHeaders = document.querySelectorAll('.filters-container .card-header');
     filterToggleHeaders.forEach(header => {
-        header.style.cursor = 'pointer'; // Add cursor style
-        header.addEventListener('click', window.toggleFilters);
+        // Check if a listener has already been attached to this specific header
+        if (!header.dataset.toggleListenerAttached) {
+            header.style.cursor = 'pointer'; // Add cursor style
+            header.addEventListener('click', window.toggleFilters);
+            header.dataset.toggleListenerAttached = 'true'; // Mark as attached
+        }
     });
 });
