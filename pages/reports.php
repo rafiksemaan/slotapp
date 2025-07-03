@@ -166,7 +166,7 @@ $has_filters = !empty($_GET['machine_id']) || !empty($_GET['brand_id']) || !empt
     <!-- Collapsible Filters -->
     <div class="filters-container card mb-6">
         <div class="card-header">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="filter-header-content">
                 <h4 style="margin: 0;">Report Filters</h4>
                 <span id="filter-toggle-icon" class="filter-toggle-icon">
                     <?php echo $has_filters ? '▼' : '▲'; ?>

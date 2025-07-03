@@ -164,7 +164,7 @@ if ($date_range_type === 'latest_upload') {
     <!-- Collapsible Filters -->
     <div class="filters-container card mb-6">
         <div class="card-header">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="filter-header-content">
                 <h4 style="margin: 0;">Guest Tracking Filters</h4>
                 <span id="filter-toggle-icon" class="filter-toggle-icon">
                     <?php echo $has_filters ? '▼' : '▲'; ?>

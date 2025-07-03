@@ -1963,3 +1963,14 @@ input[disabled] {
 .category-section-border-right {
     border-right: 3px solid var(--secondary-color) !important; /* Thicker, distinct color */
 }
+
+.filter-header-content {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	width: 100%;
+}
+
+.filter-toggle-icon {
+	margin-left: var(--spacing-sm); 
+}
