@@ -259,8 +259,9 @@ $current_iso_year = date('Y');
     <?php else: ?>
 
         <?php foreach ($weekly_data as $week_entry): ?>
-            <tr class="hover:bg-gray-800 transition duration-150 " style="cursor: pointer;"
-                onclick="window.location.href='index.php?page=daily_tracking&date_range_type=range&date_from=<?= htmlspecialchars($week_entry['start_date']) ?>&date_to=<?= htmlspecialchars($week_entry['end_date']) ?>'">
+            <tr class="hover:bg-gray-800 transition duration-150 weekly-row-clickable"
++                data-start-date="<?= htmlspecialchars($week_entry['start_date']) ?>"
++                data-end-date="<?= htmlspecialchars($week_entry['end_date']) ?>">
                 <td class="px-4 py-2 font-medium<?php echo $week_entry['is_cross_year'] ? ' cross-year-week' : ''; ?><?php echo ($week_entry['week_number'] == $current_iso_week && $filter_year == $current_iso_year) ? ' current-week-highlight' : ''; ?>">
                     <?php echo htmlspecialchars($week_entry['week_number']); ?>
                 </td>

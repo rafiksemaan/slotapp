@@ -138,6 +138,8 @@ if ($date_range_type === 'range') {
     $export_params['date_to'] = $date_to;
 } elseif ($date_range_type === 'month') {
     $export_params['month'] = $month;
+} elseif ($date_range_type === 'latest_upload') {
+    $export_params['latest_upload_date'] = $latest_upload_date;
 }
 
 $export_url_base = 'index.php?' . http_build_query($export_params);

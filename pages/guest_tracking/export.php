@@ -14,6 +14,7 @@ if (isset($_GET['export'])) {
     $date_to = $_GET['date_to'] ?? date('Y-m-t');
     $month = $_GET['month'] ?? date('Y-m');
     $guest_search = $_GET['guest_search'] ?? '';
+	$latest_upload_date = $_GET['latest_upload_date'] ?? date('Y-m-d'); // Retrieve latest_upload_date
     $sort_column = $_GET['sort'] ?? 'total_drop';
     $sort_order = $_GET['order'] ?? 'DESC';
     
