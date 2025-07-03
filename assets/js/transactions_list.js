@@ -185,4 +185,3 @@ document.addEventListener('DOMContentLoaded', function () {
     // after setting initial currentPage and totalPages from PHP.
     // For now, assuming PHP renders the first page.
 });
-

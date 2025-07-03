@@ -444,3 +444,5 @@ if ($date_range_type === 'latest_upload') {
         </div>
     <?php endif; ?>
 </div>
+
+<script src="assets/js/common_utils.js"></script>

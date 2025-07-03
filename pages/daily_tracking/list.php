@@ -263,3 +263,4 @@ if ($date_range_type === 'range') {
     </div>
 </div>
 
+<script src="assets/js/common_utils.js"></script>

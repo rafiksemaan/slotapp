@@ -79,7 +79,7 @@ function processGuestExcelFile($file, $upload_date, $conn) {
         
         // Validate headers
         $expected_headers = ['guest_code_id', 'guest_name', 'drop', 'result', 'visits'];
-        $headers = array_map('strtolower', array_map('trim', $data));
+        $headers = array_map('strtolower', array_map('trim', $data[0]));
         
         $missing_headers = array_diff($expected_headers, $headers);
         if (!empty($missing_headers)) {

@@ -89,7 +89,7 @@ try {
                 <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
             <?php endif; ?>
 
-            <form method="POST" class="brand-form">
+            <form method="POST" class="brand-form" id="brandEditForm">
                 <!-- Brand Information Section -->
                 <div class="form-section">
                     <h4>Brand Information</h4>
@@ -113,3 +113,4 @@ try {
         </div>
     </div>
 </div>
+<script src="assets/js/brands_edit.js"></script>

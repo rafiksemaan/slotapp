@@ -7,7 +7,7 @@ function validateUploadForm(form) {
         return false;
     }
     
-    const file = fileInput.files;
+    const file = fileInput.files[0];
     const maxSize = 10 * 1024 * 1024; // 10MB
     
     if (file.size > maxSize) {

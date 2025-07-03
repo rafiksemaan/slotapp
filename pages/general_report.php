@@ -403,6 +403,7 @@ $has_filters = !empty($_GET['machine_id']) || !empty($_GET['brand_id']) || !empt
     <?php endif; ?>
 </div>
 
+<script src="assets/js/common_utils.js"></script>
 <script src="assets/js/general_report_charts.js"></script>
 
 <?php

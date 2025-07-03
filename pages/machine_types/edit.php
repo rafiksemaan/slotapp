@@ -115,16 +115,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 </div>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('machineTypeEditForm');
-    if (form) {
-        form.addEventListener('submit', function(event) {
-            // Assuming validateForm is a global function from main.js
-            if (typeof validateForm === 'function' && !validateForm(this)) {
-                event.preventDefault();
-            }
-        });
-    }
-});
-</script>
+<script src="assets/js/machine_types_edit.js"></script>

@@ -24,4 +24,17 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    const form = document.getElementById('transactionEditForm');
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            // Assuming validateForm is a global function from main.js
+            // Note: transactions_edit.js does not have its own validateForm, it relies on main.js's general one.
+            // If specific validation is needed, it should be added here.
+            // For now, assuming the form's HTML5 validation and the operation_date confirmation are sufficient.
+            // If a general validateForm is needed, ensure it's imported or globally available.
+            // For this specific file, the original `validateForm` was not present, so I'm not adding it.
+            // The original `transactions_edit.js` only had the operation date confirmation.
+        });
+    }
 });

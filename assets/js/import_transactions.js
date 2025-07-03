@@ -24,7 +24,7 @@ function validateImportForm(form) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('.import-transactions-page form');
+    const form = document.getElementById('importTransactionsForm');
     if (form) {
         form.addEventListener('submit', function(event) {
             if (!validateImportForm(this)) {

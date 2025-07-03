@@ -220,7 +220,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['csv_files'])) {
 
             <div class="alert alert-info">
                 <h5>📋 File Format Requirements:</h5>
-                <p>Your Excel/CSV file must contain the following columns (in any order):</p>
+                <p>Upload one or more CSV files containing historical transaction data. Each file should represent a month's data.</p>
                 <ul>
                     <li>**Filename Format**: `transactions_YYYY-MM.csv` (e.g., `transactions_2023-10.csv`). This is used to determine the `operation_date`.</li>
                     <li>**Required Columns (case-insensitive)**:
@@ -238,7 +238,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['csv_files'])) {
                 <p>Transactions will be recorded with the `operation_date` set to the last day of the month derived from the filename, and the `timestamp` set to `23:59:59` on that day.</p>
             </div>
 
-            <form action="index.php?page=import_transactions" method="POST" enctype="multipart/form-data">
+            <form action="index.php?page=import_transactions" method="POST" enctype="multipart/form-data" id="importTransactionsForm">
                 <div class="form-section">
                     <h4>Select CSV Files</h4>
                     <div class="form-group">

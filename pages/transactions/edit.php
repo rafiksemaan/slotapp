@@ -181,7 +181,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             <?php endif; ?>
 
-            <form method="POST" class="transaction-form">
+            <form method="POST" class="transaction-form" id="transactionEditForm">
                 <!-- Transaction Details Section -->
                 <div class="form-section">
                     <h4>Transaction Details</h4>
