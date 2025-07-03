@@ -31,7 +31,6 @@ function initializeFiltersFromUrl() {
 
 function loadMoreTransactions() {
     if (isLoading || currentPage >= totalPages) return;
-    
     isLoading = true;
     document.getElementById('loading-indicator').classList.remove('hidden');
     document.getElementById('load-more-btn').disabled = true;
