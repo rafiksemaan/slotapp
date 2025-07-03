@@ -3,7 +3,7 @@
  * Reports page
  * Shows comprehensive reports with filtering options
  */
-
+ 
 $page = $_GET['page'] ?? 'reports';
 
 // Handle export requests first
@@ -55,8 +55,6 @@ if ($date_range_type === 'range') {
     $start_date = "$year-$month_num-01";
     $end_date = date("Y-m-t", strtotime($start_date));
 }
-
-$params = ["{$start_date} 00:00:00", "{$end_date} 23:59:59"];
 
 // Initialize variables
 $report_data = [];
@@ -357,7 +355,7 @@ $excel_export_url = $export_url_base . '&export=excel';
 
     <!-- Report Header -->
     <div class="report-header text-center py-4 px-6 rounded-lg bg-gradient-to-r from-gray-800 to-black shadow-md mb-6">
-        <h3 class="text-xl font-bold text-secondary-color">Report for:</h3>
+        <h3 class="text-xl font-bold text-secondary-color">Reports for:</h3>
 
         <!-- Main Title Line -->
         <p class="date-range text-lg font-medium text-white mt-2 mb-1">
@@ -431,7 +429,7 @@ $excel_export_url = $export_url_base . '&export=excel';
     </div>
 
     <!-- Export Buttons -->
-    <?php if (!empty($filtered_data) && empty($error) === false): ?>
+    <?php if (!empty($filtered_data) && empty($error)): ?>
         <div class="export-actions mb-4">
             <div class="card">
                 <div class="card-header">
