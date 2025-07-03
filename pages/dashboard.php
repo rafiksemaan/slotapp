@@ -171,16 +171,16 @@ foreach ($out_transactions as $transaction) {
     <!-- Charts Row with Fixed Layout -->
     <div class="dashboard-charts-row">
         <div class="dashboard-chart-card">
-            <div class="card">
+                    <div class="card">
+            <div class="card-header">
+                <h3>Machine Distribution</h3>
+            </div>
+            <div class="card-body">
                 <div class="chart-container">
-                    <h3>Machine Distribution</h3>
-                </div>
-                <div class="card-body">
-                    <div class="chart-container">
-                        <canvas id="machines-chart" data-stats='<?php echo json_encode($machine_stats); ?>'></canvas>
-                    </div>
+                    <canvas id="machines-chart" data-stats='<?php echo json_encode($machine_stats); ?>'></canvas>
                 </div>
             </div>
+        </div>
         </div>
         
         <div class="dashboard-chart-card">
