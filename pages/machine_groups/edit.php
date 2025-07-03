@@ -120,7 +120,7 @@ try {
                 <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
             <?php endif; ?>
 
-            <form method="POST" class="group-form" onsubmit="return validateGroupForm(this)">
+            <form method="POST" class="group-form" id="machineGroupEditForm">
                 <!-- Group Information Section -->
                 <div class="form-section">
                     <h4>Group Information</h4>

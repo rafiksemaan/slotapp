@@ -88,7 +88,7 @@ if ($date_range_type === 'range') {
 <div class="daily-tracking-page fade-in">
     <!-- Collapsible Filters -->
     <div class="filters-container card mb-6">
-        <div class="card-header" style="cursor: pointer;" onclick="toggleFilters()">
+        <div class="card-header">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <h4 style="margin: 0;">Date Range Filters</h4>
                 <span id="filter-toggle-icon" class="filter-toggle-icon">
@@ -264,3 +264,4 @@ if ($date_range_type === 'range') {
 </div>
 
 <script src="assets/js/daily_tracking_list.js"></script>
+

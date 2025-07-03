@@ -20,7 +20,6 @@ ob_end_flush();
     </div><!-- .app-container -->
     
     <!-- JavaScript -->
-	<script src="assets/js/footer_date_logic.js"></script>
     <script src="assets/js/main.js"></script>
 </body>
 </html>

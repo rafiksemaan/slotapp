@@ -26,6 +26,7 @@ ob_start();
     <title><?php echo $app_name; ?></title>
     <link rel="stylesheet" href="assets/css/styles.css">
     <script src="assets/js/main.js"></script>
+    <script src="assets/js/common_utils.js"></script> <!-- Added common_utils.js -->
 	<!-- Favicon -->
 	<link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96" />
 	<link rel="icon" type="image/svg+xml" href="favicon.svg" />

@@ -151,7 +151,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
             <?php endif; ?>
             
-            <form action="index.php?page=machines&action=edit&id=<?php echo $machine_id; ?>" method="POST" onsubmit="return validateForm(this)">
+            <form action="index.php?page=machines&action=edit&id=<?php echo $machine_id; ?>" method="POST" id="machineEditForm">
                 <!-- Basic Information Section -->
                 <div class="form-section">
                     <h4>Basic Information</h4>

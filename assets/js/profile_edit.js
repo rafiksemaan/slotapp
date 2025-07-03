@@ -55,4 +55,13 @@ document.addEventListener('DOMContentLoaded', function() {
         newPassword.addEventListener('input', checkPasswordMatch);
         confirmPassword.addEventListener('input', checkPasswordMatch);
     }
+
+    const form = document.getElementById('profileEditForm');
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            if (!validateProfileForm(this)) {
+                event.preventDefault();
+            }
+        });
+    }
 });

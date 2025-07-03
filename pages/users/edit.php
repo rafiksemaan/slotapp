@@ -70,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $can_edit) {
                 <div class="alert alert-success"><?php echo htmlspecialchars($message); ?></div>
             <?php endif; ?>
 
-            <form method="POST" action="index.php?page=users&action=edit&id=<?php echo $user['id']; ?>" class="user-form">
+            <form method="POST" action="index.php?page=users&action=edit&id=<?php echo $user['id']; ?>" id="userEditForm">
                 <!-- User Information Section -->
                 <div class="form-section">
                     <h4>User Information</h4>

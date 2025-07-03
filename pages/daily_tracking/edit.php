@@ -122,7 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <strong>📊 Daily Tracking:</strong> Edit the daily performance data for each machine type. Results and percentages will be calculated automatically.
             </div>
 
-            <form method="POST" class="daily-tracking-form" onsubmit="return validateTrackingForm(this)">
+            <form method="POST" class="daily-tracking-form" id="dailyTrackingEditForm">
                 <!-- Date Section -->
                 <div class="form-section">
                     <h4>Tracking Information</h4>
@@ -230,3 +230,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <script src="assets/js/daily_tracking_edit.js"></script>
+

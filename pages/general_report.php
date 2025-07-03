@@ -187,7 +187,7 @@ $has_filters = !empty($_GET['machine_id']) || !empty($_GET['brand_id']) || !empt
 <div class="general-report-page fade-in">
     <!-- Collapsible Filters -->
     <div class="filters-container card mb-6">
-        <div class="card-header" style="cursor: pointer;" onclick="toggleFilters()">
+        <div class="card-header">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <h4 style="margin: 0;">Report Configuration</h4>
                 <span id="filter-toggle-icon" class="filter-toggle-icon">

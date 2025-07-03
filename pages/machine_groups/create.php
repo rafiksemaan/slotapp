@@ -95,7 +95,7 @@ try {
                 <div class="alert alert-success"><?php echo $message; ?></div>
             <?php endif; ?>
             
-            <form action="index.php?page=machine_groups&action=create" method="POST" onsubmit="return validateGroupForm(this)">
+            <form action="index.php?page=machine_groups&action=create" method="POST" id="machineGroupCreateForm">
                 <!-- Group Information Section -->
                 <div class="form-section">
                     <h4>Group Information</h4>

@@ -119,7 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="alert alert-success"><?php echo htmlspecialchars($success); ?></div>
             <?php endif; ?>
 
-            <form method="POST" class="profile-form" onsubmit="return validateProfileForm(this)">
+            <form method="POST" class="profile-form" id="profileEditForm">
                 <!-- Basic Information -->
                 <div class="form-section">
                     <h4>Basic Information</h4>

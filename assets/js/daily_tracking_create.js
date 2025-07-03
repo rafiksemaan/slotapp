@@ -31,4 +31,13 @@ document.addEventListener('DOMContentLoaded', function () {
     if (trackingDateInput) {
         trackingDateInput.focus();
     }
+
+    const form = document.getElementById('dailyTrackingCreateForm');
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            if (!validateTrackingForm(this)) {
+                event.preventDefault();
+            }
+        });
+    }
 });

@@ -140,7 +140,7 @@ try {
                 <div class="alert alert-success"><?php echo $message; ?></div>
             <?php endif; ?>
             
-            <form action="index.php?page=machines&action=create" method="POST" onsubmit="return validateForm(this)">
+            <form action="index.php?page=machines&action=create" method="POST" id="machineCreateForm">
                 <!-- Basic Information Section -->
                 <div class="form-section">
                     <h4>Basic Information</h4>

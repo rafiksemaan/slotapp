@@ -220,7 +220,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['csv_files'])) {
 
             <div class="alert alert-info">
                 <h5>📋 File Format Requirements:</h5>
-                <p>Upload one or more CSV files containing historical transaction data. Each file should represent a month's data.</p>
+                <p>Your Excel/CSV file must contain the following columns (in any order):</p>
                 <ul>
                     <li>**Filename Format**: `transactions_YYYY-MM.csv` (e.g., `transactions_2023-10.csv`). This is used to determine the `operation_date`.</li>
                     <li>**Required Columns (case-insensitive)**:
@@ -238,7 +238,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['csv_files'])) {
                 <p>Transactions will be recorded with the `operation_date` set to the last day of the month derived from the filename, and the `timestamp` set to `23:59:59` on that day.</p>
             </div>
 
-            <form action="index.php?page=import_transactions" method="POST" enctype="multipart/form-data" onsubmit="return validateImportForm(this)">
+            <form action="index.php?page=import_transactions" method="POST" enctype="multipart/form-data">
                 <div class="form-section">
                     <h4>Select CSV Files</h4>
                     <div class="form-group">
@@ -271,28 +271,4 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['csv_files'])) {
     </div>
 </div>
 
-<script>
-function validateImportForm(form) {
-    const fileInput = form.csv_files;
-    if (fileInput.files.length === 0) {
-        alert('Please select at least one CSV file to upload.');
-        return false;
-    }
-
-    for (let i = 0; i < fileInput.files.length; i++) {
-        const file = fileInput.files[i];
-        const fileExtension = file.name.split('.').pop().toLowerCase();
-        if (fileExtension !== 'csv') {
-            alert(`File '${file.name}' is not a CSV file. Please select only CSV files.`);
-            return false;
-        }
-        if (!/transactions_\d{4}-\d{2}\.csv$/i.test(file.name)) {
-            alert(`Filename '${file.name}' does not match the expected format (e.g., transactions_YYYY-MM.csv). Please rename your files accordingly.`);
-            return false;
-        }
-    }
-
-    return confirm('Are you sure you want to import these CSV files? This will add new transaction records to your database.');
-}
-</script>
-
+<script src="assets/js/import_transactions.js"></script>

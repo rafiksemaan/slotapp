@@ -79,7 +79,7 @@ function processGuestExcelFile($file, $upload_date, $conn) {
         
         // Validate headers
         $expected_headers = ['guest_code_id', 'guest_name', 'drop', 'result', 'visits'];
-        $headers = array_map('strtolower', array_map('trim', $data[0]));
+        $headers = array_map('strtolower', array_map('trim', $data));
         
         $missing_headers = array_diff($expected_headers, $headers);
         if (!empty($missing_headers)) {
@@ -224,7 +224,7 @@ function readCSVFile($filename) {
                 <p><strong>Note:</strong> Currently only CSV files are supported. Please convert Excel files to CSV format before uploading.</p>
             </div>
             
-            <form action="index.php?page=guest_tracking&action=upload" method="POST" enctype="multipart/form-data" onsubmit="return validateUploadForm(this)">
+            <form action="index.php?page=guest_tracking&action=upload" method="POST" enctype="multipart/form-data" id="guestTrackingUploadForm">
                 <!-- Upload Details Section -->
                 <div class="form-section">
                     <h4>Upload Details</h4>

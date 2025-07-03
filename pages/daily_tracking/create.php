@@ -128,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <strong>📊 Daily Tracking:</strong> Enter the daily performance data for each machine type. Results and percentages will be calculated automatically.
             </div>
 
-            <form method="POST" class="daily-tracking-form" onsubmit="return validateTrackingForm(this)">
+            <form method="POST" class="daily-tracking-form" id="dailyTrackingCreateForm">
                 <!-- Date Section -->
                 <div class="form-section">
                     <h4>Tracking Information</h4>

@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <div class="alert alert-success"><?php echo $message; ?></div>
             <?php endif; ?>
             
-            <form action="index.php?page=machine_types&action=create" method="POST" onsubmit="return validateForm(this)">
+            <form action="index.php?page=machine_types&action=create" method="POST" id="machineTypeCreateForm">
                 <!-- Machine Type Information Section -->
                 <div class="form-section">
                     <h4>Machine Type Information</h4>
@@ -84,3 +84,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('machineTypeCreateForm');
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            // Assuming validateForm is a global function from main.js
+            if (typeof validateForm === 'function' && !validateForm(this)) {
+                event.preventDefault();
+            }
+        });
+    }
+});
+</script>

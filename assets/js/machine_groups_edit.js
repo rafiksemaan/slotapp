@@ -32,4 +32,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initial count
     updateCount();
+
+    const form = document.getElementById('machineGroupEditForm');
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            if (!validateGroupForm(this)) {
+                event.preventDefault();
+            }
+        });
+    }
 });

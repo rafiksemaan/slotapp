@@ -39,3 +39,14 @@ function isValidMAC(mac) {
     const macPattern = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
     return macPattern.test(mac);
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('machineCreateForm');
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            if (!validateForm(this)) {
+                event.preventDefault();
+            }
+        });
+    }
+});

@@ -7,7 +7,7 @@ function validateUploadForm(form) {
         return false;
     }
     
-    const file = fileInput.files[0];
+    const file = fileInput.files;
     const maxSize = 10 * 1024 * 1024; // 10MB
     
     if (file.size > maxSize) {
@@ -30,3 +30,14 @@ function validateUploadForm(form) {
     
     return confirm('Are you sure you want to upload this file? This will add new guest data to the system.');
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('guestTrackingUploadForm');
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            if (!validateUploadForm(this)) {
+                event.preventDefault();
+            }
+        });
+    }
+});

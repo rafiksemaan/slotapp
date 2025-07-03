@@ -138,7 +138,7 @@ try {
                 <br><small>This transaction will be recorded for the above operation day. Only administrators can change the operation day.</small>
             </div>
             
-            <form action="<?php echo $_SERVER['PHP_SELF'] ?>?page=transactions&action=create" method="POST" onsubmit="return validateForm(this)">
+            <form action="<?php echo $_SERVER['PHP_SELF'] ?>?page=transactions&action=create" method="POST" id="transactionCreateForm">
                 <!-- Transaction Details Section -->
                 <div class="form-section">
                     <h4>Transaction Details</h4>

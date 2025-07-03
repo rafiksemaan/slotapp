@@ -13,4 +13,13 @@ document.addEventListener('DOMContentLoaded', function () {
     if (machineIdInput) {
         machineIdInput.focus();
     }
+
+    const form = document.getElementById('transactionCreateForm');
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            if (!validateForm(this)) {
+                event.preventDefault();
+            }
+        });
+    }
 });

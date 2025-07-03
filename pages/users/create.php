@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="alert alert-success"><?php echo $message; ?></div>
             <?php endif; ?>
             
-            <form method="POST" action="index.php?page=users&action=create" class="form">
+            <form method="POST" action="index.php?page=users&action=create" id="userCreateForm">
                 <!-- User Information Section -->
                 <div class="form-section">
                     <h4>User Information</h4>
