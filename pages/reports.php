@@ -444,16 +444,20 @@ $excel_export_url = $export_url_base . '&export=excel';
                 </div>
                 <div class="card-body">
                     <div class="export-buttons">
-                        <a href="<?= htmlspecialchars($pdf_export_url) ?>" class="btn btn-secondary" target="_blank">
-                            📄 Export to PDF
-                        </a>
-                        <a href="<?= htmlspecialchars($excel_export_url) ?>" class="btn btn-secondary">
-                            📊 Export to Excel
-                        </a>
-                    </div>
-                    <p class="export-note">
-                        <small>PDF will open in a new tab. Excel file will be downloaded automatically.</small>
-                    </p>
+						<a href="<?= htmlspecialchars($pdf_export_url) ?>" class="btn btn-secondary" target="_blank">
+							📄 Export to PDF
+						</a>
+						<a href="<?= htmlspecialchars($excel_export_url) ?>" class="btn btn-secondary">
+							📊 Export to Excel
+						</a>
+						<a href="<?= htmlspecialchars($export_url_base . '&export=summary') ?>" class="btn btn-secondary" target="_blank">
+							📋 Summary
+						</a>
+					</div>
+					<p class="export-note">
+						<small>PDF and Summary will open in a new tab. Excel file will be downloaded automatically.</small>
+					</p>
+
                 </div>
             </div>
         </div>
