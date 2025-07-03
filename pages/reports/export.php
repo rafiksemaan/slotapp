@@ -268,14 +268,16 @@ if ($date_range_type === 'range') {
 
 // Handle export based on type
 if ($export_type === 'pdf') {
-    include 'export_pdf.php'; // Correctly include the PDF export file
+    include 'export_pdf.php';
 } elseif ($export_type === 'excel') {
-    include 'export_excel.php'; // Correctly include the Excel export file
-} else { // Fallback for invalid export type
-    // Invalid export type
+    include 'export_excel.php';
+} elseif ($export_type === 'summary') { // New condition for summary
+    include 'export_summary.php'; // Include the new summary export file
+} else {
     header("Location: index.php?page=reports&error=Invalid export type");
     exit;
 }
+
 
 
 // Revert error reporting after processing
