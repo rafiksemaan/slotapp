@@ -58,7 +58,7 @@ header('Pragma: no-cache');
                     <?php foreach ($results as $row): ?>
                         <tr>
                             <?php foreach ($selected_columns as $column): ?>
-                                <td <?php 
+                                <td <?php
                                     // Add currency class for monetary columns
                                     if (in_array($column, ['credit_value', 'total_handpay', 'total_ticket', 'total_refill', 'total_coins_drop', 'total_cash_drop', 'total_out', 'total_drop', 'result'])) {
                                         echo 'class="currency"';
@@ -66,7 +66,7 @@ header('Pragma: no-cache');
                                 ?>>
                                     <?php
                                     $value = $row[$column] ?? 'N/A';
-                                    
+
                                     // Format specific columns
                                     if (in_array($column, ['credit_value', 'total_handpay', 'total_ticket', 'total_refill', 'total_coins_drop', 'total_cash_drop', 'total_out', 'total_drop', 'result'])) {
                                         echo format_currency($value);
@@ -78,12 +78,12 @@ header('Pragma: no-cache');
                             <?php endforeach; ?>
                         </tr>
                     <?php endforeach; ?>
-                    
+
                     <!-- Totals Row (excluding credit_value) -->
                     <?php if (!empty($totals)): ?>
                         <tr class="totals-row">
                             <?php foreach ($selected_columns as $column): ?>
-                                <td <?php 
+                                <td <?php
                                     if (in_array($column, ['credit_value', 'total_handpay', 'total_ticket', 'total_refill', 'total_coins_drop', 'total_cash_drop', 'total_out', 'total_drop', 'result'])) {
                                         echo 'class="currency"';
                                     }

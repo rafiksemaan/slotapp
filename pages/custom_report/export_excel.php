@@ -51,14 +51,14 @@ if (!empty($selected_columns)) {
         }
     }
     fputcsv($output, $headers);
-    
+
     // Write data rows
     if (!empty($results)) {
         foreach ($results as $row) {
             $csv_row = [];
             foreach ($selected_columns as $column) {
                 $value = $row[$column] ?? 'N/A';
-                
+
                 // Format specific columns for Excel
                 if (in_array($column, ['credit_value', 'total_handpay', 'total_ticket', 'total_refill', 'total_coins_drop', 'total_cash_drop', 'total_out', 'total_drop', 'result'])) {
                     // For Excel, we want numeric values without currency symbols
@@ -69,10 +69,10 @@ if (!empty($selected_columns)) {
             }
             fputcsv($output, $csv_row);
         }
-        
+
         // Add empty row before totals
         fputcsv($output, []);
-        
+
         // Add totals row (excluding credit_value)
         if (!empty($totals)) {
             $totals_row = [];

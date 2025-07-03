@@ -1,33 +1,36 @@
 <?php
-	// Start session early
-	if (session_status() === PHP_SESSION_NONE) {
-		session_start();
-	}
+// Start session early
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-	// Handle export requests
-	if (isset($_GET['export'])) {
-		$export_type = $_GET['export']; // 'pdf' or 'excel'
-		
-		// Get all the same parameters as the main report
-		$date_range_type = $_GET['date_range_type'] ?? 'month';
-		$date_from = $_GET['date_from'] ?? date('Y-m-01');
-		$date_to = $_GET['date_to'] ?? date('Y-m-t');
-		$month = $_GET['month'] ?? date('Y-m');
-		$machine_id = $_GET['machine_id'] ?? 'all';
-		$brand_id = $_GET['brand_id'] ?? 'all';
-		$machine_group_id = $_GET['machine_group_id'] ?? 'all';
-		$selected_columns = $_GET['columns'] ?? [];
-		$sort_column = $_GET['sort'] ?? 'machine_number';
-		$sort_order = $_GET['order'] ?? 'ASC';
-		
-		if (!is_array($selected_columns)) {
-			$selected_columns = [];
-		}
-		
-		// Include the export handler
-		include 'custom_report/export.php';
-		exit;
-	}
+// Handle export requests
+if (isset($_GET['export'])) {
+    $export_type = $_GET['export']; // 'pdf' or 'excel'
+    
+    // Get all the same parameters as the main report
+    $date_range_type = $_GET['date_range_type'] ?? 'month';
+    $date_from = $_GET['date_from'] ?? date('Y-m-01');
+    $date_to = $_GET['date_to'] ?? date('Y-m-t');
+    $month = $_GET['month'] ?? date('Y-m');
+    $machine_id = $_GET['machine_id'] ?? 'all';
+    $brand_id = $_GET['brand_id'] ?? 'all';
+    $machine_group_id = $_GET['machine_group_id'] ?? 'all';
+    $selected_columns = $_GET['columns'] ?? [];
+    $sort_column = $_GET['sort'] ?? 'machine_number';
+    $sort_order = $_GET['order'] ?? 'ASC';
+    
+    if (!is_array($selected_columns)) {
+        $selected_columns = [];
+    }
+    
+    // Define the export handler constant
+    define('EXPORT_HANDLER', true);
+
+    // Include the export handler
+    include 'custom_report/export.php';
+    exit;
+}
 
 	// Get sorting parameters
 	$sort_column = $_GET['sort'] ?? 'machine_number';
