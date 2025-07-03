@@ -172,16 +172,12 @@ foreach ($out_transactions as $transaction) {
     <div class="dashboard-charts-row">
         <div class="dashboard-chart-card">
             <div class="card">
-                <div class="chart-container" 
-                         data-stats='<?php echo json_encode($machine_stats); ?>'
-                         data-out-data='<?php echo json_encode(array_column($out_transactions, 'total')); ?>'
-                         data-out-labels='<?php echo json_encode(array_column($out_transactions, 'name')); ?>'>
+                <div class="chart-container">
                     <h3>Machine Distribution</h3>
                 </div>
                 <div class="card-body">
-                    <div class="chart-container"
-                         data-stats='<?php echo json_encode($machine_stats); ?>'>
-                        <canvas id="machines-chart"></canvas>
+                    <div class="chart-container">
+                        <canvas id="machines-chart" data-stats='<?php echo json_encode($machine_stats); ?>'></canvas>
                     </div>
                 </div>
             </div>
@@ -198,13 +194,11 @@ foreach ($out_transactions as $transaction) {
                             <p>No transactions recorded this month</p>
                         </div>
                     <?php else: ?>
-                        <div class="chart-container"
-                             data-out-data='<?php echo json_encode(array_column($out_transactions, 'total')); ?>'
+                        <div class="chart-container">
+                            <canvas id="transactions-chart" data-out-data='<?php echo json_encode(array_column($out_transactions, 'total')); ?>'
                              data-out-labels='<?php echo json_encode(array_column($out_transactions, 'name')); ?>'
                              data-drop-data='<?php echo json_encode(array_column($drop_transactions, 'total')); ?>'
-                             data-drop-labels='<?php echo json_encode(array_column($drop_transactions, 'name')); ?>'>
-
-                            <canvas id="transactions-chart"></canvas>
+                             data-drop-labels='<?php echo json_encode(array_column($drop_transactions, 'name')); ?>'></canvas>
                         </div>
                     <?php endif; ?>
                 </div>

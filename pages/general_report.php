@@ -378,8 +378,8 @@ $has_filters = !empty($_GET['machine_id']) || !empty($_GET['brand_id']) || !empt
                         <h3>Result Distribution by Machine Type</h3>
                     </div>
                     <div class="card-body">
-                        <div class="chart-container" data-chart-data='<?php echo json_encode($chart_data); ?>'>
-                            <canvas id="results-pie-chart"></canvas>
+                        <div class="chart-container">
+                            <canvas id="results-pie-chart" data-chart-data='<?php echo json_encode($chart_data); ?>'></canvas>
                         </div>
                         
                         <!-- Chart Legend -->
