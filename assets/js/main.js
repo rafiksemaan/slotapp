@@ -13,12 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle auto-refresh for reports
     initAutoRefresh();
     
-    // Initialize chart if chart container exists
-    if (document.querySelector('.chart-container')) {
-        initCharts();
-    }
-    
-    // Initialize delete confirmations
+   // Initialize delete confirmations
     initDeleteConfirmations();
 });
 

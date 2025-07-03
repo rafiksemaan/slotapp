@@ -25,7 +25,6 @@ ob_start();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $app_name; ?></title>
     <link rel="stylesheet" href="assets/css/styles.css">
-    <script src="assets/js/main.js"></script>
     <script src="assets/js/common_utils.js"></script> <!-- Added common_utils.js -->
 	<!-- Favicon -->
 	<link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96" />
