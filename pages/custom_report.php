@@ -347,6 +347,3 @@
         <div class="alert alert-info">Please select at least one column to display in the report.</div>
     <?php endif; ?>
 </div>
-
-<!-- JavaScript for form interactions and toggle filters -->
-<script src="assets/js/custom_report_filters.js"></script>

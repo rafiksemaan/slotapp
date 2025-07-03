@@ -263,5 +263,3 @@ if ($date_range_type === 'range') {
     </div>
 </div>
 
-<script src="assets/js/daily_tracking_list.js"></script>
-

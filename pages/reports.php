@@ -408,5 +408,3 @@ $has_filters = !empty($_GET['machine_id']) || !empty($_GET['brand_id']) || !empt
         </div>
     </div>
 </div>
-
-<script src="assets/js/reports_filters.js"></script>
