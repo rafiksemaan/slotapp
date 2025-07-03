@@ -551,5 +551,9 @@ $has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !emp
         </div>
     </div>
 </div>
-
+<script>
+    // Pass PHP variables to JavaScript
+    const initialTotalPages = <?php echo json_encode($total_pages); ?>;
+    const initialTotalTransactions = <?php echo json_encode($total_transactions); ?>;
+</script>
 <script src="assets/js/transactions_list.js"></script>

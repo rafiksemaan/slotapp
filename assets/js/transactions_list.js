@@ -1,7 +1,9 @@
 // assets/js/transactions_list.js
 
+// Initialize with values passed from PHP
 let currentPage = 1; // Always start with page 1 for initial load
-let totalPages = 0; // Will be updated by AJAX response
+let totalPages = initialTotalPages; // Now initialized from PHP
+let totalTransactions = initialTotalTransactions; // Now initialized from PHP
 let isLoading = false;
 
 // Current filter parameters (initialized from PHP, will be updated by sort/filter actions)
@@ -204,3 +206,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+function updatePaginationInfo(data) {
+    const countElement = document.getElementById('transaction-count');
+    if (countElement) {
+        const currentCount = document.querySelectorAll('#transactions-tbody tr').length;
+        countElement.textContent = `(Showing ${currentCount} of ${data.total_transactions})`;
+    }
+    
+    const paginationInfo = document.getElementById('pagination-info');
+    if (paginationInfo) {
+        paginationInfo.innerHTML = `Page ${data.current_page} of ${data.total_pages} (${data.total_transactions} total transactions)`;
+    }
+}
+
