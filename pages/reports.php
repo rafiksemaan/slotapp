@@ -27,15 +27,11 @@ if (isset($_GET['export'])) {
     define('EXPORT_HANDLER', true);
     
     // Include the export handler
-    if ($export_type === 'pdf') {
-        include 'reports/export_pdf.php';
-    } elseif ($export_type === 'excel') {
-        include 'reports/export_excel.php';
-    } else {
-        header("Location: index.php?page=reports&error=Invalid export type");
-    }
+    // This file will now handle data fetching and then include the specific export type
+    include 'reports/export.php';
     exit;
 }
+
 
 // Get filter values from URL
 $machine_id = $_GET['machine_id'] ?? 'all';

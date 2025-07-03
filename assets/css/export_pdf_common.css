@@ -505,3 +505,38 @@
                 padding: 6px 4px;
             }
         }
+
+.report-header .header-logo {
+    max-width: 150px; /* Adjust as needed for screen view */
+    height: auto;
+    margin-bottom: 10px; /* Space between logo and title */
+}
+
+/* Adjustments for print styles for better readability */
+@media print {
+    .report-header .header-logo {
+        max-width: 100px; /* Smaller for print */
+        margin-bottom: 5px;
+    }
+    body {
+        font-size: 9px; /* Slightly larger base font for better readability in print */
+    }
+    .stat-box .stat-title {
+        font-size: 8px; /* Adjust stat title font size for print */
+    }
+    .stat-box .stat-value {
+        font-size: 11px; /* Adjust stat value font size for print */
+    }
+    th {
+        font-size: 8px; /* Table header font size for print */
+        padding: 7px 5px; /* Adjust padding for print */
+    }
+    td {
+        font-size: 8px; /* Table cell font size for print */
+        padding: 4px 5px; /* Adjust padding for print */
+    }
+    .totals-row td {
+        font-size: 8px; /* Totals row font size for print */
+        padding: 7px 5px; /* Adjust padding for print */
+    }
+}

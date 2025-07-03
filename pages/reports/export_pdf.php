@@ -30,12 +30,13 @@ header('Pragma: no-cache');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($custom_filename) ?></title>
-    <style><link rel="stylesheet" href="assets/css/export_pdf_common.css"></style>
+    <link rel="stylesheet" href="assets/css/export_pdf_common.css">
     <script src="assets/js/export_pdf_common.js"></script>
 </head>
 <body>
     <div id="printable-content">
         <div class="report-header">
+			<img src="<?= icon('sgc') ?>" alt="Logo" class="header-logo">
             <h1><?= htmlspecialchars($report_title) ?></h1>
             <h2><?= htmlspecialchars($report_subtitle) ?></h2>
             <div class="date-range"><?= htmlspecialchars($date_subtitle) ?></div>
