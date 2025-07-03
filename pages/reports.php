@@ -132,22 +132,33 @@ try {
     $stmt->execute($query_params); // Use $query_params here
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Get machines for filter dropdown with brand information
-    $query = "SELECT m.id, m.machine_number, b.name as brand_name, mt.name as type FROM machines m 
-              LEFT JOIN brands b ON m.brand_id = b.id 
-              LEFT JOIN machine_types mt ON m.type_id = mt.id";
-    $params = [];
+   // Get machines for filter dropdown with brand information
+$query = "SELECT m.id, m.machine_number, b.name as brand_name, mt.name as type FROM machines m
+          LEFT JOIN brands b ON m.brand_id = b.id
+          LEFT JOIN machine_types mt ON m.type_id = mt.id";
+$params = [];
+$where_clauses_machines = [];
 
-    if ($brand_id !== 'all') {
-        $query .= " WHERE m.brand_id = ?";
-        $params[] = $brand_id;
-    }
+if ($brand_id !== 'all') {
+    $where_clauses_machines[] = "m.brand_id = ?";
+    $params[] = $brand_id;
+}
 
-    $query .= " ORDER BY CAST(m.machine_number AS UNSIGNED)";
+if ($machine_group_id != 'all') {
+    $query .= " JOIN machine_group_members mgm ON m.id = mgm.machine_id";
+    $where_clauses_machines[] = "mgm.group_id = ?";
+    $params[] = $machine_group_id;
+}
 
-    $machines_stmt = $conn->prepare($query);
-    $machines_stmt->execute($params);
-    $machines = $machines_stmt->fetchAll(PDO::FETCH_ASSOC);
+if (!empty($where_clauses_machines)) {
+    $query .= " WHERE " . implode(" AND ", $where_clauses_machines);
+}
+
+$query .= " ORDER BY CAST(m.machine_number AS UNSIGNED)";
+
+$machines_stmt = $conn->prepare($query);
+$machines_stmt->execute($params);
+$machines = $machines_stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Initialize report_data with default values for all machines
     foreach ($machines as $machine) {
