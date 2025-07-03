@@ -193,10 +193,11 @@
         }
 
         th {
-            background-color: var(--neutral-100);
+            border-right: 1px solid var(--neutral-300);
+			background-color: var(--neutral-100);
             color: var(--text-primary);
             padding: 8px 6px;
-            text-align: left;
+            text-align: center;
             font-weight: 700;
             font-size: 9px;
             border-bottom: 2px solid var(--primary-blue);
@@ -205,15 +206,17 @@
             letter-spacing: 0.5px;
         }
 
-        /* Right-align number columns */
+        /* Right-align number columns 
         th:nth-child(4) { text-align: right; } /* Amount */
 
         td {
-            padding: 4px 6px;
+            border-right: 1px solid var(--neutral-300);
+			padding: 4px 6px;
             border-bottom: 1px solid var(--border-light);
             font-size: 8px;
             line-height: 1.2;
             vertical-align: top;
+			text-align: center;
         }
 
         /* Alternating row colors for better readability */
@@ -227,7 +230,6 @@
 
         /* Number formatting and emphasis */
         .currency {
-            text-align: right;
             font-weight: 600;
             font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
             color: var(--number-primary);
