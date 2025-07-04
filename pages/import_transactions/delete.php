@@ -24,6 +24,13 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 
 $upload_id = (int)$_GET['id'];
 
+// Construct the base URL dynamically for robust redirection
+$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+$host = $_SERVER['HTTP_HOST'];
+// This calculates the path to the root of your application (e.g., /slotapp/)
+$base_path = str_replace('\\', '/', dirname($_SERVER['PHP_SELF'], 3));
+$redirect_url = "{$protocol}://{$host}{$base_path}/index.php?page=import_transactions";
+
 try {
     // Start transaction
     $conn->beginTransaction();
@@ -36,43 +43,30 @@ try {
     if (!$upload) {
         $conn->rollBack(); // If transaction was started
         error_log("Delete failed: Upload record not found for ID: {$upload_id}"); // Log this
-        header("Location: ../../index.php?page=import_transactions&error=Upload record not found for ID: {$upload_id}");
+        header("Location: {$redirect_url}&error=" . urlencode("Upload record not found for ID: {$upload_id}"));
         exit;
     }
 
     $operation_date_to_delete = $upload['upload_date'];
     $upload_filename = (string)$upload['upload_filename']; // Ensure it's a string
 
-    // Log the values being used for deletion
-    // error_log("Attempting to delete for upload_id: {$upload_id}");
-    // error_log("Operation Date to Delete: {$operation_date_to_delete}");
-    // error_log("Upload Filename: {$upload_filename}");
-
     // Escape literal %, _, and \ in the filename for the LIKE pattern.
     // The backslash needs to be escaped as \\ because it's the escape character for LIKE.
     $search_filename = str_replace(['\\', '%', '_'], ['\\\\', '\%', '\_'], $upload_filename);
-    // error_log("Escaped Filename for LIKE: {$search_filename}");
 
     // Delete associated transactions for this operation_date and filename
-    $delete_transactions_sql = "DELETE FROM transactions WHERE operation_date = ? AND notes LIKE ? ESCAPE '\\'";
-    // error_log("Delete Transactions SQL: {$delete_transactions_sql}");
-    // error_log("Delete Transactions Params: [{$operation_date_to_delete}, %Imported from {$search_filename}%]");
+    $delete_transactions_sql = "DELETE FROM transactions WHERE operation_date = ? AND notes LIKE ? ESCAPE '\\\\'";
 
     $delete_transactions_stmt = $conn->prepare($delete_transactions_sql);
     $delete_transactions_stmt->execute([$operation_date_to_delete, "%Imported from {$search_filename}%"]);
     $deleted_transactions_count = $delete_transactions_stmt->rowCount();
-    // error_log("Number of transactions deleted: {$deleted_transactions_count}");
 
     // Delete the upload record itself
     $delete_upload_sql = "DELETE FROM transaction_uploads WHERE id = ?";
-    // error_log("Delete Upload SQL: {$delete_upload_sql}");
-    // error_log("Delete Upload Params: [{$upload_id}]");
 
     $delete_upload_stmt = $conn->prepare($delete_upload_sql);
     $delete_upload_stmt->execute([$upload_id]);
     $deleted_upload_count = $delete_upload_stmt->rowCount();
-    // error_log("Number of upload records deleted: {$deleted_upload_count}");
-
 
     // Commit transaction
     $conn->commit();
@@ -80,18 +74,18 @@ try {
     // Log action
     log_action('delete_transaction_upload', "Deleted transaction upload ID: {$upload_id} (File: {$upload_filename}, Date: {$operation_date_to_delete}). Removed {$deleted_transactions_count} associated transactions.");
 
-    header("Location: ../../index.php?page=import_transactions&message=Upload and {$deleted_transactions_count} associated transactions deleted successfully.");
+    header("Location: {$redirect_url}&message=" . urlencode("Upload and {$deleted_transactions_count} associated transactions deleted successfully."));
     exit;
 
 } catch (PDOException $e) {
     $conn->rollBack();
     error_log("PDOException during delete: " . $e->getMessage()); // Log the exception
-    header("Location: ../../index.php?page=import_transactions&error=Error deleting upload: " . urlencode($e->getMessage()));
+    header("Location: {$redirect_url}&error=" . urlencode("Error deleting upload: " . $e->getMessage()));
     exit;
 } catch (Exception $e) {
     $conn->rollBack();
     error_log("General Exception during delete: " . $e->getMessage()); // Log general exceptions
-    header("Location: ../../index.php?page=import_transactions&error=Error deleting upload: " . urlencode($e->getMessage()));
+    header("Location: {$redirect_url}&error=" . urlencode("Error deleting upload: " . $e->getMessage()));
     exit;
 }
 ?>
