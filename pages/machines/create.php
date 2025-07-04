@@ -6,6 +6,7 @@
 // Process form submission
 $message = '';
 $error = '';
+// Initialize transaction data
 $machine = [
     'machine_number' => '',
     'brand_id' => '',
@@ -17,22 +18,28 @@ $machine = [
     'ip_address' => '',
     'mac_address' => '',
     'serial_number' => '',
-    'status' => 'Active'
+    'status' => 'Active',
+    'ticket_printer' => 'N/A',
+    'system_comp' => 'offline'
 ];
+
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Sanitize and validate input
-    $machine['machine_number'] = sanitize_input($_POST['machine_number'] ?? '');
-    $machine['brand_id'] = sanitize_input($_POST['brand_id'] ?? '');
-    $machine['model'] = sanitize_input($_POST['model'] ?? '');
-    $machine['game'] = sanitize_input($_POST['game'] ?? '');
-    $machine['type_id'] = sanitize_input($_POST['type_id'] ?? '');
-    $machine['credit_value'] = sanitize_input($_POST['credit_value'] ?? '');
-    $machine['manufacturing_year'] = sanitize_input($_POST['manufacturing_year'] ?? '');
-    $machine['ip_address'] = sanitize_input($_POST['ip_address'] ?? '');
-    $machine['mac_address'] = sanitize_input($_POST['mac_address'] ?? '');
-    $machine['serial_number'] = sanitize_input($_POST['serial_number'] ?? '');
-    $machine['status'] = sanitize_input($_POST['status'] ?? 'Active');
+	$machine['machine_number'] = sanitize_input($_POST['machine_number'] ?? '');
+	$machine['brand_id'] = sanitize_input($_POST['brand_id'] ?? '');
+	$machine['model'] = sanitize_input($_POST['model'] ?? '');
+	$machine['game'] = sanitize_input($_POST['game'] ?? '');
+	$machine['type_id'] = sanitize_input($_POST['type_id'] ?? '');
+	$machine['credit_value'] = sanitize_input($_POST['credit_value'] ?? '');
+	$machine['manufacturing_year'] = sanitize_input($_POST['manufacturing_year'] ?? '');
+	$machine['ip_address'] = sanitize_input($_POST['ip_address'] ?? '');
+	$machine['mac_address'] = sanitize_input($_POST['mac_address'] ?? '');
+	$machine['serial_number'] = sanitize_input($_POST['serial_number'] ?? '');
+	$machine['status'] = sanitize_input($_POST['status'] ?? 'Active');
+	$machine['ticket_printer'] = sanitize_input($_POST['ticket_printer'] ?? 'N/A'); // Add this line
+	$machine['system_comp'] = sanitize_input($_POST['system_comp'] ?? 'offline'); // Add this line
+
     
     // Validate required fields
     if (empty($machine['machine_number']) || empty($machine['model']) || 
@@ -90,7 +97,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         $machine['ip_address'] ?: null, 
                         $machine['mac_address'] ?: null, 
                         $machine['serial_number'] ?: null, 
-                        $machine['status']
+                        $machine['status'],
+						$machine['ticket_printer'],
+						$machine['system_comp']
                     ]);
                     
                     // Log action
@@ -154,7 +163,7 @@ try {
                         
                         <div class="col">
                             <div class="form-group">
-                                <label for="brand_id">Brand</label>
+                                <label for="brand_id">Brand *</label>
                                 <select id="brand_id" name="brand_id" class="form-control" required>
                                     <option value="">Select Brand</option>
                                     <?php foreach ($brands as $brand): ?>
@@ -170,8 +179,8 @@ try {
                     <div class="row">
                         <div class="col">
                             <div class="form-group">
-                                <label for="model">Model *</label>
-                                <input type="text" id="model" name="model" class="form-control" value="<?php echo htmlspecialchars($machine['model']); ?>" required>
+                                <label for="model">Model</label>
+                                <input type="text" id="model" name="model" class="form-control" value="<?php echo htmlspecialchars($machine['model']); ?>">
                             </div>
                         </div>
                         
@@ -230,6 +239,27 @@ try {
                                 <input type="number" id="manufacturing_year" name="manufacturing_year" class="form-control" value="<?php echo htmlspecialchars($machine['manufacturing_year']); ?>" min="1900" max="<?php echo date('Y'); ?>">
                             </div>
                         </div>
+						</div>
+						<div class="row">
+						<div class="col">
+                        <div class="form-group">
+                            <label for="ticket_printer">Ticket Printer</label>
+                            <select id="ticket_printer" name="ticket_printer" class="form-control" required>
+                                <option value="yes" <?php echo $machine['ticket_printer'] == 'yes' ? 'selected' : ''; ?>>Yes</option>
+                                <option value="N/A" <?php echo $machine['ticket_printer'] == 'N/A' ? 'selected' : ''; ?>>N/A</option>
+                            </select>
+                        </div>
+                    </div>
+					<div class="col">
+                        <div class="form-group">
+                            <label for="system_comp">System Compatibility</label>
+                            <select id="system_comp" name="system_comp" class="form-control" required>
+                                <option value="offline" <?php echo $machine['system_comp'] == 'offline' ? 'selected' : ''; ?>>Offline</option>
+                                <option value="online" <?php echo $machine['system_comp'] == 'online' ? 'selected' : ''; ?>>Online</option>
+                            </select>
+                        </div>
+                    </div>
+                
                     </div>
                     
                     <div class="row">
