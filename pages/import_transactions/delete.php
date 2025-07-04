@@ -8,7 +8,19 @@ session_start();
 require_once '../../config/config.php';
 require_once '../../includes/functions.php';
 
-// ... (rest of the existing code) ...
+// Check permissions: Only editors and administrators can access this page
+if (!has_permission('editor')) {
+    header("Location: ../../index.php?page=import_transactions&error=Access denied");
+    exit;
+}
+
+// Check if ID is provided and is valid
+if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+    header("Location: ../../index.php?page=import_transactions&error=Invalid upload ID provided.");
+    exit;
+}
+
+$upload_id = (int)$_GET['id'];
 
 try {
     // Start transaction
