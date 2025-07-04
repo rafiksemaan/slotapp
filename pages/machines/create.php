@@ -37,8 +37,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	$machine['mac_address'] = sanitize_input($_POST['mac_address'] ?? '');
 	$machine['serial_number'] = sanitize_input($_POST['serial_number'] ?? '');
 	$machine['status'] = sanitize_input($_POST['status'] ?? 'Active');
-	$machine['ticket_printer'] = sanitize_input($_POST['ticket_printer'] ?? 'N/A'); // Add this line
-	$machine['system_comp'] = sanitize_input($_POST['system_comp'] ?? 'offline'); // Add this line
+	$machine['ticket_printer'] = sanitize_input($_POST['ticket_printer'] ?? 'N/A');
+	$machine['system_comp'] = sanitize_input($_POST['system_comp'] ?? 'offline');
 
     
     // Validate required fields
@@ -103,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $stmt->execute([
                         $machine['machine_number'], 
                         $machine['brand_id'], 
-                        $machine['model'] ?: null,, 
+                        $machine['model'] ?: null,
                         $machine['game'] ?: null,
                         $machine['type_id'], 
                         $machine['credit_value'], 
