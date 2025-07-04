@@ -63,22 +63,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['csv_files'])) {
                 continue;
             }
 
-            // Extract month and year from filename (e.g., transactions_YYYY-MM.csv)
-            if (!preg_match('/(\d{4}-\d{2})\.csv$/', $filename, $matches)) {
-                $error_msg = "Filename '{$filename}' does not match expected format (e.g., transactions_YYYY-MM.csv). Cannot determine month/year. Skipping.";
+			// Validate new filename format: transactions_YYYY-MM-DD_daily_upload.csv
+            if (!preg_match('/transactions_(\d{4}-\d{2}-\d{2})_daily_upload\.csv$/i', $filename, $matches)) {
+                $error_msg = "Filename '{$filename}' does not match the expected format (e.g., transactions_YYYY-MM-DD_daily_upload.csv). Cannot determine operation date. Skipping.";
                 $import_stats['files_with_errors'][] = ['filename' => $filename, 'error' => $error_msg];
                 $import_stats['skipped_files']++;
                 continue;
             }
-            $year_month = $matches[1];
-            $operation_date_str = date('Y-m-t', strtotime($year_month . '-01')); // Last day of the month
+            $operation_date_str = $matches[1]; // Extract YYYY-MM-DD directly
+
 
             $file_transactions_imported = 0;
             $file_skipped_transactions = 0;
             $file_errors = [];
 
-            try {
+                        try {
                 $conn->beginTransaction();
+
+                // Insert into transaction_uploads table first
+                $upload_stmt = $conn->prepare("
+                    INSERT INTO transaction_uploads (upload_date, upload_filename, uploaded_by, uploaded_at)
+                    VALUES (?, ?, ?, ?)
+                ");
+                $upload_stmt->execute([$operation_date_str, $filename, $_SESSION['user_id'], date('Y-m-d H:i:s')]);
+                $upload_id = $conn->lastInsertId(); // Get the ID of the new upload record
 
                 if (($handle = fopen($temp_file, "r")) !== FALSE) {
                     $header = fgetcsv($handle); // Read header row
@@ -86,6 +94,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['csv_files'])) {
                         $file_errors[] = "Could not read header from '{$filename}'.";
                         fclose($handle);
                         $conn->rollBack();
+                        // Delete the incomplete upload record if transaction was rolled back
+                        $delete_upload_stmt = $conn->prepare("DELETE FROM transaction_uploads WHERE id = ?");
+                        $delete_upload_stmt->execute([$upload_id]);
                         $import_stats['files_with_errors'][] = ['filename' => $filename, 'error' => implode(', ', $file_errors)];
                         $import_stats['skipped_files']++;
                         continue;
@@ -100,6 +111,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['csv_files'])) {
                         $file_errors[] = "Missing required columns in '{$filename}': " . implode(', ', $missing_columns);
                         fclose($handle);
                         $conn->rollBack();
+                        // Delete the incomplete upload record if transaction was rolled back
+                        $delete_upload_stmt = $conn->prepare("DELETE FROM transaction_uploads WHERE id = ?");
+                        $delete_upload_stmt->execute([$upload_id]);
                         $import_stats['files_with_errors'][] = ['filename' => $filename, 'error' => implode(', ', $file_errors)];
                         $import_stats['skipped_files']++;
                         continue;
@@ -142,8 +156,95 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['csv_files'])) {
                                         $db_machine_id,
                                         $db_transaction_type_id,
                                         $amount,
-                                        $operation_date_str . ' 23:59:59', // Timestamp at end of operation day
+                                        $operation_date_str . ' 23:59:59',
                                         $operation_date_str,
+                                        $_SESSION['user_id'],
+                                        "Imported from {$filename}"
+                                    ]);
+                                    $file_transactions_imported++;
+                                } else {
+                                    $file_errors[] = "Unknown transaction type '{$type_name}' in database. Skipping.";
+                                    $file_skipped_transactions++;
+                                }
+                            }
+                        }
+                    }
+                    fclose($handle);
+                } else {
+                    $file_errors[] = "Could not open file '{$filename}'.";
+                }
+
+                $conn->commit();
+                $import_stats['total_files_processed']++;
+                $import_stats['total_transactions_imported'] += $file_transactions_imported;
+                $import_stats['skipped_transactions'] += $file_skipped_transactions;
+
+                if (!empty($file_errors)) {
+                    $import_stats['files_with_errors'][] = ['filename' => $filename, 'error' => implode(', ', $file_errors)];
+                }
+
+            } catch (PDOException $e) {
+                $conn->rollBack();
+                // Delete the incomplete upload record if transaction was rolled back
+                if (isset($upload_id)) {
+                    $delete_upload_stmt = $conn->prepare("DELETE FROM transaction_uploads WHERE id = ?");
+                    $delete_upload_stmt->execute([$upload_id]);
+                }
+                $error_msg = "Database error processing '{$filename}': " . $e->getMessage();
+                $import_stats['files_with_errors'][] = ['filename' => $filename, 'error' => $error_msg];
+                $import_stats['skipped_files']++;
+            } catch (Exception $e) {
+                $conn->rollBack();
+                // Delete the incomplete upload record if transaction was rolled back
+                if (isset($upload_id)) {
+                    $delete_upload_stmt = $conn->prepare("DELETE FROM transaction_uploads WHERE id = ?");
+                    $delete_upload_stmt->execute([$upload_id]);
+                }
+                $error_msg = "Error processing '{$filename}': " . $e->getMessage();
+                $import_stats['files_with_errors'][] = ['filename' => $filename, 'error' => $error_msg];
+                $import_stats['skipped_files']++;
+            }
+
+
+                    $insert_stmt = $conn->prepare("
+                        INSERT INTO transactions (machine_id, transaction_type_id, amount, timestamp, operation_date, user_id, notes)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                    ");
+
+                    while (($row_data = fgetcsv($handle)) !== FALSE) {
+                        if (count($row_data) < count($header)) {
+                            $file_errors[] = "Skipping malformed row in '{$filename}': " . implode(',', $row_data);
+                            $file_skipped_transactions++;
+                            continue;
+                        }
+
+                        $machine_number_from_csv = trim($row_data[$header_map['machine_id']] ?? '');
+                        $db_machine_id = $machine_map[$machine_number_from_csv] ?? null;
+
+                        if (!$db_machine_id) {
+                            $file_errors[] = "Unknown machine number '{$machine_number_from_csv}' in '{$filename}'. Skipping transactions for this machine in this row.";
+                            $file_skipped_transactions++;
+                            continue;
+                        }
+
+                        $transaction_types_to_import = [
+                            'Handpay' => floatval($row_data[$header_map['total_handpay']] ?? 0),
+                            'Refill' => floatval($row_data[$header_map['total_refill']] ?? 0),
+                            'Ticket' => floatval($row_data[$header_map['total_ticket']] ?? 0),
+                            'Cash Drop' => floatval($row_data[$header_map['cash_drop']] ?? 0),
+                            'Coins Drop' => floatval($row_data[$header_map['coins_drop']] ?? 0)
+                        ];
+
+                        foreach ($transaction_types_to_import as $type_name => $amount) {
+                            if ($amount > 0) {
+                                $db_transaction_type_id = $transaction_type_map[$type_name] ?? null;
+                                if ($db_transaction_type_id) {
+                                    $insert_stmt->execute([
+                                        $db_machine_id,
+                                        $db_transaction_type_id,
+                                        $amount,
+                                        $operation_date_str . ' 23:59:59', // Use extracted operation_date for timestamp
+                                        $operation_date_str, // Use extracted operation_date
                                         $_SESSION['user_id'],
                                         "Imported from {$filename}"
                                     ]);
@@ -270,5 +371,65 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['csv_files'])) {
         </div>
     </div>
 </div>
+
+<?php
+// Fetch upload history for display
+$upload_history = [];
+try {
+    $history_stmt = $conn->query("
+        SELECT tu.*, u.username as uploaded_by_username
+        FROM transaction_uploads tu
+        LEFT JOIN users u ON tu.uploaded_by = u.id
+        ORDER BY tu.uploaded_at DESC
+    ");
+    $upload_history = $history_stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $history_error = "Error fetching upload history: " . $e->getMessage();
+}
+?>
+
+<?php if (!empty($upload_history)): ?>
+    <div class="card mt-6">
+        <div class="card-header">
+            <h3>Transaction Upload History</h3>
+        </div>
+        <div class="card-body">
+            <?php if (isset($history_error)): ?>
+                <div class="alert alert-danger"><?= htmlspecialchars($history_error) ?></div>
+            <?php endif; ?>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Upload Date</th>
+                            <th>Filename</th>
+                            <th>Uploaded By</th>
+                            <th>Uploaded At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($upload_history as $upload): ?>
+                            <tr>
+                                <td><?= htmlspecialchars(format_date($upload['upload_date'])) ?></td>
+                                <td><?= htmlspecialchars($upload['upload_filename']) ?></td>
+                                <td><?= htmlspecialchars($upload['uploaded_by_username'] ?? 'N/A') ?></td>
+                                <td><?= htmlspecialchars(format_datetime($upload['uploaded_at'])) ?></td>
+                                <td>
+                                    <a href="index.php?page=import_transactions&action=delete_upload&id=<?= $upload['id'] ?>" 
+                                       class="action-btn delete-btn" data-tooltip="Delete Upload" 
+                                       data-confirm="Are you sure you want to delete this upload and all associated transactions?">
+                                        <span class="menu-icon"><img src="<?= icon('delete') ?>"/></span>
+                                    </a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>
+
 
 <script src="assets/js/import_transactions.js"></script>

@@ -2,10 +2,11 @@
 
 function validateImportForm(form) {
     const fileInput = form.csv_files;
-    if (fileInput.files.length === 0) {
-        alert('Please select at least one CSV file to upload.');
-        return false;
-    }
+            // Updated regex for transactions_YYYY-MM-DD_daily_upload.csv
+        if (!/transactions_\d{4}-\d{2}-\d{2}_daily_upload\.csv$/i.test(file.name)) {
+            alert(`Filename '${file.name}' does not match the expected format (e.g., transactions_YYYY-MM-DD_daily_upload.csv). Please rename your files accordingly.`);
+            return false;
+        }
 
     for (let i = 0; i < fileInput.files.length; i++) {
         const file = fileInput.files[i];
