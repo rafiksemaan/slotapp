@@ -103,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $stmt->execute([
                         $machine['machine_number'], 
                         $machine['brand_id'], 
-                        $machine['model'], 
+                        $machine['model'] ?: null,, 
                         $machine['game'] ?: null,
                         $machine['type_id'], 
                         $machine['credit_value'], 
