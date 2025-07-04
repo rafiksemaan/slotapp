@@ -8,7 +8,7 @@ $db_pass = 'Mcmxcix7//6'; // Update with your actual password if needed
 // Application settings
 $app_name = 'Slot Management System';
 $app_version = '1.0.0';
-$app_url = 'http://localhost/slotapp'; // Update with your actual URL
+$app_url = 'http://localhost/slotapp';
 
 // Security settings
 define('SECURE_MODE', true);
