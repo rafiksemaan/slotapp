@@ -40,10 +40,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	$machine['ticket_printer'] = sanitize_input($_POST['ticket_printer'] ?? 'N/A');
 	$machine['system_comp'] = sanitize_input($_POST['system_comp'] ?? 'offline');
 
-    
     // Validate required fields
-    if (empty($machine['machine_number']) || empty($machine['model']) || 
-        empty($machine['type_id']) || empty($machine['credit_value'])) {
+    if (empty($machine['machine_number']) || empty($machine['brand_id']) || empty($machine['game']) ||
+        empty($machine['type_id']) || empty($machine['credit_value']) || empty($machine['status']) ||
+        empty($machine['ticket_printer']) || empty($machine['system_comp'])) {
         $error = "Please fill out all required fields.";
     }
     // Validate IP address format if provided
@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Check if machine number already exists
             $stmt = $conn->prepare("SELECT id FROM machines WHERE machine_number = ?");
             $stmt->execute([$machine['machine_number']]);
-            
+
             if ($stmt->rowCount() > 0) {
                 $error = "A machine with this number already exists.";
             } else {
@@ -67,45 +67,45 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 if (!empty($machine['serial_number'])) {
                     $stmt = $conn->prepare("SELECT id FROM machines WHERE serial_number = ?");
                     $stmt->execute([$machine['serial_number']]);
-                    
+
                     if ($stmt->rowCount() > 0) {
                         $error = "A machine with this serial number already exists.";
                     }
                 }
-                
+
                 if (empty($error)) {
                     // Insert new machine
                     $stmt = $conn->prepare("
-                        INSERT INTO machines (machine_number, brand_id, model, game, type_id, credit_value, 
+                        INSERT INTO machines (machine_number, brand_id, model, game, type_id, credit_value,
 						manufacturing_year, ip_address, mac_address, serial_number, status, ticket_printer, system_comp)
 						VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 
                     ");
-                    
+
 					// Handle empty brand_id
                     if (empty($machine['brand_id'])) {
                         $machine['brand_id'] = null;
                     }
-                    			
+
                     $stmt->execute([
-                        $machine['machine_number'], 
-                        $machine['brand_id'], 
+                        $machine['machine_number'],
+                        $machine['brand_id'],
                         $machine['model'] ?: null,
                         $machine['game'] ?: null,
-                        $machine['type_id'], 
-                        $machine['credit_value'], 
-                        $machine['manufacturing_year'] ?: null, 
-                        $machine['ip_address'] ?: null, 
-                        $machine['mac_address'] ?: null, 
-                        $machine['serial_number'] ?: null, 
+                        $machine['type_id'],
+                        $machine['credit_value'],
+                        $machine['manufacturing_year'] ?: null,
+                        $machine['ip_address'] ?: null,
+                        $machine['mac_address'] ?: null,
+                        $machine['serial_number'] ?: null,
                         $machine['status'],
 						$machine['ticket_printer'],
 						$machine['system_comp']
                     ]);
-					
+
 					 // Log action
                     log_action('create_machine', "Created machine: {$machine['machine_number']} - {$machine['game']}");
-                    
+
                     // Redirect to machine list
                     header("Location: index.php?page=machines&message=Machine created successfully");
                     exit;
@@ -145,11 +145,11 @@ try {
             <?php if (!empty($error)): ?>
                 <div class="alert alert-danger"><?php echo $error; ?></div>
             <?php endif; ?>
-            
+
             <?php if (!empty($message)): ?>
                 <div class="alert alert-success"><?php echo $message; ?></div>
             <?php endif; ?>
-            
+
             <form action="index.php?page=machines&action=create" method="POST" id="machineCreateForm">
                 <!-- Basic Information Section -->
                 <div class="form-section">
@@ -161,7 +161,7 @@ try {
                                 <input type="text" id="machine_number" name="machine_number" class="form-control" value="<?php echo htmlspecialchars($machine['machine_number']); ?>" required>
                             </div>
                         </div>
-                        
+
                         <div class="col">
                             <div class="form-group">
                                 <label for="brand_id">Brand *</label>
@@ -176,7 +176,7 @@ try {
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col">
                             <div class="form-group">
@@ -184,7 +184,7 @@ try {
                                 <input type="text" id="model" name="model" class="form-control" value="<?php echo htmlspecialchars($machine['model']); ?>">
                             </div>
                         </div>
-                        
+
                         <div class="col">
                             <div class="form-group">
                                 <label for="game">Game *</label>
@@ -192,7 +192,7 @@ try {
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col">
                             <div class="form-group">
@@ -207,7 +207,7 @@ try {
                                 </select>
                             </div>
                         </div>
-                        
+
                         <div class="col">
                             <div class="form-group">
                                 <label for="status">Status *</label>
@@ -221,26 +221,6 @@ try {
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <!-- Technical Details Section -->
-                <div class="form-section">
-                    <h4>Technical Details</h4>
-                    <div class="row">
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="credit_value">Credit Value *</label>
-                                <input type="number" id="credit_value" name="credit_value" class="form-control" value="<?php echo htmlspecialchars($machine['credit_value']); ?>" step="0.01" min="0" required>
-                            </div>
-                        </div>
-                        
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="manufacturing_year">Manufacturing Year</label>
-                                <input type="number" id="manufacturing_year" name="manufacturing_year" class="form-control" value="<?php echo htmlspecialchars($machine['manufacturing_year']); ?>" min="1900" max="<?php echo date('Y'); ?>">
-                            </div>
-                        </div>
-						</div>
 						<div class="row">
 						<div class="col">
                         <div class="form-group">
@@ -260,9 +240,30 @@ try {
                             </select>
                         </div>
                     </div>
-                
+
                     </div>
-                    
+
+                </div>
+
+                <!-- Technical Details Section -->
+                <div class="form-section">
+                    <h4>Technical Details</h4>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="credit_value">Credit Value *</label>
+                                <input type="number" id="credit_value" name="credit_value" class="form-control" value="<?php echo htmlspecialchars($machine['credit_value']); ?>" step="0.01" min="0" required>
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="manufacturing_year">Manufacturing Year</label>
+                                <input type="number" id="manufacturing_year" name="manufacturing_year" class="form-control" value="<?php echo htmlspecialchars($machine['manufacturing_year']); ?>" min="1900" max="<?php echo date('Y'); ?>">
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="row">
                         <div class="col">
                             <div class="form-group">
@@ -270,13 +271,13 @@ try {
                                 <input type="text" id="serial_number" name="serial_number" class="form-control" value="<?php echo htmlspecialchars($machine['serial_number']); ?>">
                             </div>
                         </div>
-                        
+
                         <div class="col">
                             <!-- Empty column for layout balance -->
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Network Configuration Section -->
                 <div class="form-section">
                     <h4>Network Configuration</h4>
@@ -287,7 +288,7 @@ try {
                                 <input type="text" id="ip_address" name="ip_address" class="form-control ip-address" value="<?php echo htmlspecialchars($machine['ip_address']); ?>">
                             </div>
                         </div>
-                        
+
                         <div class="col">
                             <div class="form-group">
                                 <label for="mac_address">MAC Address</label>
@@ -296,7 +297,7 @@ try {
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Form Actions -->
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Save Machine</button>

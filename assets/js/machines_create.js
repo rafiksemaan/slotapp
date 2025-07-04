@@ -1,6 +1,5 @@
 function validateForm(form) {
     const machineNumber = form.machine_number.value.trim();
-    const model = form.model.value.trim();
     const typeId = form.type_id.value;
     const creditValue = form.credit_value.value;
     const ipAddress = form.ip_address ? form.ip_address.value.trim() : '';
