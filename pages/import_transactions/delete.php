@@ -24,12 +24,9 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 
 $upload_id = (int)$_GET['id'];
 
-// Construct the base URL dynamically for robust redirection
-$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
-$host = $_SERVER['HTTP_HOST'];
-// This calculates the path to the root of your application (e.g., /slotapp/)
-$base_path = str_replace('\\', '/', dirname($_SERVER['PHP_SELF'], 3));
-$redirect_url = "{$protocol}://{$host}{$base_path}/index.php?page=import_transactions";
+// Use the application URL defined in config.php for redirection
+global $app_url; // Make sure $app_url is accessible
+$redirect_url = "{$app_url}/index.php?page=import_transactions";
 
 try {
     // Start transaction
