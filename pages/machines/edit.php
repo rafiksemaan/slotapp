@@ -18,7 +18,13 @@ $machine = null;
 
 // Get machine data
 try {
-    $stmt = $conn->prepare("SELECT * FROM machines WHERE id = ?");
+    $stmt = $conn->prepare("
+        SELECT m.*, b.name AS brand_name, mt.name AS type_name
+        FROM machines m
+        LEFT JOIN brands b ON m.brand_id = b.id
+        LEFT JOIN machine_types mt ON m.type_id = mt.id
+        WHERE m.id = ?
+    ");
     $stmt->execute([$machine_id]);
     $machine = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -62,11 +68,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $mac_address = sanitize_input($_POST['mac_address'] ?? '');
     $serial_number = sanitize_input($_POST['serial_number'] ?? '');
     $status = sanitize_input($_POST['status'] ?? 'Active');
+    $ticket_printer = sanitize_input($_POST['ticket_printer'] ?? 'N/A');
+    $system_comp = sanitize_input($_POST['system_comp'] ?? 'offline');
 
     // Validate required fields
-    if (empty($machine_number) || empty($model) || empty($type_id) || empty($credit_value)) {
+    if (empty($machine_number) || empty($brand_id) || empty($game) ||
+        empty($type_id) || empty($credit_value) || empty($status) ||
+        empty($ticket_printer) || empty($system_comp)) {
         $error = "Please fill out all required fields.";
-    } 
+    }
     else if (!empty($ip_address) && !is_valid_ip($ip_address)) {
         $error = "Please enter a valid IP address.";
     }
@@ -105,14 +115,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         ip_address = ?,
                         mac_address = ?,
                         serial_number = ?,
-                        status = ?
+                        status = ?,
+                        ticket_printer = ?,
+                        system_comp = ?
                     WHERE id = ?
                 ");
                 $stmt->execute([
                     $machine_number,
                     $brand_id ?: null,
-                    $model,
-                    $game ?: null,
+                    $model ?: null, // Model is now optional
+                    $game,
                     $type_id,
                     $credit_value,
                     $manufacturing_year ?: null,
@@ -120,6 +132,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $mac_address ?: null,
                     $serial_number ?: null,
                     $status,
+                    $ticket_printer,
+                    $system_comp,
                     $machine_id
                 ]);
 
@@ -164,8 +178,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                         <div class="col">
                             <div class="form-group">
-                                <label for="brand_id">Brand</label>
-                                <select id="brand_id" name="brand_id" class="form-control">
+                                <label for="brand_id">Brand *</label>
+                                <select id="brand_id" name="brand_id" class="form-control" required>
                                     <option value="">Select Brand</option>
                                     <?php foreach ($brands as $brand): ?>
                                         <option value="<?php echo $brand['id']; ?>" <?php echo $machine['brand_id'] == $brand['id'] ? 'selected' : ''; ?>>
@@ -180,14 +194,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="row">
                         <div class="col">
                             <div class="form-group">
-                                <label for="model">Model *</label>
-                                <input type="text" id="model" name="model" class="form-control" value="<?php echo htmlspecialchars($machine['model']); ?>" required>
+                                <label for="model">Model</label>
+                                <input type="text" id="model" name="model" class="form-control" value="<?php echo htmlspecialchars($machine['model']); ?>">
                             </div>
                         </div>
                         <div class="col">
                             <div class="form-group">
-                                <label for="game">Game</label>
-                                <input type="text" id="game" name="game" class="form-control" value="<?php echo htmlspecialchars($machine['game'] ?? ''); ?>" placeholder="e.g., Buffalo Gold, Lightning Link">
+                                <label for="game">Game *</label>
+                                <input type="text" id="game" name="game" class="form-control" value="<?php echo htmlspecialchars($machine['game'] ?? ''); ?>" placeholder="e.g., Buffalo Gold, Lightning Link" required>
                                 <small class="form-text">Name of the game installed on this machine</small>
                             </div>
                         </div>
@@ -216,6 +230,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                             <?php echo $status_opt; ?>
                                         </option>
                                     <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="ticket_printer">Ticket Printer *</label>
+                                <select id="ticket_printer" name="ticket_printer" class="form-control" required>
+                                    <option value="yes" <?php echo $machine['ticket_printer'] == 'yes' ? 'selected' : ''; ?>>Yes</option>
+                                    <option value="N/A" <?php echo $machine['ticket_printer'] == 'N/A' ? 'selected' : ''; ?>>N/A</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="system_comp">System Compatibility *</label>
+                                <select id="system_comp" name="system_comp" class="form-control" required>
+                                    <option value="offline" <?php echo $machine['system_comp'] == 'offline' ? 'selected' : ''; ?>>Offline</option>
+                                    <option value="online" <?php echo $machine['system_comp'] == 'online' ? 'selected' : ''; ?>>Online</option>
                                 </select>
                             </div>
                         </div>

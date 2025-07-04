@@ -1,12 +1,13 @@
 function validateForm(form) {
     const machineNumber = form.machine_number.value.trim();
-    const model = form.model.value.trim();
+    // model is no longer a required field
     const typeId = form.type_id.value;
     const creditValue = form.credit_value.value;
     const ipAddress = form.ip_address ? form.ip_address.value.trim() : '';
     const macAddress = form.mac_address ? form.mac_address.value.trim() : '';
 
-    if (!machineNumber || !model || !typeId || !creditValue) {
+    // Updated required fields check
+    if (!machineNumber || !form.brand_id.value || !form.game.value || !typeId || !creditValue || !form.status.value || !form.ticket_printer.value || !form.system_comp.value) {
         alert("Please fill out all required fields.");
         return false;
     }
