@@ -64,7 +64,7 @@ try {
                         <div class="col-6">
                             <div class="detail-group">
                                 <strong>Model:</strong>
-                                <span><?php echo htmlspecialchars($machine['model']); ?></span>
+                                <span><?php echo htmlspecialchars($machine['model'] ?? 'N/A'); ?></span>
                             </div>
                         </div>
                         <div class="col-6">
@@ -113,6 +113,20 @@ try {
                             <div class="detail-group">
                                 <strong>MAC Address:</strong>
                                 <span><?php echo htmlspecialchars($machine['mac_address'] ?: 'N/A'); ?></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="detail-group">
+                                <strong>Ticket Printer:</strong>
+                                <span><?php echo htmlspecialchars($machine['ticket_printer'] ?: 'N/A'); ?></span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="detail-group">
+                                <strong>System Compatibility:</strong>
+                                <span><?php echo htmlspecialchars($machine['system_comp'] ?: 'N/A'); ?></span>
                             </div>
                         </div>
                     </div>
