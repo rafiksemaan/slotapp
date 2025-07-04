@@ -35,7 +35,7 @@ try {
         LEFT JOIN brands b ON m.brand_id = b.id
         LEFT JOIN machine_types mt ON m.type_id = mt.id
         WHERE mgm.group_id = ?
-        ORDER BY m.machine_number
+        ORDER BY CAST(m.machine_number AS UNSIGNED)
     ");
     $stmt->execute([$group_id]);
     $machines = $stmt->fetchAll(PDO::FETCH_ASSOC);
