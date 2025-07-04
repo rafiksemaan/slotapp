@@ -41,24 +41,25 @@ try {
     }
 
     $operation_date_to_delete = $upload['upload_date'];
-    $upload_filename = $upload['upload_filename'];
+    $upload_filename = (string)$upload['upload_filename']; // Ensure it's a string
 
     // Log the values being used for deletion
     // error_log("Attempting to delete for upload_id: {$upload_id}");
     // error_log("Operation Date to Delete: {$operation_date_to_delete}");
     // error_log("Upload Filename: {$upload_filename}");
 
-    // Escape '%' and '_' characters in the filename for use in LIKE clause
-    $escaped_filename = str_replace(['%', '_'], ['\\%', '\\_'], $upload_filename);
-    // error_log("Escaped Filename for LIKE: {$escaped_filename}");
+    // Escape literal %, _, and \ in the filename for the LIKE pattern.
+    // The backslash needs to be escaped as \\ because it's the escape character for LIKE.
+    $search_filename = str_replace(['\\', '%', '_'], ['\\\\', '\%', '\_'], $upload_filename);
+    // error_log("Escaped Filename for LIKE: {$search_filename}");
 
     // Delete associated transactions for this operation_date and filename
     $delete_transactions_sql = "DELETE FROM transactions WHERE operation_date = ? AND notes LIKE ? ESCAPE '\\'";
     // error_log("Delete Transactions SQL: {$delete_transactions_sql}");
-    // error_log("Delete Transactions Params: [{$operation_date_to_delete}, %Imported from {$escaped_filename}%]");
+    // error_log("Delete Transactions Params: [{$operation_date_to_delete}, %Imported from {$search_filename}%]");
 
     $delete_transactions_stmt = $conn->prepare($delete_transactions_sql);
-    $delete_transactions_stmt->execute([$operation_date_to_delete, "%Imported from {$escaped_filename}%"]);
+    $delete_transactions_stmt->execute([$operation_date_to_delete, "%Imported from {$search_filename}%"]);
     $deleted_transactions_count = $delete_transactions_stmt->rowCount();
     // error_log("Number of transactions deleted: {$deleted_transactions_count}");
 
