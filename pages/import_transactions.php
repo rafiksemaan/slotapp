@@ -18,6 +18,24 @@ if (!in_array($action, $allowed_actions)) {
     $action = 'list'; // Default to list if action is invalid
 }
 
+// Capture messages/errors from URL and prepare for display
+$display_message = '';
+$display_error = '';
+
+if (isset($_GET['message'])) {
+    $display_message = htmlspecialchars($_GET['message']);
+}
+if (isset($_GET['error'])) {
+    $display_error = htmlspecialchars($_GET['error']);
+}
+
+// Use JavaScript to clean the URL after messages are captured
+if (!empty($display_message) || !empty($display_error)) {
+    echo "<script type='text/javascript'>
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.search.replace(/&?(message|error)=[^&]*/g, ''));
+    </script>";
+}
+
 $message = '';
 $error = '';
 $import_stats = [
@@ -257,6 +275,14 @@ switch ($action) {
                     <?php if (!empty($message)): ?>
                         <div class="alert alert-success"><?php echo htmlspecialchars($message); ?></div>
                     <?php endif; ?>
+					
+					<?php if (!empty($display_error)): ?>
+                    <div class="alert alert-danger"><?php echo $display_error; ?></div>
+					<?php endif; ?>
+
+					<?php if (!empty($display_message)): ?>
+                    <div class="alert alert-success"><?php echo $display_message; ?></div>
+					<?php endif; ?>
 
                     <?php if (!empty($import_stats['files_with_errors'])): ?>
                         <div class="alert alert-warning">
