@@ -46,36 +46,36 @@ try {
 	
 	$like_pattern = "%Imported from {$escaped_filename}%";
 
-// --- DEBUGGING START ---
-// Fetch a sample transaction that should be deleted to inspect its notes field
-$debug_stmt = $conn->prepare("
-    SELECT id, notes, operation_date
-    FROM transactions
-    WHERE operation_date = ? AND notes LIKE ? ESCAPE '\\'
-    LIMIT 1
-");
-$debug_stmt->execute([$operation_date_to_delete, $like_pattern]);
-$sample_transaction = $debug_stmt->fetch(PDO::FETCH_ASSOC);
+		// --- DEBUGGING START ---
+		// Fetch a sample transaction that should be deleted to inspect its notes field
+		$debug_stmt = $conn->prepare("
+			SELECT id, notes, operation_date
+			FROM transactions
+			WHERE operation_date = ? AND notes LIKE ? ESCAPE '\\'
+			LIMIT 1
+		");
+		$debug_stmt->execute([$operation_date_to_delete, $like_pattern]);
+		$sample_transaction = $debug_stmt->fetch(PDO::FETCH_ASSOC);
 
-echo "DEBUG INFO:<br>";
-echo "Upload ID: " . htmlspecialchars($upload_id) . "<br>";
-echo "Operation Date to Delete: " . htmlspecialchars($operation_date_to_delete) . "<br>";
-echo "Upload Filename: " . htmlspecialchars($upload_filename) . "<br>";
-echo "Escaped Filename: " . htmlspecialchars($escaped_filename) . "<br>";
-echo "LIKE Pattern (used in query): '" . htmlspecialchars($like_pattern) . "'<br>";
+		echo "DEBUG INFO:<br>";
+		echo "Upload ID: " . htmlspecialchars($upload_id) . "<br>";
+		echo "Operation Date to Delete: " . htmlspecialchars($operation_date_to_delete) . "<br>";
+		echo "Upload Filename: " . htmlspecialchars($upload_filename) . "<br>";
+		echo "Escaped Filename: " . htmlspecialchars($escaped_filename) . "<br>";
+		echo "LIKE Pattern (used in query): '" . htmlspecialchars($like_pattern) . "'<br>";
 
-if ($sample_transaction) {
-    echo "Sample Transaction Found:<br>";
-    echo "  ID: " . htmlspecialchars($sample_transaction['id']) . "<br>";
-    echo "  Notes (from DB): '" . htmlspecialchars($sample_transaction['notes']) . "'<br>";
-    echo "  Operation Date (from DB): " . htmlspecialchars($sample_transaction['operation_date']) . "<br>";
-} else {
-    echo "No sample transaction found matching criteria. This means the LIKE pattern or operation_date might be incorrect.<br>";
-}
-echo "<br>Stopping execution for debug. No deletion performed.<br>";
-$conn->rollBack(); // Ensure no changes are committed during debug
-exit;
-// --- DEBUGGING END ---
+		if ($sample_transaction) {
+			echo "Sample Transaction Found:<br>";
+			echo "  ID: " . htmlspecialchars($sample_transaction['id']) . "<br>";
+			echo "  Notes (from DB): '" . htmlspecialchars($sample_transaction['notes']) . "'<br>";
+			echo "  Operation Date (from DB): " . htmlspecialchars($sample_transaction['operation_date']) . "<br>";
+		} else {
+			echo "No sample transaction found matching criteria. This means the LIKE pattern or operation_date might be incorrect.<br>";
+		}
+		echo "<br>Stopping execution for debug. No deletion performed.<br>";
+		$conn->rollBack(); // Ensure no changes are committed during debug
+		exit;
+		// --- DEBUGGING END ---
 
 
     // Delete associated transactions for this operation_date and filename
