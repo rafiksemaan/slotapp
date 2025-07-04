@@ -6,7 +6,7 @@
 
 // Pagination parameters
 $page_num = 1; // Always start with page 1 for initial load
-$per_page = 100;
+$per_page = 500;
 
 // Sorting parameters
 $sort_column = $_GET['sort'] ?? 'operation_date';
