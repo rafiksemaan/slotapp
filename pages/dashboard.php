@@ -54,6 +54,20 @@ try {
     // Count machines by status
     $stmt = $conn->query("SELECT status, COUNT(*) as count FROM machines GROUP BY status");
     $machine_stats = $stmt->fetchAll();
+	
+	$stmt = $conn->prepare("SELECT COUNT(*) FROM machines WHERE status = 'Active'");
+	$stmt->execute();
+	$active_machines_count = $stmt->fetchColumn();
+
+	$stmt = $conn->prepare("SELECT COUNT(*) FROM machines WHERE status = 'Inactive'");
+	$stmt->execute();
+	$inactive_machines_count = $stmt->fetchColumn();
+
+	$stmt = $conn->prepare("SELECT COUNT(*) FROM machines WHERE status = 'Maintenance'");
+	$stmt->execute();
+	$maintenance_machines_count = $stmt->fetchColumn();
+	
+	
 
     // Count machines by machine type
     $stmt = $conn->query("
@@ -114,6 +128,11 @@ foreach ($out_transactions as $transaction) {
                 echo $total_machines;
             ?></div>
             <div class="stat-info">Registered Slot Machines</div>
+			<div class="stat-breakdown">
+			<div class="breakdown-item"><span class="breakdown-type">Active: <span class="breakdown-amount"><?php echo $active_machines_count ?></span></span></div>
+			<div class="breakdown-item"><span class="breakdown-type">Inactive: <span class="breakdown-amount"><?php echo $inactive_machines_count ?></span></span></div>
+			<div class="breakdown-item"><span class="breakdown-type">Maintenance: <span class="breakdown-amount"><?php echo $maintenance_machines_count ?></span></span></div>
+			</div>
         </div>
         
         <!-- Machines by Type -->
