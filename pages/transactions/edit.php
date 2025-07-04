@@ -73,6 +73,16 @@ try {
 // Check if user is admin (for operation date editing)
 $is_admin = ($_SESSION['user_role'] === 'admin');
 
+// Capture filter parameters from the URL for redirection
+$redirect_params = [];
+$allowed_filter_keys = ['machine', 'date_range_type', 'date_from', 'date_to', 'month', 'category', 'transaction_type', 'sort', 'order'];
+foreach ($allowed_filter_keys as $key) {
+    if (isset($_GET[$key])) {
+        $redirect_params[$key] = $_GET[$key];
+    }
+}
+$redirect_query_string = http_build_query($redirect_params);
+
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $machine_id = sanitize_input($_POST['machine_id'] ?? '');
@@ -149,8 +159,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $success = true;
 
                 // Redirect after successful update
-                if (!headers_sent()) {
-                    header("Location: index.php?page=transactions&message=Transaction updated successfully");
+                if (!headers_sent()) { // Ensure headers haven't been sent already
+                    header("Location: index.php?page=transactions&message=Transaction updated successfully&{$redirect_query_string}");
                     exit;
                 }
             } else {
@@ -292,7 +302,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <!-- Form Actions -->
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Update Transaction</button>
-                    <a href="index.php?page=transactions" class="btn btn-danger">Cancel</a>
+                    <a href="index.php?page=transactions&<?php echo $redirect_query_string; ?>" class="btn btn-danger">Cancel</a>
                 </div>
             </form>
         </div>

@@ -75,6 +75,20 @@ try {
     $total_pages = ceil($total_transactions / $per_page);
     $has_more = $page_num < $total_pages;
 
+// Prepare current filter parameters for passing to edit/view links
+    $current_filters_array = [
+        'machine' => $filter_machine,
+        'date_range_type' => $date_range_type,
+        'date_from' => $filter_date_from,
+        'date_to' => $filter_date_to,
+        'month' => $filter_month,
+        'category' => $filter_category,
+        'transaction_type' => $filter_transaction_type,
+        'sort' => $sort_column,
+        'order' => $sort_order
+    ];
+    $filter_query_string = http_build_query($current_filters_array);
+
     // Map sort columns to actual database columns
     $sort_map = [
         'operation_date' => 't.operation_date',
@@ -520,7 +534,7 @@ $has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !emp
                                     <td class="px-4 py-2 text-right">
                                         <a href="index.php?page=transactions&action=view&id=<?php echo $t['id']; ?>" class="action-btn view-btn" data-tooltip="View Details"><span class="menu-icon"><img src="<?= icon('view2') ?>"/></span></a>
                                         <?php if ($can_edit): ?>
-                                            <a href="index.php?page=transactions&action=edit&id=<?php echo $t['id']; ?>" class="action-btn edit-btn" data-tooltip="Edit"><span class="menu-icon"><img src="<?= icon('edit') ?>"/></span></a>
+                                            <a href="index.php?page=transactions&action=edit&id=<?php echo $t['id']; ?>&<?php echo $filter_query_string; ?>" class="action-btn edit-btn" data-tooltip="Edit"><span class="menu-icon"><img src="<?= icon('edit') ?>"/></span></a>
                                             <a href="index.php?page=transactions&action=delete&id=<?php echo $t['id']; ?>" class="action-btn delete-btn" data-tooltip="Delete" data-confirm="Are you sure you want to delete this transaction?"><span class="menu-icon"><img src="<?= icon('delete') ?>"/></span></a>
                                         <?php endif; ?>
                                     </td>
