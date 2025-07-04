@@ -6,7 +6,7 @@ function validateForm(form) {
     const ipAddress = form.ip_address ? form.ip_address.value.trim() : '';
     const macAddress = form.mac_address ? form.mac_address.value.trim() : '';
 
-    if (!machineNumber || !model || !typeId || !creditValue) {
+    if (!machineNumber || !form.brand_id.value || !form.game.value || !typeId || !creditValue || !form.status.value || !form.ticket_printer.value || !form.system_comp.value) {
         alert("Please fill out all required fields.");
         return false;
     }
