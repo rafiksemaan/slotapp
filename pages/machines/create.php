@@ -78,14 +78,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $stmt = $conn->prepare("
                         INSERT INTO machines (machine_number, brand_id, model, game, type_id, credit_value, 
                         manufacturing_year, ip_address, mac_address, serial_number, status)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ");
                     
+					                    // --- DEBUGGING START ---
+                    echo "<pre>SQL Query:\n";
+                    var_dump($sql);
+                    echo "\nParameters:\n";
+                    var_dump($params_to_execute);
+                    echo "</pre>";
+                    exit; // Stop execution here to see the output
+                    // --- DEBUGGING END ---
+
+					
+					
+					
                     // Handle empty brand_id
                     if (empty($machine['brand_id'])) {
                         $machine['brand_id'] = null;
                     }
                     
+			
+					
                     $stmt->execute([
                         $machine['machine_number'], 
                         $machine['brand_id'], 
@@ -101,6 +115,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 						$machine['ticket_printer'],
 						$machine['system_comp']
                     ]);
+					
+					
                     
                     // Log action
                     log_action('create_machine', "Created machine: {$machine['machine_number']} - {$machine['game']}");
