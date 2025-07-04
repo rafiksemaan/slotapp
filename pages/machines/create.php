@@ -77,29 +77,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     // Insert new machine
                     $stmt = $conn->prepare("
                         INSERT INTO machines (machine_number, brand_id, model, game, type_id, credit_value, 
-                        manufacturing_year, ip_address, mac_address, serial_number, status)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+						manufacturing_year, ip_address, mac_address, serial_number, status, ticket_printer, system_comp)
+						VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+
                     ");
                     
-					                    // --- DEBUGGING START ---
-                    echo "<pre>SQL Query:\n";
-                    var_dump($sql);
-                    echo "\nParameters:\n";
-                    var_dump($params_to_execute);
-                    echo "</pre>";
-                    exit; // Stop execution here to see the output
-                    // --- DEBUGGING END ---
-
-					
-					
-					
-                    // Handle empty brand_id
+					// Handle empty brand_id
                     if (empty($machine['brand_id'])) {
                         $machine['brand_id'] = null;
                     }
-                    
-			
-					
+                    			
                     $stmt->execute([
                         $machine['machine_number'], 
                         $machine['brand_id'], 
@@ -116,9 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 						$machine['system_comp']
                     ]);
 					
-					
-                    
-                    // Log action
+					 // Log action
                     log_action('create_machine', "Created machine: {$machine['machine_number']} - {$machine['game']}");
                     
                     // Redirect to machine list
