@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     },
                     title: {
                         display: true,
-                        text: 'This Month\'s Transactions',
+                        text: 'This Year\'s Transactions',
                         color: '#ffffff'
                     }
                 }
