@@ -1,7 +1,7 @@
 <?php
 /**
  * Dashboard page
- * Shows overview of slot machine statistics and monthly transactions
+ * Shows overview of slot machine statistics and yearly transactions
  */
 $page = $_GET['page'] ?? 'dashboard';
 
@@ -9,13 +9,13 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Get current Cairo time and calculate month range
+// Get current Cairo time and calculate year range
 $cairo_now = new DateTime('now', new DateTimeZone('Africa/Cairo'));
-$current_month = $cairo_now->format('Y-m');
-$month_start = $current_month . '-01 00:00:00';
-$month_end = $cairo_now->format('Y-m-t') . ' 23:59:59';
+$current_year = $cairo_now->format('Y');
+$year_start = $current_year . '-01-01 00:00:00';
+$year_end = $current_year . '-12-31 23:59:59';
 
-// Get current month's transaction breakdown
+// Get current year's transaction breakdown
 try {
     // OUT transactions (type category = 'OUT')
     $out_query = "
@@ -28,7 +28,7 @@ try {
         GROUP BY tt.name
     ";
     $out_stmt = $conn->prepare($out_query);
-    $out_stmt->execute([$month_start, $month_end]);
+    $out_stmt->execute([$year_start, $year_end]);
     $out_transactions = $out_stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
     // DROP transactions (category = 'DROP')
@@ -42,7 +42,7 @@ try {
         GROUP BY tt.name
     ";
     $drop_stmt = $conn->prepare($drop_query);
-    $drop_stmt->execute([$month_start, $month_end]);
+    $drop_stmt->execute([$year_start, $year_end]);
     $drop_transactions = $drop_stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 } catch (PDOException $e) {
     $out_transactions = [];
@@ -78,14 +78,14 @@ try {
     ");
     $type_stats = $stmt->fetchAll();
     
-    // Calculate totals for current month
+    // Calculate totals for current year
     $total_out = array_sum(array_column($out_transactions, 'total')) ?? 0;
     $total_drop = array_sum(array_column($drop_transactions, 'total')) ?? 0;
     
     // Calculate result
     $result = $total_drop - $total_out;
     
-    // Get current month's transaction type breakdown for chart
+    // Get current year's transaction type breakdown for chart
     $stmt = $conn->prepare("
         SELECT tt.name, tt.category, SUM(t.amount) as total 
         FROM transactions t
@@ -93,7 +93,7 @@ try {
         WHERE t.timestamp BETWEEN ? AND ?
         GROUP BY tt.name, tt.category
     ");
-    $stmt->execute([$month_start, $month_end]);
+    $stmt->execute([$year_start, $year_end]);
     $type_breakdown = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
 } catch (PDOException $e) {
@@ -118,7 +118,7 @@ foreach ($out_transactions as $transaction) {
 <div class="dashboard fade-in">
     <!-- Stats Overview with Detailed Breakdown -->
     <div class="stats-container">
-        <div class="stat-card">
+        <div class="stat-card card-body-centered">
             <div class="stat-title">Total Machines</div>
             <div class="stat-value"><?php 
                 $total_machines = 0;
@@ -136,7 +136,7 @@ foreach ($out_transactions as $transaction) {
         </div>
         
         <!-- Machines by Type -->
-        <div class="stat-card">
+        <div class="stat-card card-body-centered">
             <div class="stat-title">Machines by Type</div>
             <div class="stat-value"><?php
                 foreach ($type_stats as $type) {
@@ -145,8 +145,8 @@ foreach ($out_transactions as $transaction) {
             ?></div>
         </div>
         
-        <div class="stat-card in">
-            <div class="stat-title">This Month's DROP</div>
+        <div class="stat-card card-body-centered in">
+            <div class="stat-title">This Year's DROP</div>
             <div class="stat-value"><?php echo format_currency($total_drop); ?></div>
             <!--<div class="stat-info">Total Coins & Cash drops</div> -->
             <!-- DROP Breakdown -->
@@ -160,8 +160,8 @@ foreach ($out_transactions as $transaction) {
             </div>
         </div>
         
-        <div class="stat-card out">
-            <div class="stat-title">This Month's OUT</div>
+        <div class="stat-card card-body-centered out">
+            <div class="stat-title">This Year's OUT</div>
             <div class="stat-value"><?php echo format_currency($total_out); ?></div>
           <!--  <div class="stat-info">Total Handpays, Tickets, Refills</div> -->
             <!-- OUT Breakdown -->
@@ -175,8 +175,8 @@ foreach ($out_transactions as $transaction) {
             </div>
         </div>
         
-        <div class="stat-card <?php echo $result >= 0 ? 'in' : 'out'; ?>">
-            <div class="stat-title">This Month's Result</div>
+        <div class="stat-card card-body-centered <?php echo $result >= 0 ? 'in' : 'out'; ?>">
+            <div class="stat-title">This Year's Result</div>
             <div class="stat-value"><?php echo format_currency($result); ?></div>
          <!--   <div class="stat-info">DROP - OUT</div> -->
             <div class="stat-breakdown">
@@ -205,12 +205,12 @@ foreach ($out_transactions as $transaction) {
         <div class="dashboard-chart-card">
             <div class="card">
                 <div class="card-header">
-                    <h3>This Month's Transactions</h3>
+                    <h3>This Year's Transactions</h3>
                 </div>
                 <div class="card-body">
                     <?php if ($total_out == 0 && $total_drop == 0): ?>
                         <div class="no-transactions">
-                            <p>No transactions recorded this month</p>
+                            <p>No transactions recorded this year</p>
                         </div>
                     <?php else: ?>
                         <div class="chart-container">
