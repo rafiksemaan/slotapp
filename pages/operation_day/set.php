@@ -3,8 +3,6 @@
  * Set New Operation Day
  */
 
-$error = '';
-$success = '';
 $operation_date = date('Y-m-d'); // Default to today
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -13,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Validate required fields
     if (empty($operation_date)) {
-        $error = "Operation date is required.";
+        set_flash_message('danger', "Operation date is required.");
     } else {
         try {
             // Get current user info
@@ -37,13 +35,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Log action
             log_action('set_operation_day', "Set operation day to: $operation_date");
             
-            $success = "Operation day has been set successfully!";
+            set_flash_message('success', "Operation day has been set successfully!");
             
             // Redirect after 2 seconds
-            header("refresh:2;url=index.php?page=operation_day");
+            header("Location: index.php?page=operation_day");
+            exit;
             
         } catch (PDOException $e) {
-            $error = "Database error: " . $e->getMessage();
+            set_flash_message('danger', "Database error: " . $e->getMessage());
         }
     }
 }
@@ -65,17 +64,6 @@ try {
             <h3>Set Operation Day</h3>
         </div>
         <div class="card-body">
-            <?php if (!empty($error)): ?>
-                <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
-            <?php endif; ?>
-
-            <?php if (!empty($success)): ?>
-                <div class="alert alert-success">
-                    <?php echo htmlspecialchars($success); ?>
-                    <br><small>Redirecting to operation day overview...</small>
-                </div>
-            <?php endif; ?>
-
             <div class="alert alert-info">
                 <strong>ℹ️ Current Operation Day:</strong> <?php echo format_date($current_operation_date); ?>
                 <br><small>Setting a new operation day will affect all new transactions created after this change.</small>

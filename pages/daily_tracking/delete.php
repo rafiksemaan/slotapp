@@ -5,13 +5,15 @@
 
 // Ensure user has edit permissions
 if (!has_permission('editor')) {
-    header("Location: index.php?page=daily_tracking&error=Access denied");
+    set_flash_message('danger', "Access denied.");
+    header("Location: index.php?page=daily_tracking");
     exit;
 }
 
 // Check if ID was provided and is valid
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header("Location: index.php?page=daily_tracking&error=Invalid daily tracking ID");
+    set_flash_message('danger', "Invalid daily tracking ID.");
+    header("Location: index.php?page=daily_tracking");
     exit;
 }
 
@@ -24,7 +26,8 @@ try {
     $entry = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$entry) {
-        header("Location: index.php?page=daily_tracking&error=Daily tracking entry not found");
+        set_flash_message('danger', "Daily tracking entry not found.");
+        header("Location: index.php?page=daily_tracking");
         exit;
     }
 
@@ -36,12 +39,14 @@ try {
     log_action('delete_daily_tracking', "Deleted daily tracking entry for date: {$entry['tracking_date']}");
 
     // Redirect with success message
-    header("Location: index.php?page=daily_tracking&message=Daily tracking entry deleted successfully");
+    set_flash_message('success', "Daily tracking entry deleted successfully.");
+    header("Location: index.php?page=daily_tracking");
     exit;
 
 } catch (PDOException $e) {
     // Handle database error
-    header("Location: index.php?page=daily_tracking&error=Database error: " . $e->getMessage());
+    set_flash_message('danger', "Database error: " . $e->getMessage());
+    header("Location: index.php?page=daily_tracking");
     exit;
 }
 ?>

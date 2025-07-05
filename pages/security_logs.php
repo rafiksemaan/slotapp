@@ -99,7 +99,7 @@ try {
     $all_event_types = $event_types_stmt->fetchAll(PDO::FETCH_COLUMN);
 
 } catch (PDOException $e) {
-    $error = "Database error: " . htmlspecialchars($e->getMessage());
+    set_flash_message('danger', "Database error: " . htmlspecialchars($e->getMessage()));
     $logs = [];
     $all_users = [];
     $all_event_types = [];
@@ -212,10 +212,6 @@ $current_filters = [
             <h3 class="text-lg font-semibold">Security Logs (<?= $total_logs ?> entries)</h3>
         </div>
         <div class="card-body p-6">
-            <?php if (isset($error)): ?>
-                <div class="alert alert-danger"><?= $error ?></div>
-            <?php endif; ?>
-            
             <div class="table-container overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-700">
                     <thead class="bg-gray-800 text-white">

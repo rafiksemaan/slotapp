@@ -3,10 +3,6 @@
  * View User Profile
  */
 
-// Capture messages from URL
-$display_message = '';
-$display_error = '';
-
 // Get current user data
 try {
     $stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
@@ -18,7 +14,8 @@ try {
         exit;
     }
 } catch (PDOException $e) {
-    $error = "Database error: " . $e->getMessage();
+    set_flash_message('danger', "Database error: " . $e->getMessage());
+    // No redirect here, as we want to display the error on the current page
 }
 
 // Get user activity stats
@@ -145,8 +142,3 @@ try {
         </div>
     </div>
 </div>
-<div id="url-cleaner-data" 
-     data-display-message="<?= !empty($display_message) ? 'true' : 'false' ?>" 
-     data-display-error="<?= !empty($display_error) ? 'true' : 'false' ?>">
-</div>
-<script type="module" src="assets/js/url_cleaner.js"></script>

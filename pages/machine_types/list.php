@@ -42,9 +42,6 @@ try {
     echo "Database error: " . $e->getMessage();
     $types = [];
 }
-
-// Process message
-$message = isset($_GET['message']) ? $_GET['message'] : '';
 ?>
 
 <div class="machine-types-list fade-in">
@@ -53,10 +50,6 @@ $message = isset($_GET['message']) ? $_GET['message'] : '';
     <div class="action-buttons">
         <a href="index.php?page=machine_types&action=create" class="btn btn-primary">Add New Machine Type</a>
     </div>
-    <?php endif; ?>
-    
-    <?php if (!empty($message)): ?>
-        <div class="alert alert-success"><?php echo $message; ?></div>
     <?php endif; ?>
     
     <!-- Machine Types Table -->

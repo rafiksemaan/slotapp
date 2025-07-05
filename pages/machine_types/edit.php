@@ -3,32 +3,21 @@
  * Edit Machine Type
  */
 
-// Capture messages from URL
-$display_message = '';
-$display_error = '';
-
-if (isset($_GET['message'])) {
-    $display_message = htmlspecialchars($_GET['message']);
-}
-if (isset($_GET['error'])) {
-    $display_error = htmlspecialchars($_GET['error']);
-}
-
 // Ensure user has edit permissions
 if (!$can_edit) {
-    header("Location: index.php?page=machine_types&error=" . urlencode("Access denied"));
+    set_flash_message('danger', "Access denied.");
+    header("Location: index.php?page=machine_types");
     exit;
 }
 
 // Check if an ID was provided
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+    set_flash_message('danger', "Invalid machine type ID.");
     header("Location: index.php?page=machine_types");
     exit;
 }
 
 $type_id = $_GET['id'];
-$error = '';
-$success = false;
 
 // Get current machine type data
 try {
@@ -37,11 +26,13 @@ try {
     $machine_type = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$machine_type) {
-        header("Location: index.php?page=machine_types&error=" . urlencode("Machine type not found"));
+        set_flash_message('danger', "Machine type not found.");
+        header("Location: index.php?page=machine_types");
         exit;
     }
 } catch (PDOException $e) {
-    header("Location: index.php?page=machine_types&error=" . urlencode("Database error"));
+    set_flash_message('danger', "Database error: " . $e->getMessage());
+    header("Location: index.php?page=machine_types");
     exit;
 }
 
@@ -52,14 +43,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Validate required fields
     if (empty($name)) {
-        $error = "Machine type name is required.";
+        set_flash_message('danger', "Machine type name is required.");
     } else {
         try {
             // Check for duplicate name
             $stmt = $conn->prepare("SELECT id FROM machine_types WHERE name = ? AND id != ?");
             $stmt->execute([$name, $type_id]);
             if ($stmt->rowCount() > 0) {
-                $error = "A machine type with this name already exists.";
+                set_flash_message('danger', "A machine type with this name already exists.");
             } else {
                 // Update machine type
                 $stmt = $conn->prepare("
@@ -77,14 +68,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 if ($result) {
                     log_action('update_machine_type', "Updated machine type: {$name}");
-                    header("Location: index.php?page=machine_types&message=" . urlencode("Machine type updated successfully"));
+                    set_flash_message('success', "Machine type updated successfully.");
+                    header("Location: index.php?page=machine_types");
                     exit;
                 } else {
-                    $error = "Failed to update machine type.";
+                    set_flash_message('danger', "Failed to update machine type.");
                 }
             }
         } catch (PDOException $e) {
-            $error = "Database error: " . $e->getMessage();
+            set_flash_message('danger', "Database error: " . $e->getMessage());
         }
     }
 }
@@ -96,17 +88,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <h3>Edit Machine Type</h3>
         </div>
         <div class="card-body">
-            <?php if (!empty($error)): ?>
-                <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
-            <?php endif; ?>
-            <?php if (!empty($display_error)): ?>
-                <div class="alert alert-danger"><?php echo htmlspecialchars($display_error); ?></div>
-            <?php endif; ?>
-
-            <?php if (!empty($display_message)): ?>
-                <div class="alert alert-success"><?php echo htmlspecialchars($display_message); ?></div>
-            <?php endif; ?>
-
             <form method="POST" class="machine-type-form" id="machineTypeEditForm">
                 <!-- Machine Type Information Section -->
                 <div class="form-section">
@@ -133,9 +114,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 </div>
-<div id="url-cleaner-data" 
-     data-display-message="<?= !empty($display_message) ? 'true' : 'false' ?>" 
-     data-display-error="<?= !empty($display_error) ? 'true' : 'false' ?>">
-</div>
-<script type="module" src="assets/js/url_cleaner.js"></script>
 <script type="module" src="assets/js/machine_types_edit.js"></script>

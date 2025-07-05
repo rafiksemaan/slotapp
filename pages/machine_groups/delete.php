@@ -5,6 +5,7 @@
 
 // Check if ID is provided
 if (!isset($_GET['id'])) {
+    set_flash_message('danger', "Group ID not provided.");
     header("Location: index.php?page=machine_groups");
     exit;
 }
@@ -18,7 +19,8 @@ try {
     $group = $stmt->fetch();
     
     if (!$group) {
-        header("Location: index.php?page=machine_groups&error=Group not found");
+        set_flash_message('danger', "Group not found.");
+        header("Location: index.php?page=machine_groups");
         exit;
     }
     
@@ -39,13 +41,15 @@ try {
     // Log action
     log_action('delete_machine_group', "Deleted machine group: {$group['name']}");
     
-    header("Location: index.php?page=machine_groups&message=Machine group deleted successfully");
+    set_flash_message('success', "Machine group deleted successfully.");
+    header("Location: index.php?page=machine_groups");
     exit;
     
 } catch (PDOException $e) {
     // Rollback transaction on error
     $conn->rollback();
-    header("Location: index.php?page=machine_groups&error=Error deleting group: " . urlencode($e->getMessage()));
+    set_flash_message('danger', "Error deleting group: " . $e->getMessage());
+    header("Location: index.php?page=machine_groups");
     exit;
 }
 ?>

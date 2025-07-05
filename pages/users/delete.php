@@ -5,13 +5,15 @@
 
 // Ensure user has edit permissions
 if (!$can_edit) {
-    header("Location: index.php?page=users&error=Access denied");
+    set_flash_message('danger', "Access denied.");
+    header("Location: index.php?page=users");
     exit;
 }
 
 // Check if ID is provided
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header("Location: index.php?page=users&error=Invalid user ID");
+    set_flash_message('danger', "Invalid user ID.");
+    header("Location: index.php?page=users");
     exit;
 }
 
@@ -24,13 +26,15 @@ try {
     $user = $stmt->fetch();
     
     if (!$user) {
-        header("Location: index.php?page=users&error=User not found");
+        set_flash_message('danger', "User not found.");
+        header("Location: index.php?page=users");
         exit;
     }
     
     // Prevent deletion of current user
     if ($user_id == $_SESSION['user_id']) {
-        header("Location: index.php?page=users&error=Cannot delete your own account");
+        set_flash_message('danger', "Cannot delete your own account.");
+        header("Location: index.php?page=users");
         exit;
     }
     
@@ -40,7 +44,8 @@ try {
     $transaction_count = $stmt->fetch()['count'];
     
     if ($transaction_count > 0) {
-        header("Location: index.php?page=users&error=Cannot delete user: User has associated transactions");
+        set_flash_message('danger', "Cannot delete user: User has associated transactions.");
+        header("Location: index.php?page=users");
         exit;
     }
     
@@ -51,11 +56,13 @@ try {
     // Log action
     log_action('delete_user', "Deleted user: {$user['username']}");
     
-    header("Location: index.php?page=users&message=User deleted successfully");
+    set_flash_message('success', "User deleted successfully.");
+    header("Location: index.php?page=users");
     exit;
     
 } catch (PDOException $e) {
-    header("Location: index.php?page=users&error=Error deleting user: " . urlencode($e->getMessage()));
+    set_flash_message('danger', "Error deleting user: " . $e->getMessage());
+    header("Location: index.php?page=users");
     exit;
 }
 ?>

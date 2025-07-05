@@ -3,20 +3,8 @@
  * Edit User Page
  */
 
-// Capture messages from URL
-$display_message = '';
-$display_error = '';
-
-if (isset($_GET['message'])) {
-    $display_message = htmlspecialchars($_GET['message']);
-}
-if (isset($_GET['error'])) {
-    $display_error = htmlspecialchars($_GET['error']);
-}
-
 $can_edit = true; // Replace with actual permission check if available
-$message = ''; // This variable will no longer be used for display, but might be for internal logic
-$error = ''; // This variable will no longer be used for display, but might be for internal logic
+
 $user_id = $_GET['id'] ?? 0;
 
 // Load current user
@@ -30,8 +18,8 @@ try {
         exit;
     }
 } catch (PDOException $e) {
-    echo "Database error: " . htmlspecialchars($e->getMessage());
-    exit;
+    set_flash_message('danger', "Database error: " . htmlspecialchars($e->getMessage()));
+    // No redirect here, as we want to display the error on the current page
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $can_edit) {
@@ -42,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $can_edit) {
     $password = trim($_POST['password'] ?? '');
 
     if (empty($user['name']) || empty($user['email'])) {
-        $error = "Name and email are required.";
+        set_flash_message('danger', "Name and email are required.");
     } else {
         try {
             $sql = "UPDATE users SET name = ?, email = ?, role = ?, status = ?";
@@ -59,10 +47,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $can_edit) {
             $stmt = $conn->prepare($sql);
             $stmt->execute($params);
 
-            header("Location: index.php?page=users&message=" . urlencode("User updated successfully"));
+            set_flash_message('success', "User updated successfully.");
+            header("Location: index.php?page=users");
             exit;
         } catch (PDOException $e) {
-            $error = "Database error: " . htmlspecialchars($e->getMessage());
+            set_flash_message('danger', "Database error: " . htmlspecialchars($e->getMessage()));
         }
     }
 }
@@ -74,17 +63,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $can_edit) {
             <h3>Edit User</h3>
         </div>
         <div class="card-body">
-            <?php if (!empty($error)): ?>
-                <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
-            <?php endif; ?>
-            <?php if (!empty($display_error)): ?>
-                <div class="alert alert-danger"><?php echo htmlspecialchars($display_error); ?></div>
-            <?php endif; ?>
-            
-            <?php if (!empty($display_message)): ?>
-                <div class="alert alert-success"><?php echo htmlspecialchars($display_message); ?></div>
-            <?php endif; ?>
-			
 			<form method="POST" action="index.php?page=users&action=edit&id=<?php echo $user['id']; ?>" id="userEditForm">
                 <!-- User Information Section -->
                 <div class="form-section">
@@ -158,9 +136,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $can_edit) {
         </div>
     </div>
 </div>
-<div id="url-cleaner-data" 
-     data-display-message="<?= !empty($display_message) ? 'true' : 'false' ?>" 
-     data-display-error="<?= !empty($display_error) ? 'true' : 'false' ?>">
-</div>
-<script type="module" src="assets/js/url_cleaner.js"></script>
 <script type="module" src="assets/js/users_edit.js"></script>

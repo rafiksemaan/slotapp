@@ -5,6 +5,7 @@
 
 // Check if ID is provided
 if (!isset($_GET['id'])) {
+    set_flash_message('danger', "Machine type ID not provided.");
     header("Location: index.php?page=machine_types");
     exit;
 }
@@ -18,7 +19,8 @@ try {
     $type = $stmt->fetch();
     
     if (!$type) {
-        header("Location: index.php?page=machine_types&message=Machine type not found");
+        set_flash_message('danger', "Machine type not found.");
+        header("Location: index.php?page=machine_types");
         exit;
     }
     
@@ -28,7 +30,8 @@ try {
     $machine_count = $stmt->fetch()['count'];
     
     if ($machine_count > 0) {
-        header("Location: index.php?page=machine_types&message=Cannot delete machine type: It has associated machines");
+        set_flash_message('danger', "Cannot delete machine type: It has associated machines.");
+        header("Location: index.php?page=machine_types");
         exit;
     }
     
@@ -39,11 +42,13 @@ try {
     // Log action
     log_action('delete_machine_type', "Deleted machine type: {$type['name']}");
     
-    header("Location: index.php?page=machine_types&message=Machine type deleted successfully");
+    set_flash_message('success', "Machine type deleted successfully.");
+    header("Location: index.php?page=machine_types");
     exit;
     
 } catch (PDOException $e) {
-    header("Location: index.php?page=machine_types&message=Error deleting machine type: " . urlencode($e->getMessage()));
+    set_flash_message('danger', "Error deleting machine type: " . $e->getMessage());
+    header("Location: index.php?page=machine_types");
     exit;
 }
 ?>

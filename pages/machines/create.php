@@ -3,17 +3,6 @@
  * Create new slot machine
  */
 
-// Capture messages from URL
-$display_message = '';
-$display_error = '';
-
-if (isset($_GET['message'])) {
-    $display_message = htmlspecialchars($_GET['message']);
-}
-if (isset($_GET['error'])) {
-    $display_error = htmlspecialchars($_GET['error']);
-}
-
 // Initialize transaction data
 $machine = [
     'machine_number' => '',
@@ -52,17 +41,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($machine['machine_number']) || empty($machine['brand_id']) || empty($machine['game']) ||
         empty($machine['type_id']) || empty($machine['credit_value']) || empty($machine['status']) ||
         empty($machine['ticket_printer']) || empty($machine['system_comp'])) {
-        header("Location: index.php?page=machines&action=create&error=" . urlencode("Please fill out all required fields."));
+        set_flash_message('danger', "Please fill out all required fields.");
+        header("Location: index.php?page=machines&action=create");
         exit;
     }
     // Validate IP address format if provided
     else if (!empty($machine['ip_address']) && !is_valid_ip($machine['ip_address'])) {
-        header("Location: index.php?page=machines&action=create&error=" . urlencode("Please enter a valid IP address."));
+        set_flash_message('danger', "Please enter a valid IP address.");
+        header("Location: index.php?page=machines&action=create");
         exit;
     }
     // Validate MAC address format if provided
     else if (!empty($machine['mac_address']) && !is_valid_mac($machine['mac_address'])) {
-        header("Location: index.php?page=machines&action=create&error=" . urlencode("Please enter a valid MAC address (e.g., 00:1A:2B:3C:4D:5E)."));
+        set_flash_message('danger', "Please enter a valid MAC address (e.g., 00:1A:2B:3C:4D:5E).");
+        header("Location: index.php?page=machines&action=create");
         exit;
     }
     else {
@@ -72,7 +64,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt->execute([$machine['machine_number']]);
 
             if ($stmt->rowCount() > 0) {
-                header("Location: index.php?page=machines&action=create&error=" . urlencode("A machine with this number already exists."));
+                set_flash_message('danger', "A machine with this number already exists.");
+                header("Location: index.php?page=machines&action=create");
                 exit;
             } else {
                 // Check if serial number already exists (if provided)
@@ -81,7 +74,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $stmt->execute([$machine['serial_number']]);
 
                     if ($stmt->rowCount() > 0) {
-                        header("Location: index.php?page=machines&action=create&error=" . urlencode("A machine with this serial number already exists."));
+                        set_flash_message('danger', "A machine with this serial number already exists.");
+                        header("Location: index.php?page=machines&action=create");
                         exit;
                     }
                 }
@@ -120,12 +114,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     log_action('create_machine', "Created machine: {$machine['machine_number']} - {$machine['game']}");
 
                     // Redirect to machine list
-                    header("Location: index.php?page=machines&message=" . urlencode("Machine created successfully"));
+                    set_flash_message('success', "Machine created successfully.");
+                    header("Location: index.php?page=machines");
                     exit;
                 }
             }
         } catch (PDOException $e) {
-            header("Location: index.php?page=machines&action=create&error=" . urlencode("Database error: " . $e->getMessage()));
+            set_flash_message('danger', "Database error: " . $e->getMessage());
+            header("Location: index.php?page=machines&action=create");
             exit;
         }
     }
@@ -136,7 +132,7 @@ try {
     $stmt = $conn->query("SELECT id, name FROM brands ORDER BY name");
     $brands = $stmt->fetchAll();
 } catch (PDOException $e) {
-    $error = "Database error: " . $e->getMessage();
+    // No need to set $error here, as flash messages handle display
     $brands = [];
 }
 
@@ -145,7 +141,7 @@ try {
     $stmt = $conn->query("SELECT id, name FROM machine_types ORDER BY name");
     $machine_types = $stmt->fetchAll();
 } catch (PDOException $e) {
-    $error = "Database error: " . $e->getMessage();
+    // No need to set $error here, as flash messages handle display
     $machine_types = [];
 }
 ?>
@@ -156,14 +152,6 @@ try {
             <h3>Add New Machine</h3>
         </div>
         <div class="card-body">
-            <?php if (!empty($display_error)): ?>
-                <div class="alert alert-danger"><?php echo $display_error; ?></div>
-            <?php endif; ?>
-
-            <?php if (!empty($display_message)): ?>
-                <div class="alert alert-success"><?php echo $display_message; ?></div>
-            <?php endif; ?>
-
             <form action="index.php?page=machines&action=create" method="POST" id="machineCreateForm">
                 <!-- Basic Information Section -->
                 <div class="form-section">
@@ -321,9 +309,4 @@ try {
         </div>
     </div>
 </div>
-<div id="url-cleaner-data" 
-     data-display-message="<?= !empty($display_message) ? 'true' : 'false' ?>" 
-     data-display-error="<?= !empty($display_error) ? 'true' : 'false' ?>">
-</div>
-<script type="module" src="assets/js/url_cleaner.js"></script>
 <script type="module" src="assets/js/machines_create.js"></script>

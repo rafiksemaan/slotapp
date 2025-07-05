@@ -44,7 +44,7 @@ if ($date_range_type === 'range') {
 try {
     $params = ["{$start_date} 00:00:00", "{$end_date} 23:59:59"];
     
-    // Base query - using operation_date for filtering instead of timestamp
+    // Base query - using operation_date for filtering
     $query = "SELECT t.*, m.machine_number, tt.name AS transaction_type, tt.category, u.username
               FROM transactions t
               JOIN machines m ON t.machine_id = m.id
@@ -126,7 +126,7 @@ try {
     $all_transaction_types = $all_types_stmt->fetchAll(PDO::FETCH_ASSOC);
 
 } catch (Exception $e) {
-    echo "<div class='alert alert-danger'>Database error: " . htmlspecialchars($e->getMessage()) . "</div>";
+    set_flash_message('danger', "Database error: " . htmlspecialchars($e->getMessage()));
     $transactions = [];
     $machines = [];
     $categories = [];
@@ -401,7 +401,7 @@ $has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !emp
                     }
                 }
                 echo " - " . htmlspecialchars($selected_type['name'] ?? 'Unknown Type');
-                ?>
+            ?>
             <?php elseif (!empty($filter_category)): ?>
                 - <?= ucfirst($filter_category) ?>
             <?php endif; ?>
@@ -568,10 +568,4 @@ $has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !emp
         </div>
     </div>
 </div>
-<div id="url-cleaner-data" 
-     data-display-message="<?= !empty($display_message) ? 'true' : 'false' ?>" 
-     data-display-error="<?= !empty($display_error) ? 'true' : 'false' ?>">
-</div>
-<script type="module" src="assets/js/url_cleaner.js"></script>
 <script src="assets/js/transactions_list.js"></script>
-

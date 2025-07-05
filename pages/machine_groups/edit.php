@@ -3,26 +3,14 @@
  * Edit Machine Group
  */
 
-// Capture messages from URL
-$display_message = '';
-$display_error = '';
-
-if (isset($_GET['message'])) {
-    $display_message = htmlspecialchars($_GET['message']);
-}
-if (isset($_GET['error'])) {
-    $display_error = htmlspecialchars($_GET['error']);
-}
-
 // Check if an ID was provided
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+    set_flash_message('danger', "Invalid group ID.");
     header("Location: index.php?page=machine_groups");
     exit;
 }
 
 $group_id = $_GET['id'];
-$error = '';
-$success = false;
 
 // Get current group data
 try {
@@ -31,7 +19,8 @@ try {
     $group = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$group) {
-        header("Location: index.php?page=machine_groups&error=" . urlencode("Group not found"));
+        set_flash_message('danger', "Group not found.");
+        header("Location: index.php?page=machine_groups");
         exit;
     }
     
@@ -41,7 +30,8 @@ try {
     $current_machine_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
     
 } catch (PDOException $e) {
-    header("Location: index.php?page=machine_groups&error=" . urlencode("Database error"));
+    set_flash_message('danger', "Database error: " . $e->getMessage());
+    header("Location: index.php?page=machine_groups");
     exit;
 }
 
@@ -53,16 +43,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Validate required fields
     if (empty($name)) {
-        $error = "Group name is required.";
+        set_flash_message('danger', "Group name is required.");
     } elseif (count($machine_ids) < 2) {
-        $error = "A group must contain at least 2 machines.";
+        set_flash_message('danger', "A group must contain at least 2 machines.");
     } else {
         try {
             // Check for duplicate name (excluding current group)
             $stmt = $conn->prepare("SELECT id FROM machine_groups WHERE name = ? AND id != ?");
             $stmt->execute([$name, $group_id]);
             if ($stmt->rowCount() > 0) {
-                $error = "A group with this name already exists.";
+                set_flash_message('danger', "A group with this name already exists.");
             } else {
                 // Start transaction
                 $conn->beginTransaction();
@@ -89,13 +79,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $conn->commit();
 
                 log_action('update_machine_group', "Updated machine group: {$name} with " . count($machine_ids) . " machines");
-                header("Location: index.php?page=machine_groups&message=" . urlencode("Machine group updated successfully"));
+                set_flash_message('success', "Machine group updated successfully.");
+                header("Location: index.php?page=machine_groups");
                 exit;
             }
         } catch (PDOException $e) {
             // Rollback transaction on error
             $conn->rollback();
-            $error = "Database error: " . $e->getMessage();
+            set_flash_message('danger', "Database error: " . $e->getMessage());
         }
     }
 } else {
@@ -116,7 +107,7 @@ try {
     ");
     $machines = $stmt->fetchAll();
 } catch (PDOException $e) {
-    $error = "Database error: " . $e->getMessage();
+    set_flash_message('danger', "Database error: " . $e->getMessage());
     $machines = [];
 }
 ?>
@@ -127,17 +118,6 @@ try {
             <h3>Edit Machine Group</h3>
         </div>
         <div class="card-body">
-            <?php if (!empty($error)): ?>
-                <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
-            <?php endif; ?>
-            <?php if (!empty($display_error)): ?>
-                <div class="alert alert-danger"><?php echo htmlspecialchars($display_error); ?></div>
-            <?php endif; ?>
-
-            <?php if (!empty($display_message)): ?>
-                <div class="alert alert-success"><?php echo htmlspecialchars($display_message); ?></div>
-            <?php endif; ?>
-
             <form method="POST" class="group-form" id="machineGroupEditForm">
                 <!-- Group Information Section -->
                 <div class="form-section">
@@ -194,9 +174,4 @@ try {
         </div>
     </div>
 </div>
-<div id="url-cleaner-data" 
-     data-display-message="<?= !empty($display_message) ? 'true' : 'false' ?>" 
-     data-display-error="<?= !empty($display_error) ? 'true' : 'false' ?>">
-</div>
-<script type="module" src="assets/js/url_cleaner.js"></script>
 <script type="module" src="assets/js/machine_groups_edit.js"></script>

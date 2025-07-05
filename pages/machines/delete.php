@@ -5,13 +5,15 @@
 
 // Ensure user has edit permissions
 if (!$can_edit) {
-    header("Location: index.php?page=machines&error=Access denied");
+    set_flash_message('danger', "Access denied.");
+    header("Location: index.php?page=machines");
     exit;
 }
 
 // Validate machine ID
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header("Location: index.php?page=machines&error=Invalid machine ID");
+    set_flash_message('danger', "Invalid machine ID.");
+    header("Location: index.php?page=machines");
     exit;
 }
 
@@ -24,7 +26,8 @@ try {
     $machine = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$machine) {
-        header("Location: index.php?page=machines&error=Machine not found");
+        set_flash_message('danger', "Machine not found.");
+        header("Location: index.php?page=machines");
         exit;
     }
 
@@ -36,11 +39,13 @@ try {
     log_action('delete_machine', "Deleted machine: {$machine['machine_number']}");
 
     // Redirect with success message
-    header("Location: index.php?page=machines&message=Machine deleted successfully");
+    set_flash_message('success', "Machine deleted successfully.");
+    header("Location: index.php?page=machines");
     exit;
 
 } catch (PDOException $e) {
     // Handle error
-    header("Location: index.php?page=machines&error=Database error: " . $e->getMessage());
+    set_flash_message('danger', "Database error: " . $e->getMessage());
+    header("Location: index.php?page=machines");
     exit;
 }

@@ -3,20 +3,7 @@
  * Create new machine type
  */
 
-// Capture messages from URL
-$display_message = '';
-$display_error = '';
-
-if (isset($_GET['message'])) {
-    $display_message = htmlspecialchars($_GET['message']);
-}
-if (isset($_GET['error'])) {
-    $display_error = htmlspecialchars($_GET['error']);
-}
-
 // Process form submission
-$message = '';
-$error = '';
 $machine_type = [
     'name' => '',
     'description' => ''
@@ -29,7 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     // Validate required fields
     if (empty($machine_type['name'])) {
-        header("Location: index.php?page=machine_types&action=create&error=" . urlencode("Machine type name is required."));
+        set_flash_message('danger', "Machine type name is required.");
+        header("Location: index.php?page=machine_types&action=create");
         exit;
     } else {
         try {
@@ -38,7 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt->execute([$machine_type['name']]);
             
             if ($stmt->rowCount() > 0) {
-                header("Location: index.php?page=machine_types&action=create&error=" . urlencode("A machine type with this name already exists."));
+                set_flash_message('danger', "A machine type with this name already exists.");
+                header("Location: index.php?page=machine_types&action=create");
                 exit;
             } else {
                 // Insert new machine type
@@ -49,11 +38,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 log_action('create_machine_type', "Created machine type: {$machine_type['name']}");
                 
                 // Redirect to machine type list
-                header("Location: index.php?page=machine_types&message=" . urlencode("Machine type created successfully"));
+                set_flash_message('success', "Machine type created successfully.");
+                header("Location: index.php?page=machine_types");
                 exit;
             }
         } catch (PDOException $e) {
-            header("Location: index.php?page=machine_types&action=create&error=" . urlencode("Database error: " . $e->getMessage()));
+            set_flash_message('danger', "Database error: " . $e->getMessage());
+            header("Location: index.php?page=machine_types&action=create");
             exit;
         }
     }
@@ -66,20 +57,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <h3>Add New Machine Type</h3>
         </div>
         <div class="card-body">
-            <?php if (!empty($error)): ?>
-                <div class="alert alert-danger"><?php echo $error; ?></div>
-            <?php endif; ?>
-            <?php if (!empty($display_error)): ?>
-                <div class="alert alert-danger"><?php echo $display_error; ?></div>
-            <?php endif; ?>
-            
-            <?php if (!empty($message)): ?>
-                <div class="alert alert-success"><?php echo $message; ?></div>
-            <?php endif; ?>
-            <?php if (!empty($display_message)): ?>
-                <div class="alert alert-success"><?php echo $display_message; ?></div>
-            <?php endif; ?>
-            
             <form action="index.php?page=machine_types&action=create" method="POST" id="machineTypeCreateForm">
                 <!-- Machine Type Information Section -->
                 <div class="form-section">
@@ -104,9 +81,4 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
     </div>
 </div>
-<div id="url-cleaner-data" 
-     data-display-message="<?= !empty($display_message) ? 'true' : 'false' ?>" 
-     data-display-error="<?= !empty($display_error) ? 'true' : 'false' ?>">
-</div>
-<script type="module" src="assets/js/url_cleaner.js"></script>
 <script type="module" src="assets/js/machine_types_create.js"></script>

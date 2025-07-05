@@ -44,10 +44,6 @@ try {
     echo "Database error: " . $e->getMessage();
     $groups = [];
 }
-
-// Process message
-$message = isset($_GET['message']) ? $_GET['message'] : '';
-$error = isset($_GET['error']) ? $_GET['error'] : '';
 ?>
 
 <div class="machine-groups-list fade-in">
@@ -55,14 +51,6 @@ $error = isset($_GET['error']) ? $_GET['error'] : '';
     <div class="action-buttons">
         <a href="index.php?page=machine_groups&action=create" class="btn btn-primary">Create New Group</a>
     </div>
-    
-    <?php if (!empty($message)): ?>
-        <div class="alert alert-success"><?php echo htmlspecialchars($message); ?></div>
-    <?php endif; ?>
-    
-    <?php if (!empty($error)): ?>
-        <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
-    <?php endif; ?>
     
     <!-- Machine Groups Table -->
     <div class="card">

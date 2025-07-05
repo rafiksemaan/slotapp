@@ -4,17 +4,6 @@
  * Shows list of users with actions
  */
 
-// Capture messages from URL
-$display_message = '';
-$display_error = '';
-
-if (isset($_GET['message'])) {
-    $display_message = htmlspecialchars($_GET['message']);
-}
-if (isset($_GET['error'])) {
-    $display_error = htmlspecialchars($_GET['error']);
-}
-
 // Check permissions
 $can_edit = true; // Replace with actual permission check if available
 
@@ -48,7 +37,7 @@ try {
     $stmt->execute($params);
     $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    echo "<div class='alert alert-danger'>Database error: " . htmlspecialchars($e->getMessage()) . "</div>";
+    set_flash_message('danger', "Database error: " . htmlspecialchars($e->getMessage()));
     $users = [];
 }
 ?>
@@ -58,21 +47,10 @@ try {
     <?php if ($can_edit): ?>
         <div class="action-buttons mb-6 flex justify-end">
             <a href="index.php?page=users&action=create" class="btn btn-primary">Add New User</a>
-			<?php if (!empty($display_error)): ?>
-    <div class="alert alert-danger"><?php echo $display_error; ?></div>
-<?php endif; ?>
-
-<?php if (!empty($display_message)): ?>
-    <div class="alert alert-success"><?php echo $display_message; ?></div>
-<?php endif; ?>
-	
         </div>
     <?php endif; ?>
 
     <!-- Users Table -->
-	<!-- DEBUG: Display Message Value: '<?php echo $display_message; ?>' -->
-			<!-- DEBUG: Display Error Value: '<?php echo $display_error; ?>' -->
-	
     <div class="card overflow-hidden">
         <div class="card-header bg-gray-800 text-white px-6 py-3 border-b border-gray-700">
             <h3 class="text-lg font-semibold">Users</h3>
@@ -129,8 +107,5 @@ try {
             </div>
         </div>
     </div>
-<div id="url-cleaner-data" 
-     data-display-message="<?= !empty($display_message) ? 'true' : 'false' ?>" 
-     data-display-error="<?= !empty($display_error) ? 'true' : 'false' ?>">
 </div>
-<script type="module" src="assets/js/url_cleaner.js"></script>
+<script type="module" src="assets/js/users_list.js"></script>

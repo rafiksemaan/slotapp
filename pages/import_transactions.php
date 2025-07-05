@@ -18,26 +18,6 @@ if (!in_array($action, $allowed_actions)) {
     $action = 'list'; // Default to list if action is invalid
 }
 
-// Capture messages/errors from URL and prepare for display
-$display_message = '';
-$display_error = '';
-
-if (isset($_GET['message'])) {
-    $display_message = htmlspecialchars($_GET['message']);
-}
-if (isset($_GET['error'])) {
-    $display_error = htmlspecialchars($_GET['error']);
-}
-
-// Use JavaScript to clean the URL after messages are captured
-if (!empty($display_message) || !empty($display_error)) {
-    echo "<script type='text/javascript'>
-        window.history.replaceState({}, document.title, window.location.pathname + window.location.search.replace(/&?(message|error)=[^&]*/g, ''));
-    </script>";
-}
-
-$message = '';
-$error = '';
 $import_stats = [
     'total_files_processed' => 0,
     'total_transactions_imported' => 0,
@@ -58,7 +38,7 @@ switch ($action) {
                     $machine_map[$row['machine_number']] = $row['id'];
                 }
             } catch (PDOException $e) {
-                $error = "Database error fetching machines: " . $e->getMessage();
+                set_flash_message('danger', "Database error fetching machines: " . $e->getMessage());
             }
 
             // Fetch transaction type mappings (name => id) once
@@ -69,7 +49,7 @@ switch ($action) {
                     $transaction_type_map[$row['name']] = $row['id'];
                 }
             } catch (PDOException $e) {
-                $error = "Database error fetching transaction types: " . $e->getMessage();
+                set_flash_message('danger', "Database error fetching transaction types: " . $e->getMessage());
             }
 
             if (empty($error)) {
@@ -237,12 +217,14 @@ switch ($action) {
                 }
 
                 if (empty($import_stats['files_with_errors']) && $import_stats['total_transactions_imported'] > 0) {
-                    $display_message = "All selected files processed successfully! Imported {$import_stats['total_transactions_imported']} transactions.";
+                    set_flash_message('success', "All selected files processed successfully! Imported {$import_stats['total_transactions_imported']} transactions.");
                 } elseif ($import_stats['total_transactions_imported'] > 0) {
-                    $display_message = "Processed some files. Imported {$import_stats['total_transactions_imported']} transactions. See errors below for details.";
+                    set_flash_message('warning', "Processed some files. Imported {$import_stats['total_transactions_imported']} transactions. See errors below for details.");
                 } else {
-                    $display_error = "No transactions were imported. Please check the file format and content.";
+                    set_flash_message('danger', "No transactions were imported. Please check the file format and content.");
                 }
+                header("Location: index.php?page=import_transactions");
+                exit;
             }
         }
         // Fall through to list view after upload attempt
@@ -268,22 +250,6 @@ switch ($action) {
                     <h3>Import Historical Transactions</h3>
                 </div>
                 <div class="card-body">
-                    <?php if (!empty($error)): ?>
-                        <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
-                    <?php endif; ?>
-
-                    <?php if (!empty($message)): ?>
-                        <div class="alert alert-success"><?php echo htmlspecialchars($message); ?></div>
-                    <?php endif; ?>
-					
-					<?php if (!empty($display_error)): ?>
-                    <div class="alert alert-danger"><?php echo $display_error; ?></div>
-					<?php endif; ?>
-
-					<?php if (!empty($display_message)): ?>
-                    <div class="alert alert-success"><?php echo $display_message; ?></div>
-					<?php endif; ?>
-
                     <?php if (!empty($import_stats['files_with_errors'])): ?>
                         <div class="alert alert-warning">
                             <h4>⚠️ Issues Encountered During Import:</h4>
@@ -390,11 +356,6 @@ switch ($action) {
                 </div>
             <?php endif; ?>
         </div>
-		<div id="url-cleaner-data" 
-			 data-display-message="<?= !empty($display_message) ? 'true' : 'false' ?>" 
-			 data-display-error="<?= !empty($display_error) ? 'true' : 'false' ?>">
-		</div>
-		<script type="module" src="assets/js/url_cleaner.js"></script>
         <script type="module" src="assets/js/import_transactions.js"></script>
         <?php
         break; // End of 'list' case

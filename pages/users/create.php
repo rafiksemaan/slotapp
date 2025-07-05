@@ -3,21 +3,8 @@
  * Create New User
  */
 
-// Capture messages from URL
-$display_message = '';
-$display_error = '';
-
-if (isset($_GET['message'])) {
-    $display_message = htmlspecialchars($_GET['message']);
-}
-if (isset($_GET['error'])) {
-    $display_error = htmlspecialchars($_GET['error']);
-}
-
 $can_edit = true; // Replace with real permission check if available
 
-$message = ''; // This variable will no longer be used for display, but might be for internal logic
-$error = ''; // This variable will no longer be used for display, but might be for internal logic
 $user = [
     'username' => '',
     'name' => '',
@@ -34,7 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user['status'] = trim($_POST['status'] ?? '');
 
     if (empty($user['username']) || empty($user['name']) || empty($user['email'])) {
-        header("Location: index.php?page=users&action=create&error=" . urlencode("All required fields must be filled out."));
+        set_flash_message('danger', "All required fields must be filled out.");
+        header("Location: index.php?page=users&action=create");
         exit;
     } else {
         try {
@@ -48,10 +36,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $user['status']
             ]);
 
-            header("Location: index.php?page=users&message=" . urlencode("User created successfully"));
+            set_flash_message('success', "User created successfully.");
+            header("Location: index.php?page=users");
             exit;
         } catch (PDOException $e) {
-            header("Location: index.php?page=users&action=create&error=" . urlencode("Database error: " . $e->getMessage()));
+            set_flash_message('danger', "Database error: " . $e->getMessage());
+            header("Location: index.php?page=users&action=create");
             exit;
         }
     }
@@ -64,14 +54,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <h3 class="text-lg font-semibold">Add New User</h3>
         </div>
         <div class="card-body p-6">
-            <?php if (!empty($display_error)): ?>
-                <div class="alert alert-danger"><?php echo $display_error; ?></div>
-            <?php endif; ?>
-            
-            <?php if (!empty($display_message)): ?>
-                <div class="alert alert-success"><?php echo $display_message; ?></div>
-            <?php endif; ?>
-            
             <form method="POST" action="index.php?page=users&action=create" id="userCreateForm">
                 <!-- User Information Section -->
                 <div class="form-section">
@@ -143,10 +125,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </div>
 
-<div id="url-cleaner-data" 
-     data-display-message="<?= !empty($display_message) ? 'true' : 'false' ?>" 
-     data-display-error="<?= !empty($display_error) ? 'true' : 'false' ?>">
-</div>
-
-<script type="module" src="assets/js/url_cleaner.js"></script>
 <script type="module" src="assets/js/users_create.js"></script>

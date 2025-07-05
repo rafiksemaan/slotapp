@@ -3,29 +3,14 @@
  * Edit existing slot machine
  */
 
-// Capture messages from URL
-$display_message = '';
-$display_error = '';
-
-if (isset($_GET['message'])) {
-    $display_message = htmlspecialchars($_GET['message']);
-}
-if (isset($_GET['error'])) {
-    $display_error = htmlspecialchars($_GET['error']);
-}
-
 // Ensure we have an ID
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+    set_flash_message('danger', "Invalid machine ID.");
     header("Location: index.php?page=machines");
     exit;
 }
 
 $machine_id = $_GET['id'];
-
-// Initialize variables
-$error = '';
-$success = false;
-$machine = null;
 
 // Get machine data
 try {
@@ -40,11 +25,14 @@ try {
     $machine = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$machine) {
-        header("Location: index.php?page=machines&error=" . urlencode("Machine not found"));
+        set_flash_message('danger', "Machine not found.");
+        header("Location: index.php?page=machines");
         exit;
     }
 } catch (PDOException $e) {
-    $error = "Database error: " . $e->getMessage();
+    set_flash_message('danger', "Database error: " . $e->getMessage());
+    header("Location: index.php?page=machines");
+    exit;
 }
 
 // Get brands for dropdown
@@ -52,7 +40,7 @@ try {
     $brands_stmt = $conn->query("SELECT id, name FROM brands ORDER BY name");
     $brands = $brands_stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    $error = "Database error: " . $e->getMessage();
+    set_flash_message('danger', "Database error: " . $e->getMessage());
     $brands = [];
 }
 
@@ -61,7 +49,7 @@ try {
     $types_stmt = $conn->query("SELECT id, name FROM machine_types ORDER BY name");
     $machine_types = $types_stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    $error = "Database error: " . $e->getMessage();
+    set_flash_message('danger', "Database error: " . $e->getMessage());
     $machine_types = [];
 }
 
@@ -86,13 +74,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($machine_number) || empty($brand_id) || empty($game) ||
         empty($type_id) || empty($credit_value) || empty($status) ||
         empty($ticket_printer) || empty($system_comp)) {
-        $error = "Please fill out all required fields.";
+        set_flash_message('danger', "Please fill out all required fields.");
     }
     else if (!empty($ip_address) && !is_valid_ip($ip_address)) {
-        $error = "Please enter a valid IP address.";
+        set_flash_message('danger', "Please enter a valid IP address.");
     }
     else if (!empty($mac_address) && !is_valid_mac($mac_address)) {
-        $error = "Please enter a valid MAC address (e.g., 00:1A:2B:3C:4D:5E).";
+        set_flash_message('danger', "Please enter a valid MAC address (e.g., 00:1A:2B:3C:4D:5E).");
     }
     else {
         try {
@@ -100,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $conn->prepare("SELECT id FROM machines WHERE machine_number = ? AND id != ?");
             $stmt->execute([$machine_number, $machine_id]);
             if ($stmt->rowCount() > 0) {
-                $error = "A machine with this number already exists.";
+                set_flash_message('danger', "A machine with this number already exists.");
             }
 
             // Check for duplicate serial number (if provided)
@@ -108,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $conn->prepare("SELECT id FROM machines WHERE serial_number = ? AND id != ?");
                 $stmt->execute([$serial_number, $machine_id]);
                 if ($stmt->rowCount() > 0) {
-                    $error = "A machine with this serial number already exists.";
+                    set_flash_message('danger', "A machine with this serial number already exists.");
                 }
             }
 
@@ -149,16 +137,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
 
                 log_action('update_machine', "Updated machine: {$machine_number} - {$game}");
-                $success = true;
+                set_flash_message('success', "Machine updated successfully.");
 
                 // Redirect after successful update
                 if (!headers_sent()) {
-                    header("Location: index.php?page=machines&message=" . urlencode("Machine updated successfully"));
+                    header("Location: index.php?page=machines");
                     exit;
                 }
             }
         } catch (PDOException $e) {
-            $error = "Database error: " . $e->getMessage();
+            set_flash_message('danger', "Database error: " . $e->getMessage());
         }
     }
 }
@@ -170,12 +158,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <h3>Edit Machine</h3>
         </div>
         <div class="card-body">
-            <?php if (!empty($display_message)): ?>
-                <div class="alert alert-success"><?php echo htmlspecialchars($display_message); ?></div>
-            <?php elseif (!empty($display_error)): ?>
-                <div class="alert alert-danger"><?php echo htmlspecialchars($display_error); ?></div>
-            <?php endif; ?>
-            
             <form action="index.php?page=machines&action=edit&id=<?php echo $machine_id; ?>" method="POST" id="machineEditForm">
                 <!-- Basic Information Section -->
                 <div class="form-section">
@@ -326,9 +308,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 </div>
-<div id="url-cleaner-data" 
-     data-display-message="<?= !empty($display_message) ? 'true' : 'false' ?>" 
-     data-display-error="<?= !empty($display_error) ? 'true' : 'false' ?>">
-</div>
-<script type="module" src="assets/js/url_cleaner.js"></script>
 <script type="module" src="assets/js/machines_edit.js"></script>

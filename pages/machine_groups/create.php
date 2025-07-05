@@ -3,20 +3,7 @@
  * Create new machine group
  */
 
-// Capture messages from URL
-$display_message = '';
-$display_error = '';
-
-if (isset($_GET['message'])) {
-    $display_message = htmlspecialchars($_GET['message']);
-}
-if (isset($_GET['error'])) {
-    $display_error = htmlspecialchars($_GET['error']);
-}
-
 // Process form submission
-$message = '';
-$error = '';
 $group = [
     'name' => '',
     'description' => '',
@@ -31,10 +18,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     // Validate required fields
     if (empty($group['name'])) {
-        header("Location: index.php?page=machine_groups&action=create&error=" . urlencode("Group name is required."));
+        set_flash_message('danger', "Group name is required.");
+        header("Location: index.php?page=machine_groups&action=create");
         exit;
     } elseif (count($group['machine_ids']) < 2) {
-        header("Location: index.php?page=machine_groups&action=create&error=" . urlencode("A group must contain at least 2 machines."));
+        set_flash_message('danger', "A group must contain at least 2 machines.");
+        header("Location: index.php?page=machine_groups&action=create");
         exit;
     } else {
         try {
@@ -43,7 +32,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt->execute([$group['name']]);
             
             if ($stmt->rowCount() > 0) {
-                header("Location: index.php?page=machine_groups&action=create&error=" . urlencode("A group with this name already exists."));
+                set_flash_message('danger', "A group with this name already exists.");
+                header("Location: index.php?page=machine_groups&action=create");
                 exit;
             } else {
                 // Start transaction
@@ -68,13 +58,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 log_action('create_machine_group', "Created machine group: {$group['name']} with " . count($group['machine_ids']) . " machines");
                 
                 // Redirect to group list
-                header("Location: index.php?page=machine_groups&message=" . urlencode("Machine group created successfully"));
+                set_flash_message('success', "Machine group created successfully.");
+                header("Location: index.php?page=machine_groups");
                 exit;
             }
         } catch (PDOException $e) {
             // Rollback transaction on error
             $conn->rollback();
-            header("Location: index.php?page=machine_groups&action=create&error=" . urlencode("Database error: " . $e->getMessage()));
+            set_flash_message('danger', "Database error: " . $e->getMessage());
+            header("Location: index.php?page=machine_groups&action=create");
             exit;
         }
     }
@@ -91,7 +83,7 @@ try {
     ");
     $machines = $stmt->fetchAll();
 } catch (PDOException $e) {
-    $error = "Database error: " . $e->getMessage();
+    set_flash_message('danger', "Database error: " . $e->getMessage());
     $machines = [];
 }
 ?>
@@ -102,20 +94,6 @@ try {
             <h3>Create New Machine Group</h3>
         </div>
         <div class="card-body">
-            <?php if (!empty($error)): ?>
-                <div class="alert alert-danger"><?php echo $error; ?></div>
-            <?php endif; ?>
-            <?php if (!empty($display_error)): ?>
-                <div class="alert alert-danger"><?php echo $display_error; ?></div>
-            <?php endif; ?>
-            
-            <?php if (!empty($message)): ?>
-                <div class="alert alert-success"><?php echo $message; ?></div>
-            <?php endif; ?>
-            <?php if (!empty($display_message)): ?>
-                <div class="alert alert-success"><?php echo $display_message; ?></div>
-            <?php endif; ?>
-            
             <form action="index.php?page=machine_groups&action=create" method="POST" id="machineGroupCreateForm">
                 <!-- Group Information Section -->
                 <div class="form-section">
@@ -172,10 +150,4 @@ try {
         </div>
     </div>
 </div>
-<div id="url-cleaner-data" 
-     data-display-message="<?= !empty($display_message) ? 'true' : 'false' ?>" 
-     data-display-error="<?= !empty($display_error) ? 'true' : 'false' ?>">
-</div>
-<script type="module" src="assets/js/url_cleaner.js"></script>
 <script type="module" src="assets/js/machine_groups_create.js"></script>
-
