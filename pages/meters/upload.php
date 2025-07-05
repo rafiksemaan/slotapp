@@ -23,10 +23,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['csv_file'])) {
             set_flash_message('danger', "Invalid file type. Please upload a CSV file.");
         } else {
             try {
-                // Check if upload for this date already exists (optional, depending on business logic)
-                // For meters, you might allow multiple uploads per day, or overwrite.
-                // For simplicity, let's assume we add new entries.
-                
                 // Process the uploaded file
                 $upload_result = processMeterCSVFile($_FILES['csv_file'], $upload_date, $conn);
                 
@@ -83,18 +79,17 @@ function processMeterCSVFile($file, $operation_date, $conn) {
         // Create header mapping
         $header_map = array_flip($headers);
         
-        // Fetch machine mappings (machine_number => id) once
+        // Fetch machine mappings (machine_number => id and system_comp) once
         $machine_map = [];
-        $stmt = $conn->query("SELECT id, machine_number FROM machines");
+        $stmt = $conn->query("SELECT machine_number, id, system_comp FROM machines");
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $machine_map[$row['machine_number']] = $row['id'];
+            $machine_map[$row['machine_number']] = ['id' => $row['id'], 'system_comp' => $row['system_comp']];
         }
 
         $processed_count = 0;
         $errors = [];
         
-        // Prepare insert statement for meters table (assuming it exists)
-        // NOTE: This SQL needs to match your actual 'meters' table schema
+        // Prepare insert statement for meters table
         $insert_stmt = $conn->prepare("
             INSERT INTO meters (
                 machine_id, operation_date, total_in, total_out, bills_in, 
@@ -113,10 +108,19 @@ function processMeterCSVFile($file, $operation_date, $conn) {
             }
             
             $machine_number_from_csv = trim($row[$header_map['machine_id']] ?? '');
-            $db_machine_id = $machine_map[$machine_number_from_csv] ?? null;
-
-            if (!$db_machine_id) {
+            
+            if (!isset($machine_map[$machine_number_from_csv])) {
                 $errors[] = "Row " . ($i + 1) . ": Unknown machine number '{$machine_number_from_csv}'. Skipping entry.";
+                continue;
+            }
+
+            $machine_info = $machine_map[$machine_number_from_csv];
+            $db_machine_id = $machine_info['id'];
+            $system_comp = $machine_info['system_comp'];
+
+            // Only process if the machine is 'online'
+            if ($system_comp !== 'online') {
+                $errors[] = "Row " . ($i + 1) . ": Machine '{$machine_number_from_csv}' is not an online machine. Skipping entry.";
                 continue;
             }
 
@@ -209,7 +213,7 @@ function processMeterCSVFile($file, $operation_date, $conn) {
             <!-- File Format Instructions -->
             <div class="alert alert-info">
                 <h5>📋 File Format Requirements:</h5>
-                <p>Upload a CSV file containing daily meter data for online machines. The file must contain the following columns:</p>
+                <p>Upload a CSV file containing daily meter data for <strong>online machines only</strong>. The file must contain the following columns:</p>
                 <ul>
                     <li><strong>machine_id</strong> - The machine number (e.g., "M001")</li>
                     <li><strong>operation_date</strong> - Date in YYYY-MM-DD format</li>

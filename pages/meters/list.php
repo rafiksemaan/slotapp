@@ -4,12 +4,12 @@
  * Shows meter entries with filtering and sorting options
  */
 
-// Placeholder for sorting parameters
+// Get sorting parameters
 $sort_column = $_GET['sort'] ?? 'operation_date';
 $sort_order = $_GET['order'] ?? 'DESC';
 $toggle_order = $sort_order === 'ASC' ? 'DESC' : 'ASC';
 
-// Placeholder for filter parameters
+// Get filter parameters
 $filter_machine = $_GET['machine'] ?? 'all';
 $date_range_type = $_GET['date_range_type'] ?? 'month';
 $filter_date_from = $_GET['date_from'] ?? date('Y-m-01');
@@ -27,51 +27,67 @@ if ($date_range_type === 'range') {
     $end_date = date("Y-m-t", strtotime($start_date));
 }
 
-// Placeholder for fetching machines for dropdown
-// In a real scenario, you would fetch this from your 'machines' table
-$machines = [
-    ['id' => 1, 'machine_number' => 'M001', 'brand_name' => 'Brand A'],
-    ['id' => 2, 'machine_number' => 'M002', 'brand_name' => 'Brand B'],
-    ['id' => 3, 'machine_number' => 'M003', 'brand_name' => 'Brand A'],
+// Build query for fetching meter data
+$query = "
+    SELECT 
+        m.machine_number,
+        mt.name AS machine_type_name,
+        me.*,
+        u.username AS created_by_username
+    FROM meters me
+    JOIN machines m ON me.machine_id = m.id
+    LEFT JOIN machine_types mt ON m.type_id = mt.id
+    LEFT JOIN users u ON me.created_by = u.id
+    WHERE me.operation_date BETWEEN ? AND ?
+";
+
+$params = [$start_date, $end_date];
+
+// Apply filters
+if ($filter_machine !== 'all') {
+    $query .= " AND me.machine_id = ?";
+    $params[] = $filter_machine;
+}
+if ($filter_meter_type !== 'all') {
+    $query .= " AND me.meter_type = ?";
+    $params[] = $filter_meter_type;
+}
+
+// Add sorting
+$sort_map = [
+    'operation_date' => 'me.operation_date',
+    'machine_number' => 'm.machine_number',
+    'meter_type' => 'me.meter_type',
+    'total_in' => 'me.total_in',
+    'total_out' => 'me.total_out',
+    'created_by_username' => 'u.username'
 ];
 
-// Placeholder for meter types dropdown
-$meter_types = ['Online', 'Coins', 'Offline'];
+$actual_sort_column = $sort_map[$sort_column] ?? 'me.operation_date';
+$query .= " ORDER BY $actual_sort_column $sort_order";
 
-// Placeholder for meter data (assuming a 'meters' table exists)
-// This data would be fetched from the database based on filters and sorting
-$meters = [
-    [
-        'id' => 101,
-        'machine_id' => 1,
-        'machine_number' => 'M001',
-        'operation_date' => '2025-06-01',
-        'meter_type' => 'Online',
-        'total_in' => 1500.00,
-        'total_out' => 1200.00,
-        'notes' => 'Daily online meter reading'
-    ],
-    [
-        'id' => 102,
-        'machine_id' => 2,
-        'machine_number' => 'M002',
-        'operation_date' => '2025-06-01',
-        'meter_type' => 'Coins',
-        'coins_in' => 500.00,
-        'coins_out' => 450.00,
-        'notes' => 'Manual coins meter reading'
-    ],
-    [
-        'id' => 103,
-        'machine_id' => 3,
-        'machine_number' => 'M003',
-        'operation_date' => '2025-06-02',
-        'meter_type' => 'Offline',
-        'total_in' => 1000.00,
-        'total_out' => 800.00,
-        'notes' => 'Offline machine reading'
-    ],
-];
+try {
+    $stmt = $conn->prepare($query);
+    $stmt->execute($params);
+    $meters = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Get machines for filter dropdown
+    $machines_stmt = $conn->query("
+        SELECT m.id, m.machine_number, b.name as brand_name 
+        FROM machines m 
+        LEFT JOIN brands b ON m.brand_id = b.id 
+        ORDER BY m.machine_number
+    ");
+    $machines = $machines_stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+} catch (PDOException $e) {
+    set_flash_message('danger', "Database error: " . htmlspecialchars($e->getMessage()));
+    $meters = [];
+    $machines = [];
+}
+
+// Meter types for dropdown (from database ENUM or fixed list)
+$meter_types_options = ['online', 'coins', 'offline'];
 
 // Check if we have filter parameters (indicating filters were applied)
 $has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !empty($_GET['date_from']) || !empty($_GET['date_to']) || !empty($_GET['month']) || $filter_meter_type !== 'all';
@@ -161,9 +177,9 @@ $has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !emp
                                 <label for="meter_type">Meter Type</label>
                                 <select name="meter_type" id="meter_type" class="form-control">
                                     <option value="all" <?= $filter_meter_type === 'all' ? 'selected' : '' ?>>All Types</option>
-                                    <?php foreach ($meter_types as $type): ?>
-                                        <option value="<?= strtolower($type) ?>" <?= $filter_meter_type === strtolower($type) ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($type) ?>
+                                    <?php foreach ($meter_types_options as $type): ?>
+                                        <option value="<?= $type ?>" <?= $filter_meter_type === $type ? 'selected' : '' ?>>
+                                            <?= ucfirst($type) ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
@@ -186,7 +202,7 @@ $has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !emp
         <div>
             <?php if ($can_edit): ?>
                 <a href="index.php?page=meters&action=create" class="btn btn-primary">
-                    Add New Meter Entry
+                    Add New Meter Entry (Offline Machines)
                 </a>
                 <a href="index.php?page=meters&action=upload" class="btn btn-secondary">
                     Upload Online Meters
@@ -216,42 +232,42 @@ $has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !emp
                             </th>
                             <th class="px-4 py-2 text-right">Total In</th>
                             <th class="px-4 py-2 text-right">Total Out</th>
+                            <th class="px-4 py-2 text-right">Bills In</th>
+                            <th class="px-4 py-2 text-right">Coins In</th>
+                            <th class="px-4 py-2 text-right">Coins Out</th>
+                            <th class="px-4 py-2 text-right">Coins Drop</th>
+                            <th class="px-4 py-2 text-right">Bets</th>
+                            <th class="px-4 py-2 text-right">Handpay</th>
+                            <th class="px-4 py-2 text-right">JP</th>
                             <th class="px-4 py-2 text-left">Notes</th>
+                            <th class="px-4 py-2 text-left sortable-header" data-sort-column="created_by_username" data-sort-order="<?php echo $sort_column == 'created_by_username' ? $toggle_order : 'ASC'; ?>">
+                                Created By <?php if ($sort_column == 'created_by_username') echo $sort_order == 'ASC' ? '▲' : '▼'; ?>
+                            </th>
                             <th class="px-4 py-2 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-700">
                         <?php if (empty($meters)): ?>
                             <tr>
-                                <td colspan="7" class="text-center px-4 py-6">No meter entries found</td>
+                                <td colspan="15" class="text-center px-4 py-6">No meter entries found</td>
                             </tr>
                         <?php else: ?>
                             <?php foreach ($meters as $meter): ?>
                                 <tr class="hover:bg-gray-800 transition duration-150">
                                     <td class="px-4 py-2"><?php echo htmlspecialchars(format_date($meter['operation_date'])); ?></td>
                                     <td class="px-4 py-2"><?php echo htmlspecialchars($meter['machine_number']); ?></td>
-                                    <td class="px-4 py-2"><?php echo htmlspecialchars($meter['meter_type']); ?></td>
-                                    <td class="px-4 py-2 text-right">
-                                        <?php
-                                        // Display specific 'in' field based on meter type
-                                        if ($meter['meter_type'] === 'Coins') {
-                                            echo format_currency($meter['coins_in'] ?? 0);
-                                        } else {
-                                            echo format_currency($meter['total_in'] ?? 0);
-                                        }
-                                        ?>
-                                    </td>
-                                    <td class="px-4 py-2 text-right">
-                                        <?php
-                                        // Display specific 'out' field based on meter type
-                                        if ($meter['meter_type'] === 'Coins') {
-                                            echo format_currency($meter['coins_out'] ?? 0);
-                                        } else {
-                                            echo format_currency($meter['total_out'] ?? 0);
-                                        }
-                                        ?>
-                                    </td>
-                                    <td class="px-4 py-2"><?php echo htmlspecialchars($meter['notes'] ?? ''); ?></td>
+                                    <td class="px-4 py-2"><?php echo htmlspecialchars(ucfirst($meter['meter_type'])); ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo format_currency($meter['total_in'] ?? 0); ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo format_currency($meter['total_out'] ?? 0); ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo format_currency($meter['bills_in'] ?? 0); ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo format_currency($meter['coins_in'] ?? 0); ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo format_currency($meter['coins_out'] ?? 0); ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo format_currency($meter['coins_drop'] ?? 0); ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo format_currency($meter['bets'] ?? 0); ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo format_currency($meter['handpay'] ?? 0); ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo format_currency($meter['jp'] ?? 0); ?></td>
+                                    <td class="px-4 py-2 text-sm"><?php echo htmlspecialchars($meter['notes'] ?? ''); ?></td>
+                                    <td class="px-4 py-2"><?php echo htmlspecialchars($meter['created_by_username'] ?? 'N/A'); ?></td>
                                     <td class="px-4 py-2 text-right">
                                         <a href="index.php?page=meters&action=view&id=<?php echo $meter['id']; ?>" class="action-btn view-btn" data-tooltip="View Details"><span class="menu-icon"><img src="<?= icon('view2') ?>"/></span></a>
                                         <?php if ($can_edit): ?>

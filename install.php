@@ -260,34 +260,37 @@ function createTables($conn) {
             KEY `uploaded_by` (`uploaded_by`)
         ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
 
-        // Create meters table
-        $conn->exec("CREATE TABLE IF NOT EXISTS `meters` (
-            `id` INT NOT NULL AUTO_INCREMENT,
-            `machine_id` INT NOT NULL,
-            `operation_date` DATE NOT NULL,
-            `meter_type` ENUM('online', 'coins', 'offline') COLLATE utf8mb4_general_ci NOT NULL,
-            `total_in` DECIMAL(10,2) DEFAULT NULL,
-            `total_out` DECIMAL(10,2) DEFAULT NULL,
-            `bills_in` DECIMAL(10,2) DEFAULT NULL,
-            `ticket_in` DECIMAL(10,2) DEFAULT NULL,
-            `ticket_out` DECIMAL(10,2) DEFAULT NULL,
-            `jp` DECIMAL(10,2) DEFAULT NULL,
-            `bets` DECIMAL(10,2) DEFAULT NULL,
-            `handpay` DECIMAL(10,2) DEFAULT NULL,
-            `coins_in` DECIMAL(10,2) DEFAULT NULL,
-            `coins_out` DECIMAL(10,2) DEFAULT NULL,
-            `coins_drop` DECIMAL(10,2) DEFAULT NULL,
-            `created_by` INT NOT NULL,
-            `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-            `updated_by` INT DEFAULT NULL,
-            `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            PRIMARY KEY (`id`),
-            UNIQUE KEY `idx_machine_date_type` (`machine_id`, `operation_date`, `meter_type`),
-            KEY `idx_operation_date` (`operation_date`),
-            KEY `idx_machine_id` (`machine_id`),
-            KEY `idx_created_by` (`created_by`),
-            KEY `idx_updated_by` (`updated_by`)
-        ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
+		// Create meters table
+		$conn->exec("CREATE TABLE IF NOT EXISTS `meters` (
+			`id` INT NOT NULL AUTO_INCREMENT,
+			`machine_id` INT NOT NULL,
+			`operation_date` DATE NOT NULL,
+			`meter_type` ENUM('online', 'coins', 'offline') COLLATE utf8mb4_general_ci NOT NULL,
+			`total_in` DECIMAL(10,2) DEFAULT NULL,
+			`total_out` DECIMAL(10,2) DEFAULT NULL,
+			`bills_in` DECIMAL(10,2) DEFAULT NULL,
+			`ticket_in` DECIMAL(10,2) DEFAULT NULL,
+			`ticket_out` DECIMAL(10,2) DEFAULT NULL,
+			`jp` DECIMAL(10,2) DEFAULT NULL,
+			`bets` DECIMAL(10,2) DEFAULT NULL,
+			`handpay` DECIMAL(10,2) DEFAULT NULL,
+			`coins_in` DECIMAL(10,2) DEFAULT NULL,
+			`coins_out` DECIMAL(10,2) DEFAULT NULL,
+			`coins_drop` DECIMAL(10,2) DEFAULT NULL,
+			`manual_reading_notes` TEXT COLLATE utf8mb4_general_ci DEFAULT NULL, /* ADD THIS LINE */
+			`notes` TEXT COLLATE utf8mb4_general_ci DEFAULT NULL, /* ADD THIS LINE */
+			`created_by` INT NOT NULL,
+			`created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+			`updated_by` INT DEFAULT NULL,
+			`updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			PRIMARY KEY (`id`),
+			UNIQUE KEY `idx_machine_date_type` (`machine_id`, `operation_date`, `meter_type`),
+			KEY `idx_operation_date` (`operation_date`),
+			KEY `idx_machine_id` (`machine_id`),
+			KEY `idx_created_by` (`created_by`),
+			KEY `idx_updated_by` (`updated_by`)
+		) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
+
         
         return true;
     } catch (PDOException $e) {
