@@ -568,6 +568,10 @@ $has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !emp
         </div>
     </div>
 </div>
-
+<div id="url-cleaner-data" 
+     data-display-message="<?= !empty($display_message) ? 'true' : 'false' ?>" 
+     data-display-error="<?= !empty($display_error) ? 'true' : 'false' ?>">
+</div>
+<script type="module" src="assets/js/url_cleaner.js"></script>
 <script src="assets/js/transactions_list.js"></script>
 

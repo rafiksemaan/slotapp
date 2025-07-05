@@ -84,8 +84,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $can_edit) {
             <?php if (!empty($display_message)): ?>
                 <div class="alert alert-success"><?php echo htmlspecialchars($display_message); ?></div>
             <?php endif; ?>
-
-            <form method="POST" action="index.php?page=users&action=edit&id=<?php echo $user['id']; ?>" id="userEditForm">
+			
+			<form method="POST" action="index.php?page=users&action=edit&id=<?php echo $user['id']; ?>" id="userEditForm">
                 <!-- User Information Section -->
                 <div class="form-section">
                     <h4>User Information</h4>
@@ -158,13 +158,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $can_edit) {
         </div>
     </div>
 </div>
-
+<div id="url-cleaner-data" 
+     data-display-message="<?= !empty($display_message) ? 'true' : 'false' ?>" 
+     data-display-error="<?= !empty($display_error) ? 'true' : 'false' ?>">
+</div>
+<script type="module" src="assets/js/url_cleaner.js"></script>
 <script type="module" src="assets/js/users_edit.js"></script>
-<?php
-// JavaScript to clear URL parameters
-if (!empty($display_message) || !empty($display_error)) {
-    echo "<script type='text/javascript'>
-        window.history.replaceState({}, document.title, window.location.pathname + window.location.search.replace(/&?(message|error)=[^&]*/g, ''));
-    </script>";
-}
-?>

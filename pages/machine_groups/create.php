@@ -172,13 +172,10 @@ try {
         </div>
     </div>
 </div>
-
+<div id="url-cleaner-data" 
+     data-display-message="<?= !empty($display_message) ? 'true' : 'false' ?>" 
+     data-display-error="<?= !empty($display_error) ? 'true' : 'false' ?>">
+</div>
+<script type="module" src="assets/js/url_cleaner.js"></script>
 <script type="module" src="assets/js/machine_groups_create.js"></script>
-<?php
-// JavaScript to clear URL parameters
-if (!empty($display_message) || !empty($display_error)) {
-    echo "<script type='text/javascript'>
-        window.history.replaceState({}, document.title, window.location.pathname + window.location.search.replace(/&?(message|error)=[^&]*/g, ''));
-    </script>";
-}
-?>
+
