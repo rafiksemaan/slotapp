@@ -391,7 +391,7 @@ switch ($action) {
             <?php endif; ?>
         </div>
 
-        <script src="assets/js/import_transactions.js"></script>
+        <script type="module" src="assets/js/import_transactions.js"></script>
         <?php
         break; // End of 'list' case
 

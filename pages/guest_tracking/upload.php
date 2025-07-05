@@ -292,7 +292,7 @@ G003,Bob Johnson,800.50,75.00,1</pre>
     </div>
 </div>
 
-<script src="assets/js/guest_tracking_upload.js"></script>
+<script type="module" src="assets/js/guest_tracking_upload.js"></script>
 <?php
 // JavaScript to clear URL parameters
 if (!empty($display_message) || !empty($display_error)) {

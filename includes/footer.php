@@ -20,6 +20,6 @@ ob_end_flush();
     </div><!-- .app-container -->
     
     <!-- JavaScript -->
-    <script src="assets/js/main.js"></script>
+    <script src="assets/js/main.js" type="module"></script>
 </body>
 </html>

@@ -173,7 +173,7 @@ try {
     </div>
 </div>
 
-<script src="assets/js/machine_groups_create.js"></script>
+<script type="module" src="assets/js/machine_groups_create.js"></script>
 <?php
 // JavaScript to clear URL parameters
 if (!empty($display_message) || !empty($display_error)) {
