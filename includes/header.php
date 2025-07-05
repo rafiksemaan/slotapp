@@ -95,6 +95,10 @@ ob_start();
                 <span class="menu-icon"><img src="<?= icon('calendar') ?>" alt="weekly_tracking" /></span>
                 <span class="menu-text">Weekly Tracking</span>
             </a></li>
+            <!--<li><a href="index.php?page=meters" class="<?= $page == 'meters' ? 'active' : '' ?>">
+                <span class="menu-icon"><img src="<?= icon('meters') ?>" alt="meters" /></span>
+                <span class="menu-text">Meters</span>
+            </a></li>-->
             <li><a href="index.php?page=general_report" class="<?= $page == 'general_report' ? 'active' : '' ?>">
                 <span class="menu-icon"><img src="<?= icon('report') ?>" alt="general_report" /></span>
                 <span class="menu-text">General Report</span>
@@ -149,7 +153,6 @@ ob_start();
                         <span class="submenu-icon"><img src="<?= icon('users') ?>" alt="users" /></span>
                         <span class="menu-text">Users</span>
                     </a></li>
-                    <!-- NEW: Import Transactions Link -->
                     <li><a href="index.php?page=import_transactions" class="<?= $page == 'import_transactions' ? 'active' : '' ?>">
                         <span class="submenu-icon"><img src="<?= icon('transaction') ?>" alt="Import Transactions" /></span>
                         <span class="menu-text">Import Transactions</span>
