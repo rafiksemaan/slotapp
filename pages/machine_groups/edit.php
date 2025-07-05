@@ -107,7 +107,7 @@ try {
     ");
     $machines = $stmt->fetchAll();
 } catch (PDOException $e) {
-    set_flash_message('danger', "Database error: " . $e->getMessage());
+    // No need to set $error here, as flash messages handle display
     $machines = [];
 }
 ?>

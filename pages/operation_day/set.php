@@ -38,8 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             set_flash_message('success', "Operation day has been set successfully!");
             
             // Redirect after 2 seconds
-            header("Location: index.php?page=operation_day");
-            exit;
+            header("refresh:2;url=index.php?page=operation_day");
             
         } catch (PDOException $e) {
             set_flash_message('danger', "Database error: " . $e->getMessage());

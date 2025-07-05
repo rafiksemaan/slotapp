@@ -3,8 +3,6 @@
  * Edit User Page
  */
 
-$can_edit = true; // Replace with actual permission check if available
-
 $user_id = $_GET['id'] ?? 0;
 
 // Load current user

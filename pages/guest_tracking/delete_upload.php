@@ -5,13 +5,15 @@
 
 // Ensure user has edit permissions
 if (!$can_edit) {
-    header("Location: index.php?page=guest_tracking&error=Access denied");
+    set_flash_message('danger', "Access denied.");
+    header("Location: index.php?page=guest_tracking");
     exit;
 }
 
 // Check if upload date is provided
 if (!isset($_GET['upload_date'])) {
-    header("Location: index.php?page=guest_tracking&error=Upload date is required");
+    set_flash_message('danger', "Upload date is required.");
+    header("Location: index.php?page=guest_tracking");
     exit;
 }
 
@@ -24,7 +26,8 @@ try {
     $upload = $check_stmt->fetch();
     
     if (!$upload) {
-        header("Location: index.php?page=guest_tracking&error=Upload not found");
+        set_flash_message('danger', "Upload not found.");
+        header("Location: index.php?page=guest_tracking");
         exit;
     }
     
@@ -54,13 +57,15 @@ try {
     // Log action
     log_action('delete_guest_upload', "Deleted guest upload for date: $upload_date, Records: $deleted_records, Cleaned guests: $cleaned_guests");
     
-    header("Location: index.php?page=guest_tracking&message=Upload deleted successfully. Removed $deleted_records records and cleaned up $cleaned_guests guests.");
+    set_flash_message('success', "Upload deleted successfully. Removed $deleted_records records and cleaned up $cleaned_guests guests.");
+    header("Location: index.php?page=guest_tracking");
     exit;
     
 } catch (PDOException $e) {
     // Rollback transaction on error
     $conn->rollback();
-    header("Location: index.php?page=guest_tracking&error=Error deleting upload: " . urlencode($e->getMessage()));
+    set_flash_message('danger', "Error deleting upload: " . $e->getMessage());
+    header("Location: index.php?page=guest_tracking");
     exit;
 }
 ?>

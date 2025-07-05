@@ -37,7 +37,7 @@ try {
     $stmt->execute($params);
     $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    set_flash_message('danger', "Database error: " . htmlspecialchars($e->getMessage()));
+    echo "<div class='alert alert-danger'>Database error: " . htmlspecialchars($e->getMessage()) . "</div>";
     $users = [];
 }
 ?>
@@ -108,4 +108,3 @@ try {
         </div>
     </div>
 </div>
-<script type="module" src="assets/js/users_list.js"></script>

@@ -5,6 +5,7 @@
 
 // Check if ID is provided
 if (!isset($_GET['id'])) {
+    set_flash_message('danger', "Brand ID not provided.");
     header("Location: index.php?page=brands");
     exit;
 }
@@ -18,7 +19,8 @@ try {
     $brand = $stmt->fetch();
     
     if (!$brand) {
-        header("Location: index.php?page=brands&message=Brand not found");
+        set_flash_message('danger', "Brand not found.");
+        header("Location: index.php?page=brands");
         exit;
     }
     
@@ -28,7 +30,8 @@ try {
     $machine_count = $stmt->fetch()['count'];
     
     if ($machine_count > 0) {
-        header("Location: index.php?page=brands&message=Cannot delete brand: It has associated machines");
+        set_flash_message('danger', "Cannot delete brand: It has associated machines.");
+        header("Location: index.php?page=brands");
         exit;
     }
     
@@ -39,11 +42,13 @@ try {
     // Log action
     log_action('delete_brand', "Deleted brand: {$brand['name']}");
     
-    header("Location: index.php?page=brands&message=Brand deleted successfully");
+    set_flash_message('success', "Brand deleted successfully.");
+    header("Location: index.php?page=brands");
     exit;
     
 } catch (PDOException $e) {
-    header("Location: index.php?page=brands&message=Error deleting brand: " . urlencode($e->getMessage()));
+    set_flash_message('danger', "Error deleting brand: " . $e->getMessage());
+    header("Location: index.php?page=brands");
     exit;
 }
 ?>

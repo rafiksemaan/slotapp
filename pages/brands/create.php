@@ -3,20 +3,7 @@
  * Create new brand
  */
 
-// Capture messages from URL
-$display_message = '';
-$display_error = '';
-
-if (isset($_GET['message'])) {
-    $display_message = htmlspecialchars($_GET['message']);
-}
-if (isset($_GET['error'])) {
-    $display_error = htmlspecialchars($_GET['error']);
-}
-
 // Process form submission
-$message = ''; // This variable will no longer be used for display, but might be for internal logic
-$error = '';   // This variable will no longer be used for display, but might be for internal logic
 $brand = [
     'name' => '',
     'description' => ''
@@ -29,7 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     // Validate required fields
     if (empty($brand['name'])) {
-        header("Location: index.php?page=brands&action=create&error=" . urlencode("Brand name is required."));
+        set_flash_message('danger', "Brand name is required.");
+        header("Location: index.php?page=brands&action=create");
         exit;
     } else {
         try {
@@ -38,7 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt->execute([$brand['name']]);
             
             if ($stmt->rowCount() > 0) {
-                header("Location: index.php?page=brands&action=create&error=" . urlencode("A brand with this name already exists."));
+                set_flash_message('danger', "A brand with this name already exists.");
+                header("Location: index.php?page=brands&action=create");
                 exit;
             } else {
                 // Insert new brand
@@ -49,11 +38,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 log_action('create_brand', "Created brand: {$brand['name']}");
                 
                 // Redirect to brand list
-                header("Location: index.php?page=brands&message=" . urlencode("Brand created successfully"));
+                set_flash_message('success', "Brand created successfully.");
+                header("Location: index.php?page=brands");
                 exit;
             }
         } catch (PDOException $e) {
-            header("Location: index.php?page=brands&action=create&error=" . urlencode("Database error: " . $e->getMessage()));
+            set_flash_message('danger', "Database error: " . $e->getMessage());
+            header("Location: index.php?page=brands&action=create");
             exit;
         }
     }
@@ -66,14 +57,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <h3>Add New Brand</h3>
         </div>
         <div class="card-body">
-            <?php if (!empty($display_error)): ?>
-                <div class="alert alert-danger"><?php echo $display_error; ?></div>
-            <?php endif; ?>
-            
-            <?php if (!empty($display_message)): ?>
-                <div class="alert alert-success"><?php echo $display_message; ?></div>
-            <?php endif; ?>
-            
             <form action="index.php?page=brands&action=create" method="POST" id="brandCreateForm">
                 <!-- Brand Information Section -->
                 <div class="form-section">
@@ -98,9 +81,4 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
     </div>
 </div>
-<div id="url-cleaner-data" 
-     data-display-message="<?= !empty($display_message) ? 'true' : 'false' ?>" 
-     data-display-error="<?= !empty($display_error) ? 'true' : 'false' ?>">
-</div>
-<script type="module" src="assets/js/url_cleaner.js"></script>
 <script type="module" src="assets/js/brands_create.js"></script>

@@ -80,44 +80,42 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     }
                 }
 
-                if (empty($error)) {
-                    // Insert new machine
-                    $stmt = $conn->prepare("
-                        INSERT INTO machines (machine_number, brand_id, model, game, type_id, credit_value,
-						manufacturing_year, ip_address, mac_address, serial_number, status, ticket_printer, system_comp)
-						VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                // Insert new machine
+                $stmt = $conn->prepare("
+                    INSERT INTO machines (machine_number, brand_id, model, game, type_id, credit_value,
+                    manufacturing_year, ip_address, mac_address, serial_number, status, ticket_printer, system_comp)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 
-                    ");
+                ");
 
-					// Handle empty brand_id
-                    if (empty($machine['brand_id'])) {
-                        $machine['brand_id'] = null;
-                    }
-
-                    $stmt->execute([
-                        $machine['machine_number'],
-                        $machine['brand_id'],
-                        $machine['model'] ?: null,
-                        $machine['game'] ?: null,
-                        $machine['type_id'],
-                        $machine['credit_value'],
-                        $machine['manufacturing_year'] ?: null,
-                        $machine['ip_address'] ?: null,
-                        $machine['mac_address'] ?: null,
-                        $machine['serial_number'] ?: null,
-                        $machine['status'],
-						$machine['ticket_printer'],
-						$machine['system_comp']
-                    ]);
-
-					 // Log action
-                    log_action('create_machine', "Created machine: {$machine['machine_number']} - {$machine['game']}");
-
-                    // Redirect to machine list
-                    set_flash_message('success', "Machine created successfully.");
-                    header("Location: index.php?page=machines");
-                    exit;
+                // Handle empty brand_id
+                if (empty($machine['brand_id'])) {
+                    $machine['brand_id'] = null;
                 }
+
+                $stmt->execute([
+                    $machine['machine_number'],
+                    $machine['brand_id'],
+                    $machine['model'] ?: null,
+                    $machine['game'] ?: null,
+                    $machine['type_id'],
+                    $machine['credit_value'],
+                    $machine['manufacturing_year'] ?: null,
+                    $machine['ip_address'] ?: null,
+                    $machine['mac_address'] ?: null,
+                    $machine['serial_number'] ?: null,
+                    $machine['status'],
+                    $machine['ticket_printer'],
+                    $machine['system_comp']
+                ]);
+
+                 // Log action
+                log_action('create_machine', "Created machine: {$machine['machine_number']} - {$machine['game']}");
+
+                // Redirect to machine list
+                set_flash_message('success', "Machine created successfully.");
+                header("Location: index.php?page=machines");
+                exit;
             }
         } catch (PDOException $e) {
             set_flash_message('danger', "Database error: " . $e->getMessage());

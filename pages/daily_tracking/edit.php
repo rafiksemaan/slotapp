@@ -3,26 +3,14 @@
  * Edit Daily Tracking Entry
  */
 
-// Capture messages from URL
-$display_message = '';
-$display_error = '';
-
-if (isset($_GET['message'])) {
-    $display_message = htmlspecialchars($_GET['message']);
-}
-if (isset($_GET['error'])) {
-    $display_error = htmlspecialchars($_GET['error']);
-}
-
 // Check if an ID was provided
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header("Location: index.php?page=daily_tracking&error=" . urlencode("Invalid daily tracking ID"));
+    set_flash_message('danger', "Invalid daily tracking ID.");
+    header("Location: index.php?page=daily_tracking");
     exit;
 }
 
 $tracking_id = $_GET['id'];
-$error = ''; // This variable will no longer be used for display, but might be for internal logic
-$success = ''; // This variable will no longer be used for display, but might be for internal logic
 
 // Get current tracking data
 try {
@@ -31,11 +19,13 @@ try {
     $tracking_data = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$tracking_data) {
-        header("Location: index.php?page=daily_tracking&error=" . urlencode("Daily tracking entry not found"));
+        set_flash_message('danger', "Daily tracking entry not found.");
+        header("Location: index.php?page=daily_tracking");
         exit;
     }
 } catch (PDOException $e) {
-    header("Location: index.php?page=daily_tracking&error=" . urlencode("Database error"));
+    set_flash_message('danger', "Database error: " . $e->getMessage());
+    header("Location: index.php?page=daily_tracking");
     exit;
 }
 
@@ -52,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Validate required fields
     if (empty($tracking_date)) {
-        $error = "Tracking date is required.";
+        set_flash_message('danger', "Tracking date is required.");
     } else {
         try {
             // Check if another entry exists for this date (excluding current entry)
@@ -60,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $check_stmt->execute([$tracking_date, $tracking_id]);
             
             if ($check_stmt->rowCount() > 0) {
-                $error = "Another daily tracking entry already exists for this date.";
+                set_flash_message('danger', "Another daily tracking entry already exists for this date.");
             } else {
                 // Convert empty strings to 0 for numeric fields
                 $slots_drop = empty($slots_drop) ? 0 : floatval($slots_drop);
@@ -102,14 +92,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($result) {
                     // Log action
                     log_action('update_daily_tracking', "Updated daily tracking entry for: {$tracking_date}");
-                    header("Location: index.php?page=daily_tracking&message=" . urlencode("Daily tracking entry updated successfully"));
+                    set_flash_message('success', "Daily tracking entry updated successfully.");
+                    header("Location: index.php?page=daily_tracking");
                     exit;
                 } else {
-                    $error = "Failed to update daily tracking entry.";
+                    set_flash_message('danger', "Failed to update daily tracking entry.");
                 }
             }
         } catch (PDOException $e) {
-            $error = "Database error: " . $e->getMessage();
+            set_flash_message('danger', "Database error: " . $e->getMessage());
         }
     }
 }
@@ -121,17 +112,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <h3>Edit Daily Tracking Entry</h3>
         </div>
         <div class="card-body">
-            <?php if (!empty($error)): ?>
-                <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
-            <?php endif; ?>
-            <?php if (!empty($display_error)): ?>
-                <div class="alert alert-danger"><?php echo htmlspecialchars($display_error); ?></div>
-            <?php endif; ?>
-
-            <?php if (!empty($display_message)): ?>
-                <div class="alert alert-success"><?php echo htmlspecialchars($display_message); ?></div>
-            <?php endif; ?>
-
             <div class="alert alert-info">
                 <strong>📊 Daily Tracking:</strong> Edit the daily performance data for each machine type. Results and percentages will be calculated automatically.
             </div>
@@ -242,9 +222,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 </div>
-<div id="url-cleaner-data" 
-     data-display-message="<?= !empty($display_message) ? 'true' : 'false' ?>" 
-     data-display-error="<?= !empty($display_error) ? 'true' : 'false' ?>">
-</div>
-<script type="module" src="assets/js/url_cleaner.js"></script>
 <script type="module" src="assets/js/daily_tracking_edit.js"></script>

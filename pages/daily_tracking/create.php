@@ -3,17 +3,6 @@
  * Create Daily Tracking Entry
  */
 
-// Capture messages from URL
-$display_message = '';
-$display_error = '';
-
-if (isset($_GET['message'])) {
-    $display_message = htmlspecialchars($_GET['message']);
-}
-if (isset($_GET['error'])) {
-    $display_error = htmlspecialchars($_GET['error']);
-}
-
 // Get current operation day for default date
 try {
     $op_stmt = $conn->prepare("SELECT operation_date FROM operation_day ORDER BY id DESC LIMIT 1");
@@ -24,8 +13,6 @@ try {
     $default_date = date('Y-m-d');
 }
 
-$error = ''; // This variable will no longer be used for display, but might be for internal logic
-$success = ''; // This variable will no longer be used for display, but might be for internal logic
 $tracking_data = [
     'tracking_date' => $default_date,
     'slots_drop' => '',
@@ -50,7 +37,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Validate required fields
     if (empty($tracking_data['tracking_date'])) {
-        header("Location: index.php?page=daily_tracking&action=create&error=" . urlencode("Tracking date is required."));
+        set_flash_message('danger', "Tracking date is required.");
+        header("Location: index.php?page=daily_tracking&action=create");
         exit;
     } else {
         try {
@@ -59,7 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $check_stmt->execute([$tracking_data['tracking_date']]);
             
             if ($check_stmt->rowCount() > 0) {
-                header("Location: index.php?page=daily_tracking&action=create&error=" . urlencode("Daily tracking entry already exists for this date. Please edit the existing entry or choose a different date."));
+                set_flash_message('danger', "Daily tracking entry already exists for this date. Please edit the existing entry or choose a different date.");
+                header("Location: index.php?page=daily_tracking&action=create");
                 exit;
             } else {
                 // Convert empty strings to 0 for numeric fields
@@ -102,11 +91,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Log action
                 log_action('create_daily_tracking', "Created daily tracking entry for: {$tracking_data['tracking_date']}");
 
-                header("Location: index.php?page=daily_tracking&message=" . urlencode("Daily tracking entry created successfully!"));
+                set_flash_message('success', "Daily tracking entry created successfully!");
+                header("Location: index.php?page=daily_tracking");
                 exit;
             }
         } catch (PDOException $e) {
-            header("Location: index.php?page=daily_tracking&action=create&error=" . urlencode("Database error: " . $e->getMessage()));
+            set_flash_message('danger', "Database error: " . $e->getMessage());
+            header("Location: index.php?page=daily_tracking&action=create");
             exit;
         }
     }
@@ -119,14 +110,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <h3>Add Daily Tracking Entry</h3>
         </div>
         <div class="card-body">
-            <?php if (!empty($display_error)): ?>
-                <div class="alert alert-danger"><?php echo htmlspecialchars($display_error); ?></div>
-            <?php endif; ?>
-
-            <?php if (!empty($display_message)): ?>
-                <div class="alert alert-success"><?php echo htmlspecialchars($display_message); ?></div>
-            <?php endif; ?>
-
             <div class="alert alert-info">
                 <strong>📊 Daily Tracking:</strong> Enter the daily performance data for each machine type. Results and percentages will be calculated automatically.
             </div>
@@ -237,9 +220,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 </div>
-<div id="url-cleaner-data" 
-     data-display-message="<?= !empty($display_message) ? 'true' : 'false' ?>" 
-     data-display-error="<?= !empty($display_error) ? 'true' : 'false' ?>">
-</div>
-<script type="module" src="assets/js/url_cleaner.js"></script>
 <script type="module" src="assets/js/daily_tracking_create.js"></script>
