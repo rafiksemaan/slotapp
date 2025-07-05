@@ -1,6 +1,11 @@
+// assets/js/main.js
+
 /**
  * Main JavaScript for Slot Management System
  */
+
+// Import the new validation utility functions
+import { validateForm as validateFormUtility, isRequired, isEmail, isValidIP, isValidMAC } from './validation_utils.js';
 
 // Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
@@ -209,78 +214,56 @@ function initDeleteConfirmations() {
 }
 
 /**
- * Handle form submission with validation
- * @param {HTMLFormElement} form The form element to validate
- * @returns {boolean} True if valid, false otherwise
+ * General form validation function.
+ * This function now acts as a wrapper, primarily checking required fields
+ * and delegating more complex validation to the new utility.
+ * Individual form scripts should define their specific rules and call this.
+ * @param {HTMLFormElement} form The form element to validate.
+ * @param {Object} customRules Optional. An object defining custom validation rules for fields.
+ * @returns {boolean} True if valid, false otherwise.
  */
-function validateForm(form) {
-    const requiredFields = form.querySelectorAll('[required]');
+window.validateForm = (form, customRules = {}) => {
     let isValid = true;
-    
-    // Reset previous error messages
-    const errorMessages = form.querySelectorAll('.error-message');
-    errorMessages.forEach(message => message.remove());
-    
-    // Check required fields
-    requiredFields.forEach(field => {
-        field.classList.remove('error');
-        
-        if (!field.value.trim()) {
-            isValid = false;
-            field.classList.add('error');
-            
-            // Add error message
-            const errorMessage = document.createElement('div');
-            errorMessage.className = 'error-message';
-            errorMessage.textContent = 'This field is required';
-            field.parentNode.appendChild(errorMessage);
-        }
-        
-        // Additional validation for specific types
-        if (field.getAttribute('type') === 'email' && field.value.trim()) {
-            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailPattern.test(field.value)) {
-                isValid = false;
-                field.classList.add('error');
-                
-                // Add error message
-                const errorMessage = document.createElement('div');
-                errorMessage.className = 'error-message';
-                errorMessage.textContent = 'Please enter a valid email address';
-                field.parentNode.appendChild(errorMessage);
-            }
-        }
-        
-        // Validate IP address
-        if (field.classList.contains('ip-address') && field.value.trim()) {
-            const ipPattern = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
-            if (!ipPattern.test(field.value)) {
-                isValid = false;
-                field.classList.add('error');
-                
-                // Add error message
-                const errorMessage = document.createElement('div');
-                errorMessage.className = 'error-message';
-                errorMessage.textContent = 'Please enter a valid IP address';
-                field.parentNode.appendChild(errorMessage);
-            }
-        }
-        
-        // Validate MAC address
-        if (field.classList.contains('mac-address') && field.value.trim()) {
-            const macPattern = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
-            if (!macPattern.test(field.value)) {
-                isValid = false;
-                field.classList.add('error');
-                
-                // Add error message
-                const errorMessage = document.createElement('div');
-                errorMessage.className = 'error-message';
-                errorMessage.textContent = 'Please enter a valid MAC address (e.g., 00:1A:2B:3C:4D:5E)';
-                field.parentNode.appendChild(errorMessage);
-            }
+
+    // Clear all existing errors from previous runs
+    form.querySelectorAll('.error').forEach(el => {
+        el.classList.remove('error');
+        const errorMessageElement = el.nextElementSibling;
+        if (errorMessageElement && errorMessageElement.classList.contains('error-message')) {
+            errorMessageElement.remove();
         }
     });
+
+    // Basic check for HTML5 required fields
+    const requiredFields = form.querySelectorAll('[required]');
+    requiredFields.forEach(field => {
+        if (!isRequired(field.value)) {
+            displayError(field, 'This field is required');
+            isValid = false;
+        }
+    });
+
+    // Delegate to the new utility for custom rules
+    if (!validateFormUtility(form, customRules)) {
+        isValid = false;
+    }
     
     return isValid;
-}
+};
+
+/**
+ * Helper function to display an error message (moved from original validateForm)
+ * @param {HTMLElement} inputElement - The input field.
+ * @param {string} message - The error message to display.
+ */
+const displayError = (inputElement, message) => {
+    inputElement.classList.add('error');
+    let errorMessageElement = inputElement.nextElementSibling;
+    if (!errorMessageElement || !errorMessageElement.classList.contains('error-message')) {
+        errorMessageElement = document.createElement('div');
+        errorMessageElement.classList.add('error-message');
+        inputElement.parentNode.insertBefore(errorMessageElement, inputElement.nextSibling);
+    }
+    errorMessageElement.textContent = message;
+};
+

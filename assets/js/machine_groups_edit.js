@@ -1,5 +1,20 @@
+// assets/js/machine_groups_edit.js
+
+import { isRequired } from './validation_utils.js';
+
 function validateGroupForm(form) {
     const checkboxes = form.querySelectorAll('input[name="machine_ids[]"]:checked');
+    
+    const rules = {
+        name: [
+            { validator: isRequired, message: 'Group name is required.' }
+        ]
+    };
+
+    if (!window.validateForm(form, rules)) {
+        return false;
+    }
+
     if (checkboxes.length < 2) {
         alert('Please select at least 2 machines for the group.');
         return false;
@@ -42,3 +57,4 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+

@@ -1,12 +1,25 @@
+// assets/js/daily_tracking_create.js
+
+import { isRequired, isNumber } from './validation_utils.js';
+
 function validateTrackingForm(form) {
-    const trackingDate = form.tracking_date.value;
-    
-    if (!trackingDate) {
-        alert('Please select a tracking date.');
+    const rules = {
+        tracking_date: [
+            { validator: isRequired, message: 'Please select a tracking date.' }
+        ],
+        slots_drop: [{ validator: (value) => value === '' || isNumber(value), message: 'Slots Drop must be a number.' }],
+        slots_out: [{ validator: (value) => value === '' || isNumber(value), message: 'Slots Out must be a number.' }],
+        gambee_drop: [{ validator: (value) => value === '' || isNumber(value), message: 'Gambee Drop must be a number.' }],
+        gambee_out: [{ validator: (value) => value === '' || isNumber(value), message: 'Gambee Out must be a number.' }],
+        coins_drop: [{ validator: (value) => value === '' || isNumber(value), message: 'Coins Drop must be a number.' }],
+        coins_out: [{ validator: (value) => value === '' || isNumber(value), message: 'Coins Out must be a number.' }]
+    };
+
+    if (!window.validateForm(form, rules)) {
         return false;
     }
     
-    // Check if at least one field has data
+    // Check if at least one field has data (custom logic)
     const fields = ['slots_drop', 'slots_out', 'gambee_drop', 'gambee_out', 'coins_drop', 'coins_out'];
     let hasData = false;
     
@@ -41,3 +54,4 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 });
+
