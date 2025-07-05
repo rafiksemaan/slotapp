@@ -31,6 +31,7 @@ if ($date_range_type === 'range') {
 $query = "
     SELECT 
         m.machine_number,
+        m.credit_value, -- Select credit_value
         mt.name AS machine_type_name,
         me.*,
         u.username AS created_by_username
@@ -56,10 +57,17 @@ if ($filter_meter_type !== 'all') {
 // Add sorting
 $sort_map = [
     'operation_date' => 'me.operation_date',
-    'machine_number' => 'm.machine_number',
+    'machine_number' => 'CAST(m.machine_number AS UNSIGNED)', // Sort numerically
     'meter_type' => 'me.meter_type',
     'total_in' => 'me.total_in',
     'total_out' => 'me.total_out',
+    'bills_in' => 'me.bills_in',
+    'coins_in' => 'me.coins_in',
+    'coins_out' => 'me.coins_out',
+    'coins_drop' => 'me.coins_drop',
+    'bets' => 'me.bets',
+    'handpay' => 'me.handpay',
+    'jp' => 'me.jp',
     'created_by_username' => 'u.username'
 ];
 
@@ -76,7 +84,7 @@ try {
         SELECT m.id, m.machine_number, b.name as brand_name 
         FROM machines m 
         LEFT JOIN brands b ON m.brand_id = b.id 
-        ORDER BY m.machine_number
+        ORDER BY CAST(m.machine_number AS UNSIGNED) ASC
     ");
     $machines = $machines_stmt->fetchAll(PDO::FETCH_ASSOC);
     
@@ -240,7 +248,7 @@ $has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !emp
                             <th class="px-4 py-2 text-right">Handpay</th>
                             <th class="px-4 py-2 text-right">JP</th>
                             <th class="px-4 py-2 text-left">Notes</th>
-                            <th class="px-4 py-2 text-left sortable-header" data-sort-column="created_by_username" data-sort-order="<?php echo $sort_column == 'created_by_username' ? $toggle_order : 'ASC'; ?>">
+                            <th class="px-4 py-2 text-left sortable-header" data-sort-column="created_by_username" data-sort-order="<?php echo $sort_column == 'created_by_username' ? '▲' : '▼'; ?>">
                                 Created By <?php if ($sort_column == 'created_by_username') echo $sort_order == 'ASC' ? '▲' : '▼'; ?>
                             </th>
                             <th class="px-4 py-2 text-right">Actions</th>
@@ -257,15 +265,15 @@ $has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !emp
                                     <td class="px-4 py-2"><?php echo htmlspecialchars(format_date($meter['operation_date'])); ?></td>
                                     <td class="px-4 py-2"><?php echo htmlspecialchars($meter['machine_number']); ?></td>
                                     <td class="px-4 py-2"><?php echo htmlspecialchars(ucfirst($meter['meter_type'])); ?></td>
-                                    <td class="px-4 py-2 text-right"><?php echo format_currency($meter['total_in'] ?? 0); ?></td>
-                                    <td class="px-4 py-2 text-right"><?php echo format_currency($meter['total_out'] ?? 0); ?></td>
-                                    <td class="px-4 py-2 text-right"><?php echo format_currency($meter['bills_in'] ?? 0); ?></td>
-                                    <td class="px-4 py-2 text-right"><?php echo format_currency($meter['coins_in'] ?? 0); ?></td>
-                                    <td class="px-4 py-2 text-right"><?php echo format_currency($meter['coins_out'] ?? 0); ?></td>
-                                    <td class="px-4 py-2 text-right"><?php echo format_currency($meter['coins_drop'] ?? 0); ?></td>
-                                    <td class="px-4 py-2 text-right"><?php echo format_currency($meter['bets'] ?? 0); ?></td>
-                                    <td class="px-4 py-2 text-right"><?php echo format_currency($meter['handpay'] ?? 0); ?></td>
-                                    <td class="px-4 py-2 text-right"><?php echo format_currency($meter['jp'] ?? 0); ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo format_currency(($meter['total_in'] ?? 0) * $meter['credit_value']); ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo format_currency(($meter['total_out'] ?? 0) * $meter['credit_value']); ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo format_currency(($meter['bills_in'] ?? 0) * $meter['credit_value']); ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo format_currency(($meter['coins_in'] ?? 0) * $meter['credit_value']); ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo format_currency(($meter['coins_out'] ?? 0) * $meter['credit_value']); ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo format_currency(($meter['coins_drop'] ?? 0) * $meter['credit_value']); ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo format_currency(($meter['bets'] ?? 0) * $meter['credit_value']); ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo format_currency(($meter['handpay'] ?? 0) * $meter['credit_value']); ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo format_currency(($meter['jp'] ?? 0) * $meter['credit_value']); ?></td>
                                     <td class="px-4 py-2 text-sm"><?php echo htmlspecialchars($meter['notes'] ?? ''); ?></td>
                                     <td class="px-4 py-2"><?php echo htmlspecialchars($meter['created_by_username'] ?? 'N/A'); ?></td>
                                     <td class="px-4 py-2 text-right">

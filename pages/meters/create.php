@@ -48,8 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if (empty($meter['machine_id']) || empty($meter['operation_date']) || !$machine_details) {
         set_flash_message('danger', "Machine and operation date are required.");
-        header("Location: index.php?page=meters&action=create");
-        exit;
+        // No redirect here, allow form to re-render with error
     } else {
         $system_comp = $machine_details['system_comp'];
         $machine_type_name = $machine_details['machine_type'];
@@ -120,13 +119,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             log_action('create_meter', "Created meter entry for machine ID: {$meter['machine_id']}, Type: {$meter_type}");
             
             set_flash_message('success', "Meter entry created successfully!");
-            header("Location: index.php?page=meters");
-            exit;
+            
+            // Clear machine_id to deselect the machine in the dropdown
+            $meter['machine_id'] = '';
+            // The page will naturally re-render with the updated $meter array and flash message.
             
         } catch (PDOException $e) {
             set_flash_message('danger', "Database error: " . $e->getMessage());
-            header("Location: index.php?page=meters&action=create");
-            exit;
+            // No redirect here, allow form to re-render with error
         }
     }
 }

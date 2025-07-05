@@ -95,10 +95,10 @@ ob_start();
                 <span class="menu-icon"><img src="<?= icon('calendar') ?>" alt="weekly_tracking" /></span>
                 <span class="menu-text">Weekly Tracking</span>
             </a></li>
-            <!--<li><a href="index.php?page=meters" class="<?= $page == 'meters' ? 'active' : '' ?>">
+            <li><a href="index.php?page=meters" class="<?= $page == 'meters' ? 'active' : '' ?>">
                 <span class="menu-icon"><img src="<?= icon('meters') ?>" alt="meters" /></span>
                 <span class="menu-text">Meters</span>
-            </a></li>-->
+            </a></li>
             <li><a href="index.php?page=general_report" class="<?= $page == 'general_report' ? 'active' : '' ?>">
                 <span class="menu-icon"><img src="<?= icon('report') ?>" alt="general_report" /></span>
                 <span class="menu-text">General Report</span>
