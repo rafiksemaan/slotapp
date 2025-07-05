@@ -3,17 +3,6 @@
  * Guest Tracking Excel Upload Page
  */
 
-// Capture messages from URL
-$display_message = '';
-$display_error = '';
-
-if (isset($_GET['message'])) {
-    $display_message = htmlspecialchars($_GET['message']);
-}
-if (isset($_GET['error'])) {
-    $display_error = htmlspecialchars($_GET['error']);
-}
-
 $message = '';
 $error = '';
 $upload_stats = null;
@@ -23,15 +12,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['excel_file'])) {
     
     // Validate file upload
     if ($_FILES['excel_file']['error'] !== UPLOAD_ERR_OK) {
-        $error = "File upload failed. Please try again.";
+        set_flash_message('danger', "File upload failed. Please try again.");
     } elseif ($_FILES['excel_file']['size'] > 10 * 1024 * 1024) { // 10MB limit
-        $error = "File size too large. Maximum size is 10MB.";
+        set_flash_message('danger', "File size too large. Maximum size is 10MB.");
     } else {
         $file_info = pathinfo($_FILES['excel_file']['name']);
         $allowed_extensions = ['xlsx', 'xls', 'csv'];
         
         if (!in_array(strtolower($file_info['extension']), $allowed_extensions)) {
-            $error = "Invalid file type. Please upload an Excel file (.xlsx, .xls) or CSV file.";
+            set_flash_message('danger', "Invalid file type. Please upload an Excel file (.xlsx, .xls) or CSV file.");
         } else {
             try {
                 // Check if upload for this date already exists
@@ -39,28 +28,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['excel_file'])) {
                 $check_stmt->execute([$upload_date]);
                 
                 if ($check_stmt->fetchColumn() > 0) {
-                    $error = "Data for this date already exists. Please delete the existing upload first or choose a different date.";
+                    set_flash_message('danger', "Data for this date already exists. Please delete the existing upload first or choose a different date.");
                 } else {
                     // Process the uploaded file
                     $upload_result = processGuestExcelFile($_FILES['excel_file'], $upload_date, $conn);
                     
                     if ($upload_result['success']) {
                         $upload_stats = $upload_result['stats'];
-                        $message = "Excel file uploaded and processed successfully!";
+                        set_flash_message('success', "Excel file uploaded and processed successfully!");
                         
                         // Log action
                         log_action('upload_guest_data', "Uploaded guest data for date: $upload_date, Records: {$upload_stats['total_records']}");
-                        header("Location: index.php?page=guest_tracking&message=" . urlencode("Excel file uploaded and processed successfully!"));
-                        exit;
                     } else {
-                        $error = $upload_result['error'];
+                        set_flash_message('danger', $upload_result['error']);
                     }
                 }
             } catch (Exception $e) {
-                $error = "Error processing file: " . $e->getMessage();
+                set_flash_message('danger', "Error processing file: " . $e->getMessage());
             }
         }
     }
+    header("Location: index.php?page=guest_tracking&action=upload");
+    exit;
 }
 
 /**
@@ -191,42 +180,30 @@ function readCSVFile($filename) {
             <h3>Upload Guest Tracking Data</h3>
         </div>
         <div class="card-body">
-            <?php if (!empty($error)): ?>
-                <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
-            <?php endif; ?>
-            <?php if (!empty($display_error)): ?>
-                <div class="alert alert-danger"><?php echo htmlspecialchars($display_error); ?></div>
-            <?php endif; ?>
-            
-            <?php if (!empty($message)): ?>
+            <?php if ($upload_stats): ?>
                 <div class="alert alert-success">
-                    <?php echo htmlspecialchars($message); ?>
+                    <?php echo htmlspecialchars("Excel file uploaded and processed successfully!"); ?>
                     
-                    <?php if ($upload_stats): ?>
-                        <div class="upload-stats mt-3">
-                            <h5>Upload Statistics:</h5>
-                            <ul>
-                                <li><strong>Records Processed:</strong> <?php echo $upload_stats['total_records']; ?></li>
-                                <li><strong>Upload Date:</strong> <?php echo format_date($upload_stats['upload_date']); ?></li>
-                                <li><strong>Filename:</strong> <?php echo htmlspecialchars($upload_stats['filename']); ?></li>
-                            </ul>
-                            
-                            <?php if (!empty($upload_stats['errors'])): ?>
-                                <div class="upload-errors mt-2">
-                                    <h6>Errors encountered:</h6>
-                                    <ul>
-                                        <?php foreach ($upload_stats['errors'] as $error_item): ?>
-                                            <li><?php echo htmlspecialchars($error_item); ?></li>
-                                        <?php endforeach; ?>
-                                    </ul>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                    <?php endif; ?>
+                    <div class="upload-stats mt-3">
+                        <h5>Upload Statistics:</h5>
+                        <ul>
+                            <li><strong>Records Processed:</strong> <?php echo $upload_stats['total_records']; ?></li>
+                            <li><strong>Upload Date:</strong> <?php echo format_date($upload_stats['upload_date']); ?></li>
+                            <li><strong>Filename:</strong> <?php echo htmlspecialchars($upload_stats['filename']); ?></li>
+                        </ul>
+                        
+                        <?php if (!empty($upload_stats['errors'])): ?>
+                            <div class="upload-errors mt-2">
+                                <h6>Errors encountered:</h6>
+                                <ul>
+                                    <?php foreach ($upload_stats['errors'] as $error_item): ?>
+                                        <li><?php echo htmlspecialchars($error_item); ?></li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
+                        <?php endif; ?>
+                    </div>
                 </div>
-            <?php endif; ?>
-            <?php if (!empty($display_message)): ?>
-                <div class="alert alert-success"><?php echo htmlspecialchars($display_message); ?></div>
             <?php endif; ?>
             
             <!-- File Format Instructions -->
@@ -291,10 +268,4 @@ G003,Bob Johnson,800.50,75.00,1</pre>
         </div>
     </div>
 </div>
-<div id="url-cleaner-data" 
-     data-display-message="<?= !empty($display_message) ? 'true' : 'false' ?>" 
-     data-display-error="<?= !empty($display_error) ? 'true' : 'false' ?>">
-</div>
-<script type="module" src="assets/js/url_cleaner.js"></script>
 <script type="module" src="assets/js/guest_tracking_upload.js"></script>
-
