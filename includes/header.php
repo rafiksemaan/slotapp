@@ -179,3 +179,12 @@ ob_start();
                 <div class="page-content">
 				
 		<script src="assets/js/sidebar.js"></script>
+        <?php
+        // Display flash messages
+        $flash_messages = get_flash_messages();
+        if (!empty($flash_messages)) {
+            foreach ($flash_messages as $msg) {
+                echo '<div class="alert alert-' . htmlspecialchars($msg['type']) . '">' . htmlspecialchars($msg['message']) . '</div>';
+            }
+        }
+        ?>

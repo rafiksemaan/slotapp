@@ -5,13 +5,15 @@
 
 // Ensure user has edit permissions
 if (!$can_edit) {
-    header("Location: index.php?page=transactions&error=Access denied");
+    set_flash_message('danger', "Access denied");
+    header("Location: index.php?page=transactions");
     exit;
 }
 
 // Check if ID was provided and is valid
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header("Location: index.php?page=transactions&error=Invalid transaction ID");
+    set_flash_message('danger', "Invalid transaction ID");
+    header("Location: index.php?page=transactions");
     exit;
 }
 
@@ -23,7 +25,8 @@ try {
     $stmt->execute([$transaction_id]);
     
     if ($stmt->rowCount() === 0) {
-        header("Location: index.php?page=transactions&error=Transaction not found");
+        set_flash_message('danger', "Transaction not found");
+        header("Location: index.php?page=transactions");
         exit;
     }
 
@@ -35,11 +38,13 @@ try {
     log_action('delete_transaction', "Deleted transaction ID: {$transaction_id}");
 
     // Redirect with success message
-    header("Location: index.php?page=transactions&message=Transaction deleted successfully");
+    set_flash_message('success', "Transaction deleted successfully");
+    header("Location: index.php?page=transactions");
     exit;
 
 } catch (PDOException $e) {
     // Handle database error
-    header("Location: index.php?page=transactions&error=Database error: " . $e->getMessage());
+    set_flash_message('danger', "Database error: " . $e->getMessage());
+    header("Location: index.php?page=transactions");
     exit;
 }

@@ -317,4 +317,28 @@ function get_monday_sunday_week_info($date_string) {
     ];
 }
 
+/**
+ * Sets a flash message to be displayed on the next page load.
+ *
+ * @param string $type The type of message (e.g., 'success', 'error', 'info', 'warning').
+ * @param string $message The message content.
+ */
+function set_flash_message($type, $message) {
+    if (!isset($_SESSION['flash_messages'])) {
+        $_SESSION['flash_messages'] = [];
+    }
+    $_SESSION['flash_messages'][] = ['type' => $type, 'message' => $message];
+}
+
+/**
+ * Retrieves and clears all flash messages.
+ *
+ * @return array An array of flash messages.
+ */
+function get_flash_messages() {
+    $messages = $_SESSION['flash_messages'] ?? [];
+    $_SESSION['flash_messages'] = []; // Clear messages after retrieval
+    return $messages;
+}
+
 ?>

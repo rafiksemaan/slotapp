@@ -8,17 +8,6 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Capture messages from URL
-$display_message = '';
-$display_error = '';
-
-if (isset($_GET['message'])) {
-    $display_message = htmlspecialchars($_GET['message']);
-}
-if (isset($_GET['error'])) {
-    $display_error = htmlspecialchars($_GET['error']);
-}
-
 // Get current operation day
 try {
     $op_stmt = $conn->prepare("SELECT operation_date FROM operation_day ORDER BY id DESC LIMIT 1");
@@ -39,9 +28,6 @@ $transaction = [
     'notes' => ''
 ];
 
-$message = ''; // This variable will no longer be used for display, but might be for internal logic
-$error = ''; // This variable will no longer be used for display, but might be for internal logic
-
 // Process form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Sanitize and validate input
@@ -55,12 +41,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Validate required fields
     if (empty($transaction['machine_id']) || empty($transaction['transaction_type_id']) || 
         empty($transaction['amount']) || empty($transaction['timestamp']) || empty($transaction['operation_date'])) {
-        header("Location: index.php?page=transactions&action=create&error=" . urlencode("Please fill out all required fields."));
+        set_flash_message('danger', "Please fill out all required fields.");
+        header("Location: index.php?page=transactions&action=create");
         exit;
     }
     // Validate amount is positive
     else if (!is_numeric($transaction['amount']) || $transaction['amount'] <= 0) {
-        header("Location: index.php?page=transactions&action=create&error=" . urlencode("Amount must be a positive number."));
+        set_flash_message('danger', "Amount must be a positive number.");
+        header("Location: index.php?page=transactions&action=create");
         exit;
     }
     else {
@@ -95,8 +83,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             log_action('create_transaction', "Created {$type_name} transaction for machine {$machine_number}: " . format_currency($transaction['amount']) . " (Operation Date: {$transaction['operation_date']})");
             
             // Set success message
-            $message = "Transaction created successfully for operation date: " . format_date($transaction['operation_date']);
-            header("Location: index.php?page=transactions&message=" . urlencode("Transaction created successfully for operation date: " . format_date($transaction['operation_date'])));
+            set_flash_message('success', "Transaction created successfully for operation date: " . format_date($transaction['operation_date']));
+            header("Location: index.php?page=transactions");
             exit;
             
             // Clear only machine and amount for re-entry, keep operation date
@@ -104,7 +92,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $transaction['amount'] = '';
             
         } catch (PDOException $e) {
-            header("Location: index.php?page=transactions&action=create&error=" . urlencode("Database error: " . $e->getMessage()));
+            set_flash_message('danger', "Database error: " . $e->getMessage());
+            header("Location: index.php?page=transactions&action=create");
             exit;
         }
     }
@@ -121,7 +110,7 @@ try {
     $machines = $stmt->fetchAll();
 } catch (PDOException $e) {
     $machines = [];
-    $error = "Database error: " . $e->getMessage();
+    // No need to set $error here, as flash messages handle display
 }
 
 // Get transaction types for dropdown
@@ -130,7 +119,7 @@ try {
     $transaction_types = $stmt->fetchAll();
 } catch (PDOException $e) {
     $transaction_types = [];
-    $error = "Database error: " . $e->getMessage();
+    // No need to set $error here, as flash messages handle display
 }
 ?>
 
@@ -140,13 +129,6 @@ try {
             <h3>Add New Transaction</h3>
         </div>
         <div class="card-body">
-            <?php if (!empty($display_error)): ?>
-                <div class="alert alert-danger"><?php echo $display_error; ?></div>
-            <?php endif; ?>
-            
-            <?php if (!empty($display_message)): ?>
-                <div class="alert alert-success"><?php echo $display_message; ?></div>
-            <?php endif; ?>
             
             <!-- Operation Day Notice -->
             <div class="alert alert-info">
@@ -262,9 +244,4 @@ try {
         </div>
     </div>
 </div>
-<div id="url-cleaner-data" 
-     data-display-message="<?= !empty($display_message) ? 'true' : 'false' ?>" 
-     data-display-error="<?= !empty($display_error) ? 'true' : 'false' ?>">
-</div>
-<script type="module" src="assets/js/url_cleaner.js"></script>
 <script type="module" src="assets/js/transactions_create.js"></script>

@@ -3,20 +3,6 @@
  * Edit User Profile
  */
 
-// Capture messages from URL
-$display_message = '';
-$display_error = '';
-
-if (isset($_GET['message'])) {
-    $display_message = htmlspecialchars($_GET['message']);
-}
-if (isset($_GET['error'])) {
-    $display_error = htmlspecialchars($_GET['error']);
-}
-
-$error = ''; // This variable will no longer be used for display, but might be for internal logic
-$success = ''; // This variable will no longer be used for display, but might be for internal logic
-
 // Get current user data
 try {
     $stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
@@ -28,7 +14,8 @@ try {
         exit;
     }
 } catch (PDOException $e) {
-    $error = "Database error: " . $e->getMessage();
+    set_flash_message('danger', "Database error: " . $e->getMessage());
+    // No redirect here, as we want to display the error on the current page
 }
 
 // Handle form submission
@@ -41,23 +28,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Validate required fields
     if (empty($name) || empty($email)) {
-        $error = "Name and email are required.";
+        set_flash_message('danger', "Name and email are required.");
     }
     // Validate email format
     elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $error = "Please enter a valid email address.";
+        set_flash_message('danger', "Please enter a valid email address.");
     }
     // If changing password, validate current password
     elseif (!empty($new_password) && !password_verify($current_password, $user['password'])) {
-        $error = "Current password is incorrect.";
+        set_flash_message('danger', "Current password is incorrect.");
     }
     // Validate new password confirmation
     elseif (!empty($new_password) && $new_password !== $confirm_password) {
-        $error = "New password and confirmation do not match.";
+        set_flash_message('danger', "New password and confirmation do not match.");
     }
     // Validate password strength
     elseif (!empty($new_password) && strlen($new_password) < 6) {
-        $error = "New password must be at least 6 characters long.";
+        set_flash_message('danger', "New password must be at least 6 characters long.");
     }
     else {
         try {
@@ -66,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([$email, $_SESSION['user_id']]);
             
             if ($stmt->rowCount() > 0) {
-                $error = "This email address is already in use by another user.";
+                set_flash_message('danger', "This email address is already in use by another user.");
             } else {
                 // Update user profile
                 if (!empty($new_password)) {
@@ -102,8 +89,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Log action
                 log_action('update_profile', "Updated profile information");
 
-                $success = "Profile updated successfully!";
-                header("Location: index.php?page=profile&message=" . urlencode("Profile updated successfully!"));
+                set_flash_message('success', "Profile updated successfully!");
+                header("Location: index.php?page=profile");
                 exit;
                 
                 // Refresh user data
@@ -112,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $user = $stmt->fetch(PDO::FETCH_ASSOC);
             }
         } catch (PDOException $e) {
-            $error = "Database error: " . $e->getMessage();
+            set_flash_message('danger', "Database error: " . $e->getMessage());
         }
     }
 }
@@ -124,17 +111,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <h3>Edit Profile</h3>
         </div>
         <div class="card-body">
-            <?php if (!empty($error)): ?>
-                <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
-            <?php endif; ?>
-            <?php if (!empty($display_error)): ?>
-                <div class="alert alert-danger"><?php echo htmlspecialchars($display_error); ?></div>
-            <?php endif; ?>
-
-            <?php if (!empty($display_message)): ?>
-                <div class="alert alert-success"><?php echo htmlspecialchars($display_message); ?></div>
-            <?php endif; ?>
-
             <form method="POST" class="profile-form" id="profileEditForm">
                 <!-- Basic Information -->
                 <div class="form-section">
@@ -209,9 +185,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 </div>
-<div id="url-cleaner-data" 
-     data-display-message="<?= !empty($display_message) ? 'true' : 'false' ?>" 
-     data-display-error="<?= !empty($display_error) ? 'true' : 'false' ?>">
-</div>
-<script type="module" src="assets/js/url_cleaner.js"></script>
 <script type="module" src="assets/js/profile_edit.js"></script>

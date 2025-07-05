@@ -3,32 +3,21 @@
  * Edit Transaction
  */
 
-// Capture messages from URL
-$display_message = '';
-$display_error = '';
-
-if (isset($_GET['message'])) {
-    $display_message = htmlspecialchars($_GET['message']);
-}
-if (isset($_GET['error'])) {
-    $display_error = htmlspecialchars($_GET['error']);
-}
-
 // Ensure user has edit permissions
 if (!$can_edit) {
-    header("Location: index.php?page=transactions&error=" . urlencode("Access denied"));
+    set_flash_message('danger', "Access denied");
+    header("Location: index.php?page=transactions");
     exit;
 }
 
 // Check if an ID was provided
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+    set_flash_message('danger', "Invalid transaction ID");
     header("Location: index.php?page=transactions");
     exit;
 }
 
 $transaction_id = $_GET['id'];
-$error = ''; // This variable will no longer be used for display, but might be for internal logic
-$success = false; // This variable will no longer be used for display, but might be for internal logic
 
 // Get current transaction data
 try {
@@ -50,11 +39,13 @@ try {
     $transaction = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$transaction) {
-        header("Location: index.php?page=transactions&error=" . urlencode("Transaction not found"));
+        set_flash_message('danger', "Transaction not found");
+        header("Location: index.php?page=transactions");
         exit;
     }
 } catch (PDOException $e) {
-    header("Location: index.php?page=transactions&error=" . urlencode("Database error"));
+    set_flash_message('danger', "Database error: " . $e->getMessage());
+    header("Location: index.php?page=transactions");
     exit;
 }
 
@@ -63,7 +54,7 @@ try {
     $types_stmt = $conn->query("SELECT id, name, category FROM transaction_types ORDER BY category, name");
     $transaction_types = $types_stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    $error = "Database error: " . $e->getMessage();
+    set_flash_message('danger', "Database error: " . $e->getMessage());
     $transaction_types = [];
 }
 
@@ -77,7 +68,7 @@ try {
     ");
     $machines = $machines_stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    $error = "Database error: " . $e->getMessage();
+    set_flash_message('danger', "Database error: " . $e->getMessage());
     $machines = [];
 }
 
@@ -105,9 +96,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Validate required fields
     if (empty($machine_id) || empty($transaction_type_id) || empty($amount) || empty($timestamp)) {
-        $error = "Please fill out all required fields.";
+        set_flash_message('danger', "Please fill out all required fields.");
     } elseif ($is_admin && empty($operation_date)) {
-        $error = "Operation date is required.";
+        set_flash_message('danger', "Operation date is required.");
     } else {
         try {
             // Prepare update query based on user role
@@ -167,18 +158,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $log_details .= " (Operation date changed from {$transaction['operation_date']} to {$operation_date})";
                 }
                 log_action('update_transaction', $log_details);
-                $success = true;
+                set_flash_message('success', "Transaction updated successfully");
 
                 // Redirect after successful update
                 if (!headers_sent()) { // Ensure headers haven't been sent already
-                    header("Location: index.php?page=transactions&message=" . urlencode("Transaction updated successfully") . "&{$redirect_query_string}");
+                    header("Location: index.php?page=transactions&{$redirect_query_string}");
                     exit;
                 }
             } else {
-                $error = "Failed to update transaction.";
+                set_flash_message('danger', "Failed to update transaction.");
             }
         } catch (PDOException $e) {
-            $error = "Database error: " . $e->getMessage();
+            set_flash_message('danger', "Database error: " . $e->getMessage());
         }
     }
 }
@@ -190,12 +181,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <h3>Edit Transaction</h3>
         </div>
         <div class="card-body">
-            <?php if (!empty($display_message)): ?>
-                <div class="alert alert-success"><?php echo htmlspecialchars($display_message); ?></div>
-            <?php elseif (!empty($display_error)): ?>
-                <div class="alert alert-danger"><?php echo htmlspecialchars($display_error); ?></div>
-            <?php endif; ?>
-
             <?php if ($is_admin): ?>
                 <div class="alert alert-info">
                     <strong>👑 Admin Privileges:</strong> You can modify both the timestamp and operation date for this transaction.
@@ -319,9 +304,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 </div>
-<div id="url-cleaner-data" 
-     data-display-message="<?= !empty($display_message) ? 'true' : 'false' ?>" 
-     data-display-error="<?= !empty($display_error) ? 'true' : 'false' ?>">
-</div>
-<script type="module" src="assets/js/url_cleaner.js"></script>
 <script type="module" src="assets/js/transactions_edit.js"></script>
