@@ -3,9 +3,20 @@
  * Edit Transaction
  */
 
+// Capture messages from URL
+$display_message = '';
+$display_error = '';
+
+if (isset($_GET['message'])) {
+    $display_message = htmlspecialchars($_GET['message']);
+}
+if (isset($_GET['error'])) {
+    $display_error = htmlspecialchars($_GET['error']);
+}
+
 // Ensure user has edit permissions
 if (!$can_edit) {
-    header("Location: index.php?page=transactions&error=Access denied");
+    header("Location: index.php?page=transactions&error=" . urlencode("Access denied"));
     exit;
 }
 
@@ -39,11 +50,11 @@ try {
     $transaction = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$transaction) {
-        header("Location: index.php?page=transactions&error=Transaction not found");
+        header("Location: index.php?page=transactions&error=" . urlencode("Transaction not found"));
         exit;
     }
 } catch (PDOException $e) {
-    header("Location: index.php?page=transactions&error=Database error");
+    header("Location: index.php?page=transactions&error=" . urlencode("Database error"));
     exit;
 }
 
@@ -160,7 +171,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 // Redirect after successful update
                 if (!headers_sent()) { // Ensure headers haven't been sent already
-                    header("Location: index.php?page=transactions&message=Transaction updated successfully&{$redirect_query_string}");
+                    header("Location: index.php?page=transactions&message=" . urlencode("Transaction updated successfully") . "&{$redirect_query_string}");
                     exit;
                 }
             } else {
@@ -179,10 +190,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <h3>Edit Transaction</h3>
         </div>
         <div class="card-body">
-            <?php if ($success): ?>
-                <div class="alert alert-success">Transaction updated successfully!</div>
-            <?php elseif ($error): ?>
-                <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
+            <?php if (!empty($display_message)): ?>
+                <div class="alert alert-success"><?php echo htmlspecialchars($display_message); ?></div>
+            <?php elseif (!empty($display_error)): ?>
+                <div class="alert alert-danger"><?php echo htmlspecialchars($display_error); ?></div>
             <?php endif; ?>
 
             <?php if ($is_admin): ?>
@@ -310,3 +321,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <script src="assets/js/transactions_edit.js"></script>
+<?php
+// JavaScript to clear URL parameters
+if (!empty($display_message) || !empty($display_error)) {
+    echo "<script type='text/javascript'>
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.search.replace(/&?(message|error)=[^&]*/g, ''));
+    </script>";
+}
+?>

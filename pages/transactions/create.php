@@ -8,6 +8,17 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Capture messages from URL
+$display_message = '';
+$display_error = '';
+
+if (isset($_GET['message'])) {
+    $display_message = htmlspecialchars($_GET['message']);
+}
+if (isset($_GET['error'])) {
+    $display_error = htmlspecialchars($_GET['error']);
+}
+
 // Get current operation day
 try {
     $op_stmt = $conn->prepare("SELECT operation_date FROM operation_day ORDER BY id DESC LIMIT 1");
@@ -44,11 +55,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Validate required fields
     if (empty($transaction['machine_id']) || empty($transaction['transaction_type_id']) || 
         empty($transaction['amount']) || empty($transaction['timestamp']) || empty($transaction['operation_date'])) {
-        $error = "Please fill out all required fields.";
+        header("Location: index.php?page=transactions&action=create&error=" . urlencode("Please fill out all required fields."));
+        exit;
     }
     // Validate amount is positive
     else if (!is_numeric($transaction['amount']) || $transaction['amount'] <= 0) {
-        $error = "Amount must be a positive number.";
+        header("Location: index.php?page=transactions&action=create&error=" . urlencode("Amount must be a positive number."));
+        exit;
     }
     else {
         try {
@@ -83,13 +96,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             
             // Set success message
             $message = "Transaction created successfully for operation date: " . format_date($transaction['operation_date']);
+            header("Location: index.php?page=transactions&message=" . urlencode("Transaction created successfully for operation date: " . format_date($transaction['operation_date'])));
+            exit;
             
             // Clear only machine and amount for re-entry, keep operation date
             $transaction['machine_id'] = '';
             $transaction['amount'] = '';
             
         } catch (PDOException $e) {
-            $error = "Database error: " . $e->getMessage();
+            header("Location: index.php?page=transactions&action=create&error=" . urlencode("Database error: " . $e->getMessage()));
+            exit;
         }
     }
 }
@@ -127,9 +143,15 @@ try {
             <?php if (!empty($error)): ?>
                 <div class="alert alert-danger"><?php echo $error; ?></div>
             <?php endif; ?>
+            <?php if (!empty($display_error)): ?>
+                <div class="alert alert-danger"><?php echo $display_error; ?></div>
+            <?php endif; ?>
             
             <?php if (!empty($message)): ?>
                 <div class="alert alert-success"><?php echo $message; ?></div>
+            <?php endif; ?>
+            <?php if (!empty($display_message)): ?>
+                <div class="alert alert-success"><?php echo $display_message; ?></div>
             <?php endif; ?>
             
             <!-- Operation Day Notice -->
@@ -248,3 +270,11 @@ try {
 </div>
 
 <script src="assets/js/transactions_create.js"></script>
+<?php
+// JavaScript to clear URL parameters
+if (!empty($display_message) || !empty($display_error)) {
+    echo "<script type='text/javascript'>
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.search.replace(/&?(message|error)=[^&]*/g, ''));
+    </script>";
+}
+?>

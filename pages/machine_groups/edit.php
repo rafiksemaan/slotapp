@@ -3,6 +3,17 @@
  * Edit Machine Group
  */
 
+// Capture messages from URL
+$display_message = '';
+$display_error = '';
+
+if (isset($_GET['message'])) {
+    $display_message = htmlspecialchars($_GET['message']);
+}
+if (isset($_GET['error'])) {
+    $display_error = htmlspecialchars($_GET['error']);
+}
+
 // Check if an ID was provided
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     header("Location: index.php?page=machine_groups");
@@ -20,7 +31,7 @@ try {
     $group = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$group) {
-        header("Location: index.php?page=machine_groups&error=Group not found");
+        header("Location: index.php?page=machine_groups&error=" . urlencode("Group not found"));
         exit;
     }
     
@@ -30,7 +41,7 @@ try {
     $current_machine_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
     
 } catch (PDOException $e) {
-    header("Location: index.php?page=machine_groups&error=Database error");
+    header("Location: index.php?page=machine_groups&error=" . urlencode("Database error"));
     exit;
 }
 
@@ -78,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $conn->commit();
 
                 log_action('update_machine_group', "Updated machine group: {$name} with " . count($machine_ids) . " machines");
-                header("Location: index.php?page=machine_groups&message=Machine group updated successfully");
+                header("Location: index.php?page=machine_groups&message=" . urlencode("Machine group updated successfully"));
                 exit;
             }
         } catch (PDOException $e) {
@@ -118,6 +129,13 @@ try {
         <div class="card-body">
             <?php if (!empty($error)): ?>
                 <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
+            <?php endif; ?>
+            <?php if (!empty($display_error)): ?>
+                <div class="alert alert-danger"><?php echo htmlspecialchars($display_error); ?></div>
+            <?php endif; ?>
+
+            <?php if (!empty($display_message)): ?>
+                <div class="alert alert-success"><?php echo htmlspecialchars($display_message); ?></div>
             <?php endif; ?>
 
             <form method="POST" class="group-form" id="machineGroupEditForm">
@@ -178,3 +196,11 @@ try {
 </div>
 
 <script src="assets/js/machine_groups_edit.js"></script>
+<?php
+// JavaScript to clear URL parameters
+if (!empty($display_message) || !empty($display_error)) {
+    echo "<script type='text/javascript'>
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.search.replace(/&?(message|error)=[^&]*/g, ''));
+    </script>";
+}
+?>

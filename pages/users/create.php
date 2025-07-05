@@ -3,6 +3,17 @@
  * Create New User
  */
 
+// Capture messages from URL
+$display_message = '';
+$display_error = '';
+
+if (isset($_GET['message'])) {
+    $display_message = htmlspecialchars($_GET['message']);
+}
+if (isset($_GET['error'])) {
+    $display_error = htmlspecialchars($_GET['error']);
+}
+
 $can_edit = true; // Replace with real permission check if available
 
 $message = '';
@@ -23,7 +34,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user['status'] = trim($_POST['status'] ?? '');
 
     if (empty($user['username']) || empty($user['name']) || empty($user['email'])) {
-        $error = "All required fields must be filled out.";
+        header("Location: index.php?page=users&action=create&error=" . urlencode("All required fields must be filled out."));
+        exit;
     } else {
         try {
             $stmt = $conn->prepare("INSERT INTO users (username, password, name, email, role, status) VALUES (?, ?, ?, ?, ?, ?)");
@@ -36,10 +48,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $user['status']
             ]);
 
-            header("Location: index.php?page=users&message=User+created+successfully");
+            header("Location: index.php?page=users&message=" . urlencode("User created successfully"));
             exit;
         } catch (PDOException $e) {
-            $error = "Database error: " . htmlspecialchars($e->getMessage());
+            header("Location: index.php?page=users&action=create&error=" . urlencode("Database error: " . $e->getMessage()));
+            exit;
         }
     }
 }
@@ -54,8 +67,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php if (!empty($error)): ?>
                 <div class="alert alert-danger"><?php echo $error; ?></div>
             <?php endif; ?>
+            <?php if (!empty($display_error)): ?>
+                <div class="alert alert-danger"><?php echo $display_error; ?></div>
+            <?php endif; ?>
+            
             <?php if (!empty($message)): ?>
                 <div class="alert alert-success"><?php echo $message; ?></div>
+            <?php endif; ?>
+            <?php if (!empty($display_message)): ?>
+                <div class="alert alert-success"><?php echo $display_message; ?></div>
             <?php endif; ?>
             
             <form method="POST" action="index.php?page=users&action=create" id="userCreateForm">
@@ -130,3 +150,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <script src="assets/js/users_create.js"></script>
+<?php
+// JavaScript to clear URL parameters
+if (!empty($display_message) || !empty($display_error)) {
+    echo "<script type='text/javascript'>
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.search.replace(/&?(message|error)=[^&]*/g, ''));
+    </script>";
+}
+?>

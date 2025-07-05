@@ -237,11 +237,11 @@ switch ($action) {
                 }
 
                 if (empty($import_stats['files_with_errors']) && $import_stats['total_transactions_imported'] > 0) {
-                    $message = "All selected files processed successfully! Imported {$import_stats['total_transactions_imported']} transactions.";
+                    $display_message = "All selected files processed successfully! Imported {$import_stats['total_transactions_imported']} transactions.";
                 } elseif ($import_stats['total_transactions_imported'] > 0) {
-                    $message = "Processed some files. Imported {$import_stats['total_transactions_imported']} transactions. See errors below for details.";
+                    $display_message = "Processed some files. Imported {$import_stats['total_transactions_imported']} transactions. See errors below for details.";
                 } else {
-                    $error = "No transactions were imported. Please check the file format and content.";
+                    $display_error = "No transactions were imported. Please check the file format and content.";
                 }
             }
         }

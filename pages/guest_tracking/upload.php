@@ -3,6 +3,17 @@
  * Guest Tracking Excel Upload Page
  */
 
+// Capture messages from URL
+$display_message = '';
+$display_error = '';
+
+if (isset($_GET['message'])) {
+    $display_message = htmlspecialchars($_GET['message']);
+}
+if (isset($_GET['error'])) {
+    $display_error = htmlspecialchars($_GET['error']);
+}
+
 $message = '';
 $error = '';
 $upload_stats = null;
@@ -39,6 +50,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['excel_file'])) {
                         
                         // Log action
                         log_action('upload_guest_data', "Uploaded guest data for date: $upload_date, Records: {$upload_stats['total_records']}");
+                        header("Location: index.php?page=guest_tracking&message=" . urlencode("Excel file uploaded and processed successfully!"));
+                        exit;
                     } else {
                         $error = $upload_result['error'];
                     }
@@ -181,6 +194,9 @@ function readCSVFile($filename) {
             <?php if (!empty($error)): ?>
                 <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
             <?php endif; ?>
+            <?php if (!empty($display_error)): ?>
+                <div class="alert alert-danger"><?php echo htmlspecialchars($display_error); ?></div>
+            <?php endif; ?>
             
             <?php if (!empty($message)): ?>
                 <div class="alert alert-success">
@@ -199,8 +215,8 @@ function readCSVFile($filename) {
                                 <div class="upload-errors mt-2">
                                     <h6>Errors encountered:</h6>
                                     <ul>
-                                        <?php foreach ($upload_stats['errors'] as $error): ?>
-                                            <li><?php echo htmlspecialchars($error); ?></li>
+                                        <?php foreach ($upload_stats['errors'] as $error_item): ?>
+                                            <li><?php echo htmlspecialchars($error_item); ?></li>
                                         <?php endforeach; ?>
                                     </ul>
                                 </div>
@@ -208,6 +224,9 @@ function readCSVFile($filename) {
                         </div>
                     <?php endif; ?>
                 </div>
+            <?php endif; ?>
+            <?php if (!empty($display_message)): ?>
+                <div class="alert alert-success"><?php echo htmlspecialchars($display_message); ?></div>
             <?php endif; ?>
             
             <!-- File Format Instructions -->
@@ -274,3 +293,11 @@ G003,Bob Johnson,800.50,75.00,1</pre>
 </div>
 
 <script src="assets/js/guest_tracking_upload.js"></script>
+<?php
+// JavaScript to clear URL parameters
+if (!empty($display_message) || !empty($display_error)) {
+    echo "<script type='text/javascript'>
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.search.replace(/&?(message|error)=[^&]*/g, ''));
+    </script>";
+}
+?>

@@ -3,6 +3,17 @@
  * Edit existing slot machine
  */
 
+// Capture messages from URL
+$display_message = '';
+$display_error = '';
+
+if (isset($_GET['message'])) {
+    $display_message = htmlspecialchars($_GET['message']);
+}
+if (isset($_GET['error'])) {
+    $display_error = htmlspecialchars($_GET['error']);
+}
+
 // Ensure we have an ID
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     header("Location: index.php?page=machines");
@@ -29,7 +40,7 @@ try {
     $machine = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$machine) {
-        header("Location: index.php?page=machines&error=Machine not found");
+        header("Location: index.php?page=machines&error=" . urlencode("Machine not found"));
         exit;
     }
 } catch (PDOException $e) {
@@ -142,7 +153,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 // Redirect after successful update
                 if (!headers_sent()) {
-                    header("Location: index.php?page=machines&message=Machine updated successfully");
+                    header("Location: index.php?page=machines&message=" . urlencode("Machine updated successfully"));
                     exit;
                 }
             }
@@ -159,10 +170,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <h3>Edit Machine</h3>
         </div>
         <div class="card-body">
-            <?php if ($success): ?>
-                <div class="alert alert-success">Machine updated successfully!</div>
-            <?php elseif ($error): ?>
-                <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
+            <?php if (!empty($display_message)): ?>
+                <div class="alert alert-success"><?php echo htmlspecialchars($display_message); ?></div>
+            <?php elseif (!empty($display_error)): ?>
+                <div class="alert alert-danger"><?php echo htmlspecialchars($display_error); ?></div>
             <?php endif; ?>
             
             <form action="index.php?page=machines&action=edit&id=<?php echo $machine_id; ?>" method="POST" id="machineEditForm">
@@ -317,3 +328,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <script src="assets/js/machines_edit.js"></script>
+<?php
+// JavaScript to clear URL parameters
+if (!empty($display_message) || !empty($display_error)) {
+    echo "<script type='text/javascript'>
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.search.replace(/&?(message|error)=[^&]*/g, ''));
+    </script>";
+}
+?>

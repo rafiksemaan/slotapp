@@ -3,6 +3,17 @@
  * Create Daily Tracking Entry
  */
 
+// Capture messages from URL
+$display_message = '';
+$display_error = '';
+
+if (isset($_GET['message'])) {
+    $display_message = htmlspecialchars($_GET['message']);
+}
+if (isset($_GET['error'])) {
+    $display_error = htmlspecialchars($_GET['error']);
+}
+
 // Get current operation day for default date
 try {
     $op_stmt = $conn->prepare("SELECT operation_date FROM operation_day ORDER BY id DESC LIMIT 1");
@@ -39,7 +50,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Validate required fields
     if (empty($tracking_data['tracking_date'])) {
-        $error = "Tracking date is required.";
+        header("Location: index.php?page=daily_tracking&action=create&error=" . urlencode("Tracking date is required."));
+        exit;
     } else {
         try {
             // Check if entry already exists for this date
@@ -47,7 +59,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $check_stmt->execute([$tracking_data['tracking_date']]);
             
             if ($check_stmt->rowCount() > 0) {
-                $error = "Daily tracking entry already exists for this date. Please edit the existing entry or choose a different date.";
+                header("Location: index.php?page=daily_tracking&action=create&error=" . urlencode("Daily tracking entry already exists for this date. Please edit the existing entry or choose a different date."));
+                exit;
             } else {
                 // Convert empty strings to 0 for numeric fields
                 $slots_drop = empty($tracking_data['slots_drop']) ? 0 : floatval($tracking_data['slots_drop']);
@@ -89,22 +102,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Log action
                 log_action('create_daily_tracking', "Created daily tracking entry for: {$tracking_data['tracking_date']}");
 
-                $success = "Daily tracking entry created successfully!";
-                
-                // Clear form data after successful creation
-                $tracking_data = [
-                    'tracking_date' => $default_date,
-                    'slots_drop' => '',
-                    'slots_out' => '',
-                    'gambee_drop' => '',
-                    'gambee_out' => '',
-                    'coins_drop' => '',
-                    'coins_out' => '',
-                    'notes' => ''
-                ];
+                header("Location: index.php?page=daily_tracking&message=" . urlencode("Daily tracking entry created successfully!"));
+                exit;
             }
         } catch (PDOException $e) {
-            $error = "Database error: " . $e->getMessage();
+            header("Location: index.php?page=daily_tracking&action=create&error=" . urlencode("Database error: " . $e->getMessage()));
+            exit;
         }
     }
 }
@@ -116,12 +119,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <h3>Add Daily Tracking Entry</h3>
         </div>
         <div class="card-body">
-            <?php if (!empty($error)): ?>
-                <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
+            <?php if (!empty($display_error)): ?>
+                <div class="alert alert-danger"><?php echo htmlspecialchars($display_error); ?></div>
             <?php endif; ?>
 
-            <?php if (!empty($success)): ?>
-                <div class="alert alert-success"><?php echo htmlspecialchars($success); ?></div>
+            <?php if (!empty($display_message)): ?>
+                <div class="alert alert-success"><?php echo htmlspecialchars($display_message); ?></div>
             <?php endif; ?>
 
             <div class="alert alert-info">
@@ -236,3 +239,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <script src="assets/js/daily_tracking_create.js"></script>
+<?php
+// JavaScript to clear URL parameters
+if (!empty($display_message) || !empty($display_error)) {
+    echo "<script type='text/javascript'>
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.search.replace(/&?(message|error)=[^&]*/g, ''));
+    </script>";
+}
+?>

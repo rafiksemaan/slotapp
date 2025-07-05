@@ -3,9 +3,17 @@
  * Create new slot machine
  */
 
-// Process form submission
-$message = '';
-$error = '';
+// Capture messages from URL
+$display_message = '';
+$display_error = '';
+
+if (isset($_GET['message'])) {
+    $display_message = htmlspecialchars($_GET['message']);
+}
+if (isset($_GET['error'])) {
+    $display_error = htmlspecialchars($_GET['error']);
+}
+
 // Initialize transaction data
 $machine = [
     'machine_number' => '',
@@ -44,15 +52,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($machine['machine_number']) || empty($machine['brand_id']) || empty($machine['game']) ||
         empty($machine['type_id']) || empty($machine['credit_value']) || empty($machine['status']) ||
         empty($machine['ticket_printer']) || empty($machine['system_comp'])) {
-        $error = "Please fill out all required fields.";
+        header("Location: index.php?page=machines&action=create&error=" . urlencode("Please fill out all required fields."));
+        exit;
     }
     // Validate IP address format if provided
     else if (!empty($machine['ip_address']) && !is_valid_ip($machine['ip_address'])) {
-        $error = "Please enter a valid IP address.";
+        header("Location: index.php?page=machines&action=create&error=" . urlencode("Please enter a valid IP address."));
+        exit;
     }
     // Validate MAC address format if provided
     else if (!empty($machine['mac_address']) && !is_valid_mac($machine['mac_address'])) {
-        $error = "Please enter a valid MAC address (e.g., 00:1A:2B:3C:4D:5E).";
+        header("Location: index.php?page=machines&action=create&error=" . urlencode("Please enter a valid MAC address (e.g., 00:1A:2B:3C:4D:5E)."));
+        exit;
     }
     else {
         try {
@@ -61,7 +72,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt->execute([$machine['machine_number']]);
 
             if ($stmt->rowCount() > 0) {
-                $error = "A machine with this number already exists.";
+                header("Location: index.php?page=machines&action=create&error=" . urlencode("A machine with this number already exists."));
+                exit;
             } else {
                 // Check if serial number already exists (if provided)
                 if (!empty($machine['serial_number'])) {
@@ -69,7 +81,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $stmt->execute([$machine['serial_number']]);
 
                     if ($stmt->rowCount() > 0) {
-                        $error = "A machine with this serial number already exists.";
+                        header("Location: index.php?page=machines&action=create&error=" . urlencode("A machine with this serial number already exists."));
+                        exit;
                     }
                 }
 
@@ -107,12 +120,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     log_action('create_machine', "Created machine: {$machine['machine_number']} - {$machine['game']}");
 
                     // Redirect to machine list
-                    header("Location: index.php?page=machines&message=Machine created successfully");
+                    header("Location: index.php?page=machines&message=" . urlencode("Machine created successfully"));
                     exit;
                 }
             }
         } catch (PDOException $e) {
-            $error = "Database error: " . $e->getMessage();
+            header("Location: index.php?page=machines&action=create&error=" . urlencode("Database error: " . $e->getMessage()));
+            exit;
         }
     }
 }
@@ -145,9 +159,15 @@ try {
             <?php if (!empty($error)): ?>
                 <div class="alert alert-danger"><?php echo $error; ?></div>
             <?php endif; ?>
+            <?php if (!empty($display_error)): ?>
+                <div class="alert alert-danger"><?php echo $display_error; ?></div>
+            <?php endif; ?>
 
             <?php if (!empty($message)): ?>
                 <div class="alert alert-success"><?php echo $message; ?></div>
+            <?php endif; ?>
+            <?php if (!empty($display_message)): ?>
+                <div class="alert alert-success"><?php echo $display_message; ?></div>
             <?php endif; ?>
 
             <form action="index.php?page=machines&action=create" method="POST" id="machineCreateForm">
@@ -309,3 +329,11 @@ try {
 </div>
 
 <script src="assets/js/machines_create.js"></script>
+<?php
+// JavaScript to clear URL parameters
+if (!empty($display_message) || !empty($display_error)) {
+    echo "<script type='text/javascript'>
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.search.replace(/&?(message|error)=[^&]*/g, ''));
+    </script>";
+}
+?>

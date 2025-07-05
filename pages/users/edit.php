@@ -3,7 +3,18 @@
  * Edit User Page
  */
 
-$can_edit = true; // Replace with real permission check if available
+// Capture messages from URL
+$display_message = '';
+$display_error = '';
+
+if (isset($_GET['message'])) {
+    $display_message = htmlspecialchars($_GET['message']);
+}
+if (isset($_GET['error'])) {
+    $display_error = htmlspecialchars($_GET['error']);
+}
+
+$can_edit = true; // Replace with actual permission check if available
 $message = '';
 $error = '';
 $user_id = $_GET['id'] ?? 0;
@@ -48,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $can_edit) {
             $stmt = $conn->prepare($sql);
             $stmt->execute($params);
 
-            header("Location: index.php?page=users&message=User+updated+successfully");
+            header("Location: index.php?page=users&message=" . urlencode("User updated successfully"));
             exit;
         } catch (PDOException $e) {
             $error = "Database error: " . htmlspecialchars($e->getMessage());
@@ -66,8 +77,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $can_edit) {
             <?php if ($error): ?>
                 <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
             <?php endif; ?>
+            <?php if (!empty($display_error)): ?>
+                <div class="alert alert-danger"><?php echo htmlspecialchars($display_error); ?></div>
+            <?php endif; ?>
+            
             <?php if (!empty($message)): ?>
                 <div class="alert alert-success"><?php echo htmlspecialchars($message); ?></div>
+            <?php endif; ?>
+            <?php if (!empty($display_message)): ?>
+                <div class="alert alert-success"><?php echo htmlspecialchars($display_message); ?></div>
             <?php endif; ?>
 
             <form method="POST" action="index.php?page=users&action=edit&id=<?php echo $user['id']; ?>" id="userEditForm">
@@ -145,3 +163,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $can_edit) {
 </div>
 
 <script src="assets/js/users_edit.js"></script>
+<?php
+// JavaScript to clear URL parameters
+if (!empty($display_message) || !empty($display_error)) {
+    echo "<script type='text/javascript'>
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.search.replace(/&?(message|error)=[^&]*/g, ''));
+    </script>";
+}
+?>

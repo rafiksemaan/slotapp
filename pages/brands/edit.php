@@ -3,9 +3,20 @@
  * Edit Brand
  */
 
+// Capture messages from URL
+$display_message = '';
+$display_error = '';
+
+if (isset($_GET['message'])) {
+    $display_message = htmlspecialchars($_GET['message']);
+}
+if (isset($_GET['error'])) {
+    $display_error = htmlspecialchars($_GET['error']);
+}
+
 // Ensure user has edit permissions
 if (!$can_edit) {
-    header("Location: index.php?page=brands&error=Access denied");
+    header("Location: index.php?page=brands&error=" . urlencode("Access denied"));
     exit;
 }
 
@@ -51,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 if ($result) {
                     log_action('update_brand', "Updated brand: {$brand['name']}");
-                    header("Location: index.php?page=brands&message=Brand updated successfully");
+                    header("Location: index.php?page=brands&message=" . urlencode("Brand updated successfully"));
                     exit;
                 } else {
                     $error = "Failed to update brand.";
@@ -70,11 +81,11 @@ try {
     $brand = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if (!$brand) {
-        header("Location: index.php?page=brands&error=Brand not found");
+        header("Location: index.php?page=brands&error=" . urlencode("Brand not found"));
         exit;
     }
 } catch (PDOException $e) {
-    header("Location: index.php?page=brands&error=Database error");
+    header("Location: index.php?page=brands&error=" . urlencode("Database error"));
     exit;
 }
 ?>
@@ -87,6 +98,13 @@ try {
         <div class="card-body">
             <?php if (!empty($error)): ?>
                 <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
+            <?php endif; ?>
+            <?php if (!empty($display_error)): ?>
+                <div class="alert alert-danger"><?php echo htmlspecialchars($display_error); ?></div>
+            <?php endif; ?>
+            
+            <?php if (!empty($display_message)): ?>
+                <div class="alert alert-success"><?php echo htmlspecialchars($display_message); ?></div>
             <?php endif; ?>
 
             <form method="POST" class="brand-form" id="brandEditForm">
@@ -114,3 +132,11 @@ try {
     </div>
 </div>
 <script src="assets/js/brands_edit.js"></script>
+<?php
+// JavaScript to clear URL parameters
+if (!empty($display_message) || !empty($display_error)) {
+    echo "<script type='text/javascript'>
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.search.replace(/&?(message|error)=[^&]*/g, ''));
+    </script>";
+}
+?>

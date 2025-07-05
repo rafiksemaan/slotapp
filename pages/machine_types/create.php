@@ -3,6 +3,17 @@
  * Create new machine type
  */
 
+// Capture messages from URL
+$display_message = '';
+$display_error = '';
+
+if (isset($_GET['message'])) {
+    $display_message = htmlspecialchars($_GET['message']);
+}
+if (isset($_GET['error'])) {
+    $display_error = htmlspecialchars($_GET['error']);
+}
+
 // Process form submission
 $message = '';
 $error = '';
@@ -18,7 +29,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     // Validate required fields
     if (empty($machine_type['name'])) {
-        $error = "Machine type name is required.";
+        header("Location: index.php?page=machine_types&action=create&error=" . urlencode("Machine type name is required."));
+        exit;
     } else {
         try {
             // Check if machine type already exists
@@ -26,7 +38,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt->execute([$machine_type['name']]);
             
             if ($stmt->rowCount() > 0) {
-                $error = "A machine type with this name already exists.";
+                header("Location: index.php?page=machine_types&action=create&error=" . urlencode("A machine type with this name already exists."));
+                exit;
             } else {
                 // Insert new machine type
                 $stmt = $conn->prepare("INSERT INTO machine_types (name, description) VALUES (?, ?)");
@@ -36,11 +49,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 log_action('create_machine_type', "Created machine type: {$machine_type['name']}");
                 
                 // Redirect to machine type list
-                header("Location: index.php?page=machine_types&message=Machine type created successfully");
+                header("Location: index.php?page=machine_types&message=" . urlencode("Machine type created successfully"));
                 exit;
             }
         } catch (PDOException $e) {
-            $error = "Database error: " . $e->getMessage();
+            header("Location: index.php?page=machine_types&action=create&error=" . urlencode("Database error: " . $e->getMessage()));
+            exit;
         }
     }
 }
@@ -55,9 +69,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <?php if (!empty($error)): ?>
                 <div class="alert alert-danger"><?php echo $error; ?></div>
             <?php endif; ?>
+            <?php if (!empty($display_error)): ?>
+                <div class="alert alert-danger"><?php echo $display_error; ?></div>
+            <?php endif; ?>
             
             <?php if (!empty($message)): ?>
                 <div class="alert alert-success"><?php echo $message; ?></div>
+            <?php endif; ?>
+            <?php if (!empty($display_message)): ?>
+                <div class="alert alert-success"><?php echo $display_message; ?></div>
             <?php endif; ?>
             
             <form action="index.php?page=machine_types&action=create" method="POST" id="machineTypeCreateForm">
@@ -85,3 +105,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
 </div>
 <script src="assets/js/machine_types_create.js"></script>
+<?php
+// JavaScript to clear URL parameters
+if (!empty($display_message) || !empty($display_error)) {
+    echo "<script type='text/javascript'>
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.search.replace(/&?(message|error)=[^&]*/g, ''));
+    </script>";
+}
+?>

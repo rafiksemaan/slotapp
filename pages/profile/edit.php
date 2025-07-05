@@ -3,6 +3,17 @@
  * Edit User Profile
  */
 
+// Capture messages from URL
+$display_message = '';
+$display_error = '';
+
+if (isset($_GET['message'])) {
+    $display_message = htmlspecialchars($_GET['message']);
+}
+if (isset($_GET['error'])) {
+    $display_error = htmlspecialchars($_GET['error']);
+}
+
 $error = '';
 $success = '';
 
@@ -92,6 +103,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 log_action('update_profile', "Updated profile information");
 
                 $success = "Profile updated successfully!";
+                header("Location: index.php?page=profile&message=" . urlencode("Profile updated successfully!"));
+                exit;
                 
                 // Refresh user data
                 $stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
@@ -114,9 +127,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php if (!empty($error)): ?>
                 <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
             <?php endif; ?>
+            <?php if (!empty($display_error)): ?>
+                <div class="alert alert-danger"><?php echo htmlspecialchars($display_error); ?></div>
+            <?php endif; ?>
 
             <?php if (!empty($success)): ?>
                 <div class="alert alert-success"><?php echo htmlspecialchars($success); ?></div>
+            <?php endif; ?>
+            <?php if (!empty($display_message)): ?>
+                <div class="alert alert-success"><?php echo htmlspecialchars($display_message); ?></div>
             <?php endif; ?>
 
             <form method="POST" class="profile-form" id="profileEditForm">
@@ -195,3 +214,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <script src="assets/js/profile_edit.js"></script>
+<?php
+// JavaScript to clear URL parameters
+if (!empty($display_message) || !empty($display_error)) {
+    echo "<script type='text/javascript'>
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.search.replace(/&?(message|error)=[^&]*/g, ''));
+    </script>";
+}
+?>

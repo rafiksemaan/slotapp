@@ -3,9 +3,20 @@
  * Edit Machine Type
  */
 
+// Capture messages from URL
+$display_message = '';
+$display_error = '';
+
+if (isset($_GET['message'])) {
+    $display_message = htmlspecialchars($_GET['message']);
+}
+if (isset($_GET['error'])) {
+    $display_error = htmlspecialchars($_GET['error']);
+}
+
 // Ensure user has edit permissions
 if (!$can_edit) {
-    header("Location: index.php?page=machine_types&error=Access denied");
+    header("Location: index.php?page=machine_types&error=" . urlencode("Access denied"));
     exit;
 }
 
@@ -26,11 +37,11 @@ try {
     $machine_type = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$machine_type) {
-        header("Location: index.php?page=machine_types&error=Machine type not found");
+        header("Location: index.php?page=machine_types&error=" . urlencode("Machine type not found"));
         exit;
     }
 } catch (PDOException $e) {
-    header("Location: index.php?page=machine_types&error=Database error");
+    header("Location: index.php?page=machine_types&error=" . urlencode("Database error"));
     exit;
 }
 
@@ -66,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 if ($result) {
                     log_action('update_machine_type', "Updated machine type: {$name}");
-                    header("Location: index.php?page=machine_types&message=Machine type updated successfully");
+                    header("Location: index.php?page=machine_types&message=" . urlencode("Machine type updated successfully"));
                     exit;
                 } else {
                     $error = "Failed to update machine type.";
@@ -85,8 +96,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <h3>Edit Machine Type</h3>
         </div>
         <div class="card-body">
-            <?php if ($error): ?>
+            <?php if (!empty($error)): ?>
                 <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
+            <?php endif; ?>
+            <?php if (!empty($display_error)): ?>
+                <div class="alert alert-danger"><?php echo htmlspecialchars($display_error); ?></div>
+            <?php endif; ?>
+
+            <?php if (!empty($display_message)): ?>
+                <div class="alert alert-success"><?php echo htmlspecialchars($display_message); ?></div>
             <?php endif; ?>
 
             <form method="POST" class="machine-type-form" id="machineTypeEditForm">
@@ -116,3 +134,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </div>
 <script src="assets/js/machine_types_edit.js"></script>
+<?php
+// JavaScript to clear URL parameters
+if (!empty($display_message) || !empty($display_error)) {
+    echo "<script type='text/javascript'>
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.search.replace(/&?(message|error)=[^&]*/g, ''));
+    </script>";
+}
+?>

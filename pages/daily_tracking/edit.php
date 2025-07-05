@@ -3,9 +3,20 @@
  * Edit Daily Tracking Entry
  */
 
+// Capture messages from URL
+$display_message = '';
+$display_error = '';
+
+if (isset($_GET['message'])) {
+    $display_message = htmlspecialchars($_GET['message']);
+}
+if (isset($_GET['error'])) {
+    $display_error = htmlspecialchars($_GET['error']);
+}
+
 // Check if an ID was provided
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header("Location: index.php?page=daily_tracking");
+    header("Location: index.php?page=daily_tracking&error=" . urlencode("Invalid daily tracking ID"));
     exit;
 }
 
@@ -20,11 +31,11 @@ try {
     $tracking_data = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$tracking_data) {
-        header("Location: index.php?page=daily_tracking&error=Daily tracking entry not found");
+        header("Location: index.php?page=daily_tracking&error=" . urlencode("Daily tracking entry not found"));
         exit;
     }
 } catch (PDOException $e) {
-    header("Location: index.php?page=daily_tracking&error=Database error");
+    header("Location: index.php?page=daily_tracking&error=" . urlencode("Database error"));
     exit;
 }
 
@@ -91,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($result) {
                     // Log action
                     log_action('update_daily_tracking', "Updated daily tracking entry for: {$tracking_date}");
-                    header("Location: index.php?page=daily_tracking&message=Daily tracking entry updated successfully");
+                    header("Location: index.php?page=daily_tracking&message=" . urlencode("Daily tracking entry updated successfully"));
                     exit;
                 } else {
                     $error = "Failed to update daily tracking entry.";
@@ -113,9 +124,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php if (!empty($error)): ?>
                 <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
             <?php endif; ?>
+            <?php if (!empty($display_error)): ?>
+                <div class="alert alert-danger"><?php echo htmlspecialchars($display_error); ?></div>
+            <?php endif; ?>
 
-            <?php if (!empty($success)): ?>
-                <div class="alert alert-success"><?php echo htmlspecialchars($success); ?></div>
+            <?php if (!empty($display_message)): ?>
+                <div class="alert alert-success"><?php echo htmlspecialchars($display_message); ?></div>
             <?php endif; ?>
 
             <div class="alert alert-info">
@@ -230,3 +244,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <script src="assets/js/daily_tracking_edit.js"></script>
+<?php
+// JavaScript to clear URL parameters
+if (!empty($display_message) || !empty($display_error)) {
+    echo "<script type='text/javascript'>
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.search.replace(/&?(message|error)=[^&]*/g, ''));
+    </script>";
+}
+?>
