@@ -215,4 +215,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 <script type="module" src="assets/js/url_cleaner.js"></script>
 <script type="module" src="assets/js/profile_edit.js"></script>
-
