@@ -146,6 +146,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         notes = ?,
                         timestamp = ?,
                         edited_by = ?,
+                        updated_at = CURRENT_TIMESTAMP
                     WHERE id = ?
                 ");
                 
@@ -318,7 +319,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 </div>
-
 <div id="url-cleaner-data" 
      data-display-message="<?= !empty($display_message) ? 'true' : 'false' ?>" 
      data-display-error="<?= !empty($display_error) ? 'true' : 'false' ?>">
