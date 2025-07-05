@@ -11,215 +11,254 @@ require_once 'config/config.php';
 function createTables($conn) {
     try {
         // Create users table
-        $conn->exec("CREATE TABLE IF NOT EXISTS users (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            username VARCHAR(50) NOT NULL UNIQUE,
-            password VARCHAR(255) NOT NULL,
-            name VARCHAR(100) NOT NULL,
-            email VARCHAR(100) NOT NULL UNIQUE,
-            role ENUM('admin', 'editor', 'viewer') NOT NULL,
-            status ENUM('Active', 'Inactive') NOT NULL DEFAULT 'Active',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            last_login TIMESTAMP NULL,
-            password_changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )");
+        $conn->exec("CREATE TABLE IF NOT EXISTS `users` (
+            `id` INT NOT NULL AUTO_INCREMENT,
+            `username` VARCHAR(50) COLLATE utf8mb4_general_ci NOT NULL,
+            `password` VARCHAR(255) COLLATE utf8mb4_general_ci NOT NULL,
+            `name` VARCHAR(100) COLLATE utf8mb4_general_ci NOT NULL,
+            `email` VARCHAR(100) COLLATE utf8mb4_general_ci NOT NULL,
+            `role` ENUM('admin', 'editor', 'viewer') COLLATE utf8mb4_general_ci NOT NULL,
+            `status` ENUM('Active','Inactive','Maintenance','Reserved') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Active',
+            `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+            `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`),
+            UNIQUE KEY `username` (`username`),
+            UNIQUE KEY `email` (`email`)
+        ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
         
         // Create brands table
-        $conn->exec("CREATE TABLE IF NOT EXISTS brands (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            name VARCHAR(100) NOT NULL UNIQUE,
-            description TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-        )");
+        $conn->exec("CREATE TABLE IF NOT EXISTS `brands` (
+            `id` INT NOT NULL AUTO_INCREMENT,
+            `name` VARCHAR(100) COLLATE utf8mb4_general_ci NOT NULL,
+            `description` TEXT COLLATE utf8mb4_general_ci,
+            `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+            `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`),
+            UNIQUE KEY `name` (`name`)
+        ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
         
         // Create machine_types table
-        $conn->exec("CREATE TABLE IF NOT EXISTS machine_types (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            name VARCHAR(50) NOT NULL UNIQUE,
-            description TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-        )");
+        $conn->exec("CREATE TABLE IF NOT EXISTS `machine_types` (
+            `id` INT NOT NULL AUTO_INCREMENT,
+            `name` VARCHAR(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+            `description` TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+            `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+            `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`),
+            UNIQUE KEY `name` (`name`)
+        ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
         
         // Create machines table
-        $conn->exec("CREATE TABLE IF NOT EXISTS machines (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            machine_number VARCHAR(50) NOT NULL UNIQUE,
-            brand_id INT,
-            model VARCHAR(100) NOT NULL,
-            type_id INT,
-            credit_value DECIMAL(10,2) NOT NULL,
-            manufacturing_year INT,
-            ip_address VARCHAR(15),
-            mac_address VARCHAR(17),
-            serial_number VARCHAR(100) UNIQUE,
-            status ENUM('Active', 'Inactive', 'Maintenance', 'Reserved') NOT NULL DEFAULT 'Active',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            FOREIGN KEY (brand_id) REFERENCES brands(id) ON DELETE SET NULL,
-            FOREIGN KEY (type_id) REFERENCES machine_types(id) ON DELETE SET NULL
-        )");
+        $conn->exec("CREATE TABLE IF NOT EXISTS `machines` (
+            `id` INT NOT NULL AUTO_INCREMENT,
+            `machine_number` VARCHAR(50) COLLATE utf8mb4_general_ci NOT NULL,
+            `brand_id` INT DEFAULT NULL,
+            `model` VARCHAR(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+            `game` VARCHAR(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+            `type_id` INT DEFAULT NULL,
+            `credit_value` DECIMAL(10,2) NOT NULL,
+            `manufacturing_year` INT DEFAULT NULL,
+            `ip_address` VARCHAR(15) COLLATE utf8mb4_general_ci DEFAULT NULL,
+            `mac_address` VARCHAR(17) COLLATE utf8mb4_general_ci DEFAULT NULL,
+            `serial_number` VARCHAR(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+            `status` ENUM('Active','Inactive','Maintenance','Reserved') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Active',
+            `ticket_printer` ENUM('yes','N/A') COLLATE utf8mb4_general_ci DEFAULT NULL,
+            `system_comp` ENUM('offline','online') COLLATE utf8mb4_general_ci DEFAULT NULL,
+            `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+            `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`),
+            UNIQUE KEY `machine_number` (`machine_number`),
+            UNIQUE KEY `serial_number` (`serial_number`),
+            KEY `brand_id` (`brand_id`),
+            KEY `type_id` (`type_id`),
+            KEY `idx_machines_game` (`game`)
+        ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
         
         // Create machine_groups table
-        $conn->exec("CREATE TABLE IF NOT EXISTS machine_groups (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            name VARCHAR(100) NOT NULL UNIQUE,
-            description TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-        )");
+        $conn->exec("CREATE TABLE IF NOT EXISTS `machine_groups` (
+            `id` INT NOT NULL AUTO_INCREMENT,
+            `name` VARCHAR(100) COLLATE utf8mb4_general_ci NOT NULL,
+            `description` TEXT COLLATE utf8mb4_general_ci,
+            `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+            `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`),
+            UNIQUE KEY `name` (`name`),
+            KEY `idx_machine_groups_name` (`name`)
+        ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
         
         // Create machine_group_members table
-        $conn->exec("CREATE TABLE IF NOT EXISTS machine_group_members (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            group_id INT NOT NULL,
-            machine_id INT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (group_id) REFERENCES machine_groups(id) ON DELETE CASCADE,
-            FOREIGN KEY (machine_id) REFERENCES machines(id) ON DELETE CASCADE,
-            UNIQUE KEY unique_group_machine (group_id, machine_id)
-        )");
+        $conn->exec("CREATE TABLE IF NOT EXISTS `machine_group_members` (
+            `id` INT NOT NULL AUTO_INCREMENT,
+            `group_id` INT NOT NULL,
+            `machine_id` INT NOT NULL,
+            `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`),
+            UNIQUE KEY `unique_group_machine` (`group_id`,`machine_id`),
+            KEY `idx_machine_group_members_group_id` (`group_id`),
+            KEY `idx_machine_group_members_machine_id` (`machine_id`)
+        ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
         
         // Create transaction_types table
-        $conn->exec("CREATE TABLE IF NOT EXISTS transaction_types (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            name VARCHAR(50) NOT NULL UNIQUE,
-            category ENUM('OUT', 'DROP') NOT NULL,
-            description TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-        )");
+        $conn->exec("CREATE TABLE IF NOT EXISTS `transaction_types` (
+            `id` INT NOT NULL AUTO_INCREMENT,
+            `name` VARCHAR(50) COLLATE utf8mb4_general_ci NOT NULL,
+            `category` ENUM('OUT', 'DROP') COLLATE utf8mb4_general_ci NOT NULL,
+            `description` TEXT COLLATE utf8mb4_general_ci,
+            `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+            `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`),
+            UNIQUE KEY `name` (`name`)
+        ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
         
         // Create transactions table
-        $conn->exec("CREATE TABLE IF NOT EXISTS transactions (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            machine_id INT NOT NULL,
-            transaction_type_id INT NOT NULL,
-            amount DECIMAL(10,2) NOT NULL,
-            timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            user_id INT NOT NULL,
-            notes TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            FOREIGN KEY (machine_id) REFERENCES machines(id) ON DELETE CASCADE,
-            FOREIGN KEY (transaction_type_id) REFERENCES transaction_types(id) ON DELETE CASCADE,
-            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-            INDEX idx_timestamp (timestamp),
-            INDEX idx_machine_timestamp (machine_id, timestamp)
-        )");
+        $conn->exec("CREATE TABLE IF NOT EXISTS `transactions` (
+            `id` INT NOT NULL AUTO_INCREMENT,
+            `machine_id` INT NOT NULL,
+            `transaction_type_id` INT NOT NULL,
+            `amount` DECIMAL(10,2) NOT NULL,
+            `timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            `operation_date` DATE NOT NULL DEFAULT (CURDATE()),
+            `user_id` INT NOT NULL,
+            `edited_by` INT DEFAULT NULL,
+            `notes` TEXT COLLATE utf8mb4_general_ci,
+            `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+            `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`),
+            KEY `machine_id` (`machine_id`),
+            KEY `transaction_type_id` (`transaction_type_id`),
+            KEY `user_id` (`user_id`),
+            KEY `edited_by` (`edited_by`),
+            KEY `idx_operation_date` (`operation_date`)
+        ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
 
         // Create daily_tracking table
-        $conn->exec("CREATE TABLE IF NOT EXISTS daily_tracking (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            tracking_date DATE NOT NULL UNIQUE,
-            slots_drop DECIMAL(10,2) DEFAULT 0.00,
-            slots_out DECIMAL(10,2) DEFAULT 0.00,
-            slots_result DECIMAL(10,2) DEFAULT 0.00,
-            slots_percentage DECIMAL(5,2) DEFAULT 0.00,
-            gambee_drop DECIMAL(10,2) DEFAULT 0.00,
-            gambee_out DECIMAL(10,2) DEFAULT 0.00,
-            gambee_result DECIMAL(10,2) DEFAULT 0.00,
-            gambee_percentage DECIMAL(5,2) DEFAULT 0.00,
-            coins_drop DECIMAL(10,2) DEFAULT 0.00,
-            coins_out DECIMAL(10,2) DEFAULT 0.00,
-            coins_result DECIMAL(10,2) DEFAULT 0.00,
-            coins_percentage DECIMAL(5,2) DEFAULT 0.00,
-            total_drop DECIMAL(10,2) DEFAULT 0.00,
-            total_out DECIMAL(10,2) DEFAULT 0.00,
-            total_result DECIMAL(10,2) DEFAULT 0.00,
-            total_result_percentage DECIMAL(5,2) DEFAULT 0.00,
-            notes TEXT,
-            created_by INT,
-            updated_by INT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
-            FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL
-        )");
+        $conn->exec("CREATE TABLE IF NOT EXISTS `daily_tracking` (
+            `id` INT NOT NULL AUTO_INCREMENT,
+            `tracking_date` DATE NOT NULL,
+            `slots_drop` DECIMAL(10,2) NOT NULL DEFAULT '0.00',
+            `slots_out` DECIMAL(10,2) NOT NULL DEFAULT '0.00',
+            `slots_result` DECIMAL(10,2) GENERATED ALWAYS AS ((`slots_drop` - `slots_out`)) STORED,
+            `gambee_drop` DECIMAL(10,2) NOT NULL DEFAULT '0.00',
+            `gambee_out` DECIMAL(10,2) NOT NULL DEFAULT '0.00',
+            `gambee_result` DECIMAL(10,2) GENERATED ALWAYS AS ((`gambee_drop` - `gambee_out`)) STORED,
+            `coins_drop` DECIMAL(10,2) NOT NULL DEFAULT '0.00',
+            `coins_out` DECIMAL(10,2) NOT NULL DEFAULT '0.00',
+            `coins_result` DECIMAL(10,2) GENERATED ALWAYS AS ((`coins_drop` - `coins_out`)) STORED,
+            `created_by` INT NOT NULL,
+            `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+            `updated_by` INT DEFAULT NULL,
+            `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            `notes` TEXT COLLATE utf8mb4_general_ci,
+            PRIMARY KEY (`id`),
+            UNIQUE KEY `tracking_date` (`tracking_date`),
+            KEY `updated_by` (`updated_by`),
+            KEY `idx_tracking_date` (`tracking_date`),
+            KEY `idx_created_by` (`created_by`),
+            KEY `idx_created_at` (`created_at`)
+        ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
         
         // Create logs table
-        $conn->exec("CREATE TABLE IF NOT EXISTS logs (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            user_id INT,
-            action VARCHAR(255) NOT NULL,
-            details TEXT,
-            ip_address VARCHAR(45),
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
-            INDEX idx_created_at (created_at),
-            INDEX idx_user_id (user_id)
-        )");
+        $conn->exec("CREATE TABLE IF NOT EXISTS `logs` (
+            `id` INT NOT NULL AUTO_INCREMENT,
+            `user_id` INT DEFAULT NULL,
+            `action` VARCHAR(255) COLLATE utf8mb4_general_ci NOT NULL,
+            `details` TEXT COLLATE utf8mb4_general_ci,
+            `ip_address` VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+            `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`),
+            KEY `user_id` (`user_id`)
+        ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
         
         // Create login_attempts table for security
-        $conn->exec("CREATE TABLE IF NOT EXISTS login_attempts (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            username VARCHAR(50) NOT NULL,
-            ip_address VARCHAR(45) NOT NULL,
-            attempt_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            INDEX idx_username_time (username, attempt_time),
-            INDEX idx_ip_time (ip_address, attempt_time)
-        )");
+        $conn->exec("CREATE TABLE IF NOT EXISTS `login_attempts` (
+            `id` INT NOT NULL AUTO_INCREMENT,
+            `username` VARCHAR(50) COLLATE utf8mb4_general_ci NOT NULL,
+            `ip_address` VARCHAR(45) COLLATE utf8mb4_general_ci NOT NULL,
+            `attempt_time` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`),
+            KEY `idx_username_time` (`username`,`attempt_time`),
+            KEY `idx_ip_time` (`ip_address`,`attempt_time`)
+        ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
         
         // Create security_logs table
-        $conn->exec("CREATE TABLE IF NOT EXISTS security_logs (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            event_type VARCHAR(100) NOT NULL,
-            details TEXT,
-            severity ENUM('INFO', 'WARNING', 'ERROR', 'CRITICAL') NOT NULL DEFAULT 'INFO',
-            ip_address VARCHAR(45),
-            user_agent TEXT,
-            user_id INT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
-            INDEX idx_event_type (event_type),
-            INDEX idx_severity (severity),
-            INDEX idx_created_at (created_at)
-        )");
+        $conn->exec("CREATE TABLE IF NOT EXISTS `security_logs` (
+            `id` INT NOT NULL AUTO_INCREMENT,
+            `event_type` VARCHAR(100) COLLATE utf8mb4_general_ci NOT NULL,
+            `details` TEXT COLLATE utf8mb4_general_ci,
+            `severity` ENUM('INFO', 'WARNING', 'ERROR', 'CRITICAL') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'INFO',
+            `ip_address` VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+            `user_agent` TEXT COLLATE utf8mb4_general_ci,
+            `user_id` INT DEFAULT NULL,
+            `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`),
+            KEY `user_id` (`user_id`),
+            KEY `idx_event_type` (`event_type`),
+            KEY `idx_severity` (`severity`),
+            KEY `idx_created_at` (`created_at`)
+        ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
 
         // Create guest_uploads table
-        $conn->exec("CREATE TABLE IF NOT EXISTS guest_uploads (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            upload_date DATE NOT NULL UNIQUE,
-            upload_filename VARCHAR(255) NOT NULL,
-            uploaded_by INT,
-            uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (uploaded_by) REFERENCES users(id) ON DELETE SET NULL
-        )");
+        $conn->exec("CREATE TABLE IF NOT EXISTS `guest_uploads` (
+            `id` INT NOT NULL AUTO_INCREMENT,
+            `upload_date` DATE NOT NULL,
+            `upload_filename` VARCHAR(255) COLLATE utf8mb4_general_ci NOT NULL,
+            `uploaded_by` INT NOT NULL,
+            `uploaded_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`),
+            UNIQUE KEY `upload_date` (`upload_date`),
+            KEY `uploaded_by` (`uploaded_by`),
+            KEY `idx_upload_date` (`upload_date`)
+        ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
 
         // Create guests table
-        $conn->exec("CREATE TABLE IF NOT EXISTS guests (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            guest_code_id VARCHAR(50) NOT NULL UNIQUE,
-            guest_name VARCHAR(255) NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-        )");
+        $conn->exec("CREATE TABLE IF NOT EXISTS `guests` (
+            `guest_code_id` VARCHAR(50) COLLATE utf8mb4_general_ci NOT NULL,
+            `guest_name` VARCHAR(255) COLLATE utf8mb4_general_ci NOT NULL,
+            `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+            `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (`guest_code_id`)
+        ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
 
         // Create guest_data table
-        $conn->exec("CREATE TABLE IF NOT EXISTS guest_data (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            guest_code_id VARCHAR(50) NOT NULL,
-            upload_date DATE NOT NULL,
-            drop_amount DECIMAL(10,2) NOT NULL,
-            result_amount DECIMAL(10,2) NOT NULL,
-            visits INT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (guest_code_id) REFERENCES guests(guest_code_id) ON DELETE CASCADE,
-            UNIQUE KEY unique_guest_data (guest_code_id, upload_date)
-        )");
+        $conn->exec("CREATE TABLE IF NOT EXISTS `guest_data` (
+            `id` INT NOT NULL AUTO_INCREMENT,
+            `guest_code_id` VARCHAR(50) COLLATE utf8mb4_general_ci NOT NULL,
+            `upload_date` DATE NOT NULL,
+            `drop_amount` DECIMAL(10,2) NOT NULL DEFAULT '0.00',
+            `result_amount` DECIMAL(10,2) NOT NULL DEFAULT '0.00',
+            `visits` INT NOT NULL DEFAULT '0',
+            `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`),
+            UNIQUE KEY `unique_guest_upload` (`guest_code_id`,`upload_date`),
+            KEY `idx_upload_date` (`upload_date`),
+            KEY `idx_guest_code` (`guest_code_id`)
+        ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
 
         // Create operation_day table
-        $conn->exec("CREATE TABLE IF NOT EXISTS operation_day (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            operation_date DATE NOT NULL UNIQUE,
-            set_by_user_id INT,
-            set_by_username VARCHAR(100),
-            notes TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (set_by_user_id) REFERENCES users(id) ON DELETE SET NULL
-        )");
+        $conn->exec("CREATE TABLE IF NOT EXISTS `operation_day` (
+            `id` INT NOT NULL AUTO_INCREMENT,
+            `operation_date` DATE NOT NULL,
+            `set_by_user_id` INT NOT NULL,
+            `set_by_username` VARCHAR(50) COLLATE utf8mb4_general_ci NOT NULL,
+            `notes` TEXT COLLATE utf8mb4_general_ci,
+            `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`),
+            KEY `set_by_user_id` (`set_by_user_id`),
+            KEY `idx_operation_date` (`operation_date`),
+            KEY `idx_created_at` (`created_at`)
+        ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
+
+        // Create transaction_uploads table
+        $conn->exec("CREATE TABLE IF NOT EXISTS `transaction_uploads` (
+            `id` INT NOT NULL AUTO_INCREMENT,
+            `upload_date` DATE NOT NULL,
+            `upload_filename` VARCHAR(255) COLLATE utf8mb4_general_ci NOT NULL,
+            `uploaded_by` INT DEFAULT NULL,
+            `uploaded_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`),
+            UNIQUE KEY `unique_upload_date_filename` (`upload_date`,`upload_filename`(191)),
+            KEY `uploaded_by` (`uploaded_by`)
+        ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
         
         return true;
     } catch (PDOException $e) {
@@ -296,7 +335,7 @@ function createAdminUser($conn, $username, $password, $name, $email) {
         // Hash password
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
         
-        // Insert admin user
+        // Insert admin user with 'Active' status, which is part of the new ENUM
         $stmt = $conn->prepare("INSERT INTO users (username, password, name, email, role, status) VALUES (?, ?, ?, ?, 'admin', 'Active')");
         $stmt->execute([$username, $hashed_password, $name, $email]);
         
