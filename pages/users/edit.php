@@ -15,8 +15,8 @@ if (isset($_GET['error'])) {
 }
 
 $can_edit = true; // Replace with actual permission check if available
-$message = '';
-$error = '';
+$message = ''; // This variable will no longer be used for display, but might be for internal logic
+$error = ''; // This variable will no longer be used for display, but might be for internal logic
 $user_id = $_GET['id'] ?? 0;
 
 // Load current user
@@ -74,16 +74,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $can_edit) {
             <h3>Edit User</h3>
         </div>
         <div class="card-body">
-            <?php if ($error): ?>
+            <?php if (!empty($error)): ?>
                 <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
             <?php endif; ?>
             <?php if (!empty($display_error)): ?>
                 <div class="alert alert-danger"><?php echo htmlspecialchars($display_error); ?></div>
             <?php endif; ?>
             
-            <?php if (!empty($message)): ?>
-                <div class="alert alert-success"><?php echo htmlspecialchars($message); ?></div>
-            <?php endif; ?>
             <?php if (!empty($display_message)): ?>
                 <div class="alert alert-success"><?php echo htmlspecialchars($display_message); ?></div>
             <?php endif; ?>

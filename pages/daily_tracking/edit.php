@@ -21,8 +21,8 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 }
 
 $tracking_id = $_GET['id'];
-$error = '';
-$success = '';
+$error = ''; // This variable will no longer be used for display, but might be for internal logic
+$success = ''; // This variable will no longer be used for display, but might be for internal logic
 
 // Get current tracking data
 try {

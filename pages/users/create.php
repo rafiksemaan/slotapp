@@ -16,8 +16,8 @@ if (isset($_GET['error'])) {
 
 $can_edit = true; // Replace with real permission check if available
 
-$message = '';
-$error = '';
+$message = ''; // This variable will no longer be used for display, but might be for internal logic
+$error = ''; // This variable will no longer be used for display, but might be for internal logic
 $user = [
     'username' => '',
     'name' => '',
@@ -64,16 +64,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <h3 class="text-lg font-semibold">Add New User</h3>
         </div>
         <div class="card-body p-6">
-            <?php if (!empty($error)): ?>
-                <div class="alert alert-danger"><?php echo $error; ?></div>
-            <?php endif; ?>
             <?php if (!empty($display_error)): ?>
                 <div class="alert alert-danger"><?php echo $display_error; ?></div>
             <?php endif; ?>
             
-            <?php if (!empty($message)): ?>
-                <div class="alert alert-success"><?php echo $message; ?></div>
-            <?php endif; ?>
             <?php if (!empty($display_message)): ?>
                 <div class="alert alert-success"><?php echo $display_message; ?></div>
             <?php endif; ?>

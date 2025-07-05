@@ -27,8 +27,8 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 }
 
 $transaction_id = $_GET['id'];
-$error = '';
-$success = false;
+$error = ''; // This variable will no longer be used for display, but might be for internal logic
+$success = false; // This variable will no longer be used for display, but might be for internal logic
 
 // Get current transaction data
 try {
@@ -146,7 +146,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         notes = ?,
                         timestamp = ?,
                         edited_by = ?,
-                        updated_at = CURRENT_TIMESTAMP
                     WHERE id = ?
                 ");
                 

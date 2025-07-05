@@ -39,8 +39,8 @@ $transaction = [
     'notes' => ''
 ];
 
-$message = '';
-$error = '';
+$message = ''; // This variable will no longer be used for display, but might be for internal logic
+$error = ''; // This variable will no longer be used for display, but might be for internal logic
 
 // Process form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -140,16 +140,10 @@ try {
             <h3>Add New Transaction</h3>
         </div>
         <div class="card-body">
-            <?php if (!empty($error)): ?>
-                <div class="alert alert-danger"><?php echo $error; ?></div>
-            <?php endif; ?>
             <?php if (!empty($display_error)): ?>
                 <div class="alert alert-danger"><?php echo $display_error; ?></div>
             <?php endif; ?>
             
-            <?php if (!empty($message)): ?>
-                <div class="alert alert-success"><?php echo $message; ?></div>
-            <?php endif; ?>
             <?php if (!empty($display_message)): ?>
                 <div class="alert alert-success"><?php echo $display_message; ?></div>
             <?php endif; ?>

@@ -14,8 +14,8 @@ if (isset($_GET['error'])) {
     $display_error = htmlspecialchars($_GET['error']);
 }
 
-$error = '';
-$success = '';
+$error = ''; // This variable will no longer be used for display, but might be for internal logic
+$success = ''; // This variable will no longer be used for display, but might be for internal logic
 
 // Get current user data
 try {
@@ -131,9 +131,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="alert alert-danger"><?php echo htmlspecialchars($display_error); ?></div>
             <?php endif; ?>
 
-            <?php if (!empty($success)): ?>
-                <div class="alert alert-success"><?php echo htmlspecialchars($success); ?></div>
-            <?php endif; ?>
             <?php if (!empty($display_message)): ?>
                 <div class="alert alert-success"><?php echo htmlspecialchars($display_message); ?></div>
             <?php endif; ?>

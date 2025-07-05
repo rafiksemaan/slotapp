@@ -24,8 +24,8 @@ try {
     $default_date = date('Y-m-d');
 }
 
-$error = '';
-$success = '';
+$error = ''; // This variable will no longer be used for display, but might be for internal logic
+$success = ''; // This variable will no longer be used for display, but might be for internal logic
 $tracking_data = [
     'tracking_date' => $default_date,
     'slots_drop' => '',
