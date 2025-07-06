@@ -66,6 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $operation_date = sanitize_input($_POST['operation_date'] ?? '');
     $manual_reading_notes = sanitize_input($_POST['manual_reading_notes'] ?? '');
     $notes = sanitize_input($_POST['notes'] ?? '');
+    $is_initial_reading = isset($_POST['is_initial_reading']) ? 1 : 0; // Capture checkbox value
 
     // Fetch machine details to determine meter type and expected fields for submission
     $machine_details_for_submit = null;
@@ -117,7 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     machine_id = ?, operation_date = ?, meter_type = ?, 
                     total_in = ?, total_out = ?, bills_in = ?, ticket_in = ?, ticket_out = ?, jp = ?, bets = ?, handpay = ?, 
                     coins_in = ?, coins_out = ?, coins_drop = ?, 
-                    manual_reading_notes = ?, notes = ?, updated_by = ?, updated_at = NOW()
+                    manual_reading_notes = ?, notes = ?, is_initial_reading = ?, updated_by = ?, updated_at = NOW()
                 WHERE id = ?
             ");
             
@@ -138,6 +139,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $coins_drop,
                 $manual_reading_notes ?: null,
                 $notes ?: null,
+                $is_initial_reading, // New field
                 $_SESSION['user_id'],
                 $meter_id
             ]);
@@ -198,6 +200,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                        value="<?php echo htmlspecialchars($meter_data['operation_date']); ?>" required>
                             </div>
                         </div>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" id="is_initial_reading" name="is_initial_reading" class="form-check-input" <?php echo $meter_data['is_initial_reading'] ? 'checked' : ''; ?>>
+                        <label class="form-check-label" for="is_initial_reading">This is the initial meter reading for this machine</label>
                     </div>
                 </div>
 
@@ -328,3 +334,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </div>
 <script type="module" src="assets/js/meters_edit.js"></script>
+
