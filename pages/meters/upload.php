@@ -63,7 +63,7 @@ function processMeterCSVFile($file, $operation_date, $conn) {
                 fseek($handle, 0); // No BOM, rewind to the beginning
             }
             
-            while (($row = fgetcsv($handle, 1000, ",")) !== FALSE) {
+            while (($row = fgetcsv($handle, 1000, "\t")) !== FALSE) { // Changed delimiter to tab
                 $data[] = $row;
             }
             fclose($handle);
