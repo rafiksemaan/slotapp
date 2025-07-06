@@ -1,5 +1,4 @@
 // assets/js/meters_create.js
-
 import { isRequired, isNumber } from './validation_utils.js';
 
 function validateMeterForm(form) {
@@ -42,19 +41,18 @@ function validateMeterForm(form) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    const form = document.getElementById('meterCreateForm');
     const machineSelect = document.getElementById('machine_id');
 
     const cashGambeeMeterFields = document.getElementById('cashGambeeMeterFields');
     const coinsMachineMeterFields = document.getElementById('coinsMachineMeterFields');
-    // Removed offlineMachineStatusSection variable
+    const offlineMachineStatusSection = document.getElementById('offlineMachineStatusSection'); // Re-added variable
 
     // Function to reset all dynamic meter fields
     function resetMeterFields() {
         const fieldsToReset = [
             'total_in', 'total_out', 'bills_in', 'handpay_cash_gambee', 'jp',
             'coins_in', 'coins_out', 'coins_drop', 'bets_coins', 'handpay_coins',
-            // Removed 'manual_reading_notes'
+            'manual_reading_notes', // Re-added manual_reading_notes
             'notes'
         ];
         fieldsToReset.forEach(id => {
@@ -73,20 +71,26 @@ document.addEventListener('DOMContentLoaded', function () {
         const systemComp = selectedMachineOption ? selectedMachineOption.dataset.systemComp : '';
         const machineType = selectedMachineOption ? selectedMachineOption.dataset.machineType : '';
 
+        console.log('Selected Machine System Comp:', systemComp);
+        console.log('Selected Machine Type:', machineType);
+
         // Hide all dynamic sections initially
         cashGambeeMeterFields.style.display = 'none';
         coinsMachineMeterFields.style.display = 'none';
-        // Removed offlineMachineStatusSection.style.display = 'none';
+        offlineMachineStatusSection.style.display = 'none'; // Control this section
 
         if (systemComp === 'offline') {
-            // Removed offlineMachineStatusSection.style.display = 'block';
+            offlineMachineStatusSection.style.display = 'block'; // Show offline section
             if (machineType === 'COINS') {
                 coinsMachineMeterFields.style.display = 'block';
+                console.log('Showing Coins Meter Fields');
             } else { // CASH or GAMBEE
                 cashGambeeMeterFields.style.display = 'block';
+                console.log('Showing Cash/Gambee Meter Fields');
             }
+        } else {
+            console.log('System Comp is not offline, hiding all meter fields.');
         }
-        // If no machine is selected or system_comp is 'online', all remain hidden.
     }
 
     // Attach event listeners
@@ -97,12 +101,12 @@ document.addEventListener('DOMContentLoaded', function () {
     // Initial call to set correct form state on page load
     toggleMeterForms();
 
-    if (form) {
-        form.addEventListener('submit', function(event) {
+    const meterCreateForm = document.getElementById('meterCreateForm'); // CRITICAL FIX: Corrected form ID
+    if (meterCreateForm) {
+        meterCreateForm.addEventListener('submit', function(event) {
             if (!validateMeterForm(this)) {
                 event.preventDefault();
             }
         });
     }
 });
-

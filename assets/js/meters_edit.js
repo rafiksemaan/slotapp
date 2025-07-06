@@ -1,8 +1,9 @@
+// assets/js/meters_edit.js
 document.addEventListener('DOMContentLoaded', function() {
     const machineSelect = document.getElementById('machine_id');
     const cashGambeeMeterFields = document.getElementById('cashGambeeMeterFields');
     const coinsMachineMeterFields = document.getElementById('coinsMachineMeterFields');
-    // Removed offlineMachineStatusSection variable
+    const offlineMachineStatusSection = document.getElementById('offlineMachineStatusSection'); // Re-added variable
 
     // Function to toggle visibility of meter fields and offline section
     function toggleMeterForms() {
@@ -13,10 +14,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // Hide all dynamic sections initially
         cashGambeeMeterFields.style.display = 'none';
         coinsMachineMeterFields.style.display = 'none';
-        // Removed offlineMachineStatusSection.style.display = 'none';
+        offlineMachineStatusSection.style.display = 'none'; // Control this section
 
         if (systemComp === 'offline') {
-            // Removed offlineMachineStatusSection.style.display = 'block';
+            offlineMachineStatusSection.style.display = 'block'; // Show offline section
             if (machineType === 'COINS') {
                 coinsMachineMeterFields.style.display = 'block';
             } else { // CASH or GAMBEE
@@ -33,4 +34,3 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initial call to set correct form state on page load
     toggleMeterForms();
 });
-
