@@ -57,6 +57,12 @@ function processMeterCSVFile($file, $operation_date, $conn) {
         
         $data = [];
         if (($handle = fopen($temp_file, "r")) !== FALSE) {
+            // Check for and remove UTF-8 BOM
+            $bom = fread($handle, 3);
+            if ($bom !== "\xef\xbb\xbf") {
+                fseek($handle, 0); // No BOM, rewind to the beginning
+            }
+            
             while (($row = fgetcsv($handle, 1000, ",")) !== FALSE) {
                 $data[] = $row;
             }
@@ -131,14 +137,14 @@ function processMeterCSVFile($file, $operation_date, $conn) {
             }
 
             // Extract and validate numeric fields
-            $total_in = floatval($row[$header_map['total_in']] ?? 0);
-            $total_out = floatval($row[$header_map['total_out']] ?? 0);
-            $bills_in = floatval($row[$header_map['bills_in']] ?? 0);
-            $ticket_in = floatval($row[$header_map['ticket_in']] ?? 0);
-            $ticket_out = floatval($row[$header_map['ticket_out']] ?? 0);
-            $jp = floatval($row[$header_map['jp']] ?? 0);
-            $bets = floatval($row[$header_map['bets']] ?? 0);
-            $handpay = floatval($row[$header_map['handpay']] ?? 0);
+            $total_in = intval($row[$header_map['total_in']] ?? 0);
+            $total_out = intval($row[$header_map['total_out']] ?? 0);
+            $bills_in = intval($row[$header_map['bills_in']] ?? 0);
+            $ticket_in = intval($row[$header_map['ticket_in']] ?? 0);
+            $ticket_out = intval($row[$header_map['ticket_out']] ?? 0);
+            $jp = intval($row[$header_map['jp']] ?? 0);
+            $bets = intval($row[$header_map['bets']] ?? 0);
+            $handpay = intval($row[$header_map['handpay']] ?? 0);
 
             // Execute insert statement
             $insert_stmt->execute([
