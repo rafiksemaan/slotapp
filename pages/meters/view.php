@@ -93,7 +93,7 @@ try {
                         <div class="col-6">
                             <div class="detail-group">
                                 <strong>Credit Value:</strong>
-                                <span><?php echo format_currency($meter['credit_value']); ?></span>
+                                <span><?php echo number_format($meter['credit_value']); ?></span>
                             </div>
                         </div>
                     </div>
@@ -104,37 +104,37 @@ try {
                             <div class="col-6">
                                 <div class="detail-group">
                                     <strong>Total In:</strong>
-                                    <span><?php echo format_currency(($meter['total_in'] ?? 0) * $meter['credit_value']); ?></span>
+                                    <span><?php echo number_format(($meter['total_in'] ?? 0) * $meter['credit_value']); ?></span>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="detail-group">
                                     <strong>Total Out:</strong>
-                                    <span><?php echo format_currency(($meter['total_out'] ?? 0) * $meter['credit_value']); ?></span>
+                                    <span><?php echo number_format(($meter['total_out'] ?? 0) * $meter['credit_value']); ?></span>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="detail-group">
                                     <strong>Bills In:</strong>
-                                    <span><?php echo format_currency(($meter['bills_in'] ?? 0) * $meter['credit_value']); ?></span>
+                                    <span><?php echo number_format(($meter['bills_in'] ?? 0) * $meter['credit_value']); ?></span>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="detail-group">
                                     <strong>Handpay:</strong>
-                                    <span><?php echo format_currency(($meter['handpay'] ?? 0) * $meter['credit_value']); ?></span>
+                                    <span><?php echo number_format(($meter['handpay'] ?? 0) * $meter['credit_value']); ?></span>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="detail-group">
                                     <strong>JP:</strong>
-                                    <span><?php echo format_currency(($meter['jp'] ?? 0) * $meter['credit_value']); ?></span>
+                                    <span><?php echo number_format(($meter['jp'] ?? 0) * $meter['credit_value']); ?></span>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="detail-group">
                                     <strong>Bets:</strong>
-                                    <span><?php echo format_currency(($meter['bets'] ?? 0) * $meter['credit_value']); ?></span>
+                                    <span><?php echo number_format(($meter['bets'] ?? 0) * $meter['credit_value']); ?></span>
                                 </div>
                             </div>
                         <?php endif; ?>
@@ -143,31 +143,31 @@ try {
                             <div class="col-6">
                                 <div class="detail-group">
                                     <strong>Coins In:</strong>
-                                    <span><?php echo format_currency(($meter['coins_in'] ?? 0) * $meter['credit_value']); ?></span>
+                                    <span><?php echo number_format(($meter['coins_in'] ?? 0) * $meter['credit_value']); ?></span>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="detail-group">
                                     <strong>Coins Out:</strong>
-                                    <span><?php echo format_currency(($meter['coins_out'] ?? 0) * $meter['credit_value']); ?></span>
+                                    <span><?php echo number_format(($meter['coins_out'] ?? 0) * $meter['credit_value']); ?></span>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="detail-group">
                                     <strong>Coins Drop:</strong>
-                                    <span><?php echo format_currency(($meter['coins_drop'] ?? 0) * $meter['credit_value']); ?></span>
+                                    <span><?php echo number_format(($meter['coins_drop'] ?? 0) * $meter['credit_value']); ?></span>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="detail-group">
                                     <strong>Bets:</strong>
-                                    <span><?php echo format_currency(($meter['bets'] ?? 0) * $meter['credit_value']); ?></span>
+                                    <span><?php echo number_format(($meter['bets'] ?? 0) * $meter['credit_value']); ?></span>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="detail-group">
                                     <strong>Handpay:</strong>
-                                    <span><?php echo format_currency(($meter['handpay'] ?? 0) * $meter['credit_value']); ?></span>
+                                    <span><?php echo number_format(($meter['handpay'] ?? 0) * $meter['credit_value']); ?></span>
                                 </div>
                             </div>
                         <?php endif; ?>
