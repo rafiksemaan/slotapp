@@ -27,14 +27,17 @@ if ($date_range_type === 'range') {
     $end_date = date("Y-m-t", strtotime($start_date));
 }
 
-// Build query for fetching meter data
+// Build query for fetching meter data with LAG for previous readings
 $query = "
-    SELECT 
-        m.machine_number,
-        m.credit_value, -- Select credit_value
-        mt.name AS machine_type_name,
+    SELECT
         me.*,
-        u.username AS created_by_username
+        m.machine_number,
+        m.credit_value,
+        mt.name AS machine_type_name,
+        u.username AS created_by_username,
+        LAG(me.bills_in, 1, NULL) OVER (PARTITION BY me.machine_id ORDER BY me.operation_date) AS prev_bills_in,
+        LAG(me.handpay, 1, NULL) OVER (PARTITION BY me.machine_id ORDER BY me.operation_date) AS prev_handpay,
+        LAG(me.coins_drop, 1, NULL) OVER (PARTITION BY me.machine_id ORDER BY me.operation_date) AS prev_coins_drop
     FROM meters me
     JOIN machines m ON me.machine_id = m.id
     LEFT JOIN machine_types mt ON m.type_id = mt.id
@@ -79,19 +82,97 @@ try {
     $stmt->execute($params);
     $meters = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    // Fetch transaction sums for anomaly calculation
+    $transaction_sums_query = "
+        SELECT
+            t.machine_id,
+            t.operation_date,
+            SUM(CASE WHEN tt.name = 'Cash Drop' THEN t.amount ELSE 0 END) AS cash_drop_sum,
+            SUM(CASE WHEN tt.name = 'Coins Drop' THEN t.amount ELSE 0 END) AS coins_drop_sum,
+            SUM(CASE WHEN tt.name = 'Handpay' THEN t.amount ELSE 0 END) AS handpay_sum
+        FROM transactions t
+        JOIN transaction_types tt ON t.transaction_type_id = tt.id
+        WHERE t.operation_date BETWEEN ? AND ?
+    ";
+    // Add machine filter to transaction sums query if applicable
+    $transaction_sums_params = [$start_date, $end_date];
+    if ($filter_machine !== 'all') {
+        $transaction_sums_query .= " AND t.machine_id = ?";
+        $transaction_sums_params[] = $filter_machine;
+    }
+    $transaction_sums_query .= " GROUP BY t.machine_id, t.operation_date";
+
+    $sums_stmt = $conn->prepare($transaction_sums_query);
+    $sums_stmt->execute($transaction_sums_params);
+    $transaction_sums = [];
+    foreach ($sums_stmt->fetchAll(PDO::FETCH_ASSOC) as $sum_row) {
+        $transaction_sums[$sum_row['machine_id'] . '_' . $sum_row['operation_date']] = $sum_row;
+    }
+
+    // Process meters data to calculate variance and anomaly
+    foreach ($meters as &$meter) {
+        $credit_value = (float)$meter['credit_value'];
+        $operation_date = $meter['operation_date'];
+        $machine_id = $meter['machine_id'];
+
+        // Initialize variance and anomaly fields
+        $meter['bills_in_variance'] = '---';
+        $meter['handpay_variance'] = '---';
+        $meter['coins_drop_variance'] = '---';
+        $meter['bills_in_anomaly'] = '---';
+        $meter['handpay_anomaly'] = '---';
+        $meter['coins_drop_anomaly'] = '---';
+
+        // Calculate Variance
+        if (!$meter['is_initial_reading']) { // Only calculate if not an initial reading
+            if ($meter['bills_in'] !== null && $meter['prev_bills_in'] !== null) {
+                $meter['bills_in_variance'] = ($meter['bills_in'] - $meter['prev_bills_in']) * $credit_value;
+            }
+            if ($meter['handpay'] !== null && $meter['prev_handpay'] !== null) {
+                $meter['handpay_variance'] = ($meter['handpay'] - $meter['prev_handpay']) * $credit_value;
+            }
+            if ($meter['coins_drop'] !== null && $meter['prev_coins_drop'] !== null) {
+                $meter['coins_drop_variance'] = ($meter['coins_drop'] - $meter['prev_coins_drop']) * $credit_value;
+            }
+        }
+
+        // Calculate Anomaly
+        $sum_key = $machine_id . '_' . $operation_date;
+        if (isset($transaction_sums[$sum_key])) {
+            $current_transaction_sums = $transaction_sums[$sum_key];
+
+            // Bills In Anomaly (vs Cash Drop Transaction)
+            if ($meter['bills_in_variance'] !== '---' && $current_transaction_sums['cash_drop_sum'] !== null) {
+                $meter['bills_in_anomaly'] = $meter['bills_in_variance'] - (float)$current_transaction_sums['cash_drop_sum'];
+            }
+
+            // Handpay Anomaly (vs Handpay Transaction)
+            if ($meter['handpay_variance'] !== '---' && $current_transaction_sums['handpay_sum'] !== null) {
+                $meter['handpay_anomaly'] = $meter['handpay_variance'] - (float)$current_transaction_sums['handpay_sum'];
+            }
+
+            // Coins Drop Anomaly (vs Coins Drop Transaction)
+            if ($meter['coins_drop_variance'] !== '---' && $current_transaction_sums['coins_drop_sum'] !== null) {
+                $meter['coins_drop_anomaly'] = $meter['coins_drop_variance'] - (float)$current_transaction_sums['coins_drop_sum'];
+            }
+        }
+    }
+    unset($meter); // Break the reference
+
     // Get machines for filter dropdown
     $machines_stmt = $conn->query("
-        SELECT m.id, m.machine_number, b.name as brand_name 
-        FROM machines m 
-        LEFT JOIN brands b ON m.brand_id = b.id 
+        SELECT m.id, m.machine_number, b.name as brand_name
+        FROM machines m
+        LEFT JOIN brands b ON m.brand_id = b.id
         ORDER BY CAST(m.machine_number AS UNSIGNED) ASC
     ");
     $machines = $machines_stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
 } catch (PDOException $e) {
     set_flash_message('danger', "Database error: " . htmlspecialchars($e->getMessage()));
     $meters = [];
     $machines = [];
+    $transaction_sums = [];
 }
 
 // Meter types for dropdown (from database ENUM or fixed list)
@@ -247,6 +328,12 @@ $has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !emp
                             <th class="px-4 py-2 text-right">Bets</th>
                             <th class="px-4 py-2 text-right">Handpay</th>
                             <th class="px-4 py-2 text-right">JP</th>
+                            <th class="px-4 py-2 text-right">Bills In Variance</th>
+                            <th class="px-4 py-2 text-right">Handpay Variance</th>
+                            <th class="px-4 py-2 text-right">Coins Drop Variance</th>
+                            <th class="px-4 py-2 text-right">Bills In Anomaly</th>
+                            <th class="px-4 py-2 text-right">Handpay Anomaly</th>
+                            <th class="px-4 py-2 text-right">Coins Drop Anomaly</th>
                             <th class="px-4 py-2 text-left">Notes</th>
                             <th class="px-4 py-2 text-left sortable-header" data-sort-column="created_by_username" data-sort-order="<?php echo $sort_column == 'created_by_username' ? '▲' : '▼'; ?>">
                                 Created By <?php if ($sort_column == 'created_by_username') echo $sort_order == 'ASC' ? '▲' : '▼'; ?>
@@ -257,7 +344,7 @@ $has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !emp
                     <tbody class="divide-y divide-gray-700">
                         <?php if (empty($meters)): ?>
                             <tr>
-                                <td colspan="15" class="text-center px-4 py-6">No meter entries found</td>
+                                <td colspan="21" class="text-center px-4 py-6">No meter entries found</td>
                             </tr>
                         <?php else: ?>
                             <?php foreach ($meters as $meter): ?>
@@ -274,6 +361,12 @@ $has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !emp
                                     <td class="px-4 py-2 text-right"><?php echo format_currency(($meter['bets'] ?? 0) * $meter['credit_value']); ?></td>
                                     <td class="px-4 py-2 text-right"><?php echo format_currency(($meter['handpay'] ?? 0) * $meter['credit_value']); ?></td>
                                     <td class="px-4 py-2 text-right"><?php echo format_currency(($meter['jp'] ?? 0) * $meter['credit_value']); ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo is_numeric($meter['bills_in_variance']) ? format_currency($meter['bills_in_variance']) : $meter['bills_in_variance']; ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo is_numeric($meter['handpay_variance']) ? format_currency($meter['handpay_variance']) : $meter['handpay_variance']; ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo is_numeric($meter['coins_drop_variance']) ? format_currency($meter['coins_drop_variance']) : $meter['coins_drop_variance']; ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo is_numeric($meter['bills_in_anomaly']) ? format_currency($meter['bills_in_anomaly']) : $meter['bills_in_anomaly']; ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo is_numeric($meter['handpay_anomaly']) ? format_currency($meter['handpay_anomaly']) : $meter['handpay_anomaly']; ?></td>
+                                    <td class="px-4 py-2 text-right"><?php echo is_numeric($meter['coins_drop_anomaly']) ? format_currency($meter['coins_drop_anomaly']) : $meter['coins_drop_anomaly']; ?></td>
                                     <td class="px-4 py-2 text-sm"><?php echo htmlspecialchars($meter['notes'] ?? ''); ?></td>
                                     <td class="px-4 py-2"><?php echo htmlspecialchars($meter['created_by_username'] ?? 'N/A'); ?></td>
                                     <td class="px-4 py-2 text-right">

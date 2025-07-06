@@ -279,6 +279,7 @@ function createTables($conn) {
 			`coins_drop` DECIMAL(10,2) DEFAULT NULL,
 			`manual_reading_notes` TEXT COLLATE utf8mb4_general_ci DEFAULT NULL, /* ADD THIS LINE */
 			`notes` TEXT COLLATE utf8mb4_general_ci DEFAULT NULL, /* ADD THIS LINE */
+            `is_initial_reading` BOOLEAN NOT NULL DEFAULT FALSE, /* ADD THIS LINE */
 			`created_by` INT NOT NULL,
 			`created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
 			`updated_by` INT DEFAULT NULL,
@@ -497,4 +498,3 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	
 </body>
 </html>
-

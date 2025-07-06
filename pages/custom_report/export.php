@@ -4,6 +4,11 @@
  * Handles both PDF and Excel exports
  */
 
+// Temporarily enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+
 // Prevent direct access
 if (!defined('EXPORT_HANDLER')) {
     define('EXPORT_HANDLER', true);
@@ -203,6 +208,8 @@ try {
             $order_column = in_array('machine_type', $selected_columns) ? 'machine_type' : 'm.machine_number';
             break;
         case 'machine_number':
+            $order_column = 'CAST(m.machine_number AS UNSIGNED)'; // Fix applied here
+            break;
         case 'model':
         case 'credit_value':
         case 'serial_number':
@@ -298,4 +305,8 @@ if ($export_type === 'pdf') {
     header("Location: index.php?page=custom_report&error=Invalid export type");
     exit;
 }
+
+// Revert error reporting after processing
+ini_set('display_errors', 0);
+error_reporting(E_ERROR | E_WARNING | E_PARSE);
 ?>

@@ -27,7 +27,8 @@ $meter = [
     'handpay' => '', // Generic handpay field
     'jp' => '',
     'manual_reading_notes' => '',
-    'notes' => ''
+    'notes' => '',
+    'is_initial_reading' => false // Initialize new field
 ];
 
 // Process form submission
@@ -37,6 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $meter['operation_date'] = sanitize_input($_POST['operation_date'] ?? $operation_date);
     $meter['manual_reading_notes'] = sanitize_input($_POST['manual_reading_notes'] ?? '');
     $meter['notes'] = sanitize_input($_POST['notes'] ?? '');
+    $meter['is_initial_reading'] = isset($_POST['is_initial_reading']) ? 1 : 0; // Capture checkbox value
 
     // Fetch machine details to determine meter type and expected fields
     $machine_details = null;
@@ -91,8 +93,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     machine_id, operation_date, meter_type, 
                     total_in, total_out, bills_in, ticket_in, ticket_out, jp, bets, handpay, 
                     coins_in, coins_out, coins_drop, 
-                    manual_reading_notes, notes, created_by
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    manual_reading_notes, notes, is_initial_reading, created_by
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
             
             $stmt->execute([
@@ -112,6 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $coins_drop,
                 $meter['manual_reading_notes'] ?: null,
                 $meter['notes'] ?: null,
+                $meter['is_initial_reading'], // New field
                 $_SESSION['user_id']
             ]);
             
@@ -191,6 +194,10 @@ try {
                                 <small class="form-text">Casino operation day (set by administrator)</small>
                             </div>
                         </div>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" id="is_initial_reading" name="is_initial_reading" class="form-check-input" <?php echo $meter['is_initial_reading'] ? 'checked' : ''; ?>>
+                        <label class="form-check-label" for="is_initial_reading">This is the initial meter reading for this machine</label>
                     </div>
                 </div>
 
