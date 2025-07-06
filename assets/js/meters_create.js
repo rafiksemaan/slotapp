@@ -47,14 +47,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const cashGambeeMeterFields = document.getElementById('cashGambeeMeterFields');
     const coinsMachineMeterFields = document.getElementById('coinsMachineMeterFields');
-    const offlineMachineStatusSection = document.getElementById('offlineMachineStatusSection');
+    // Removed offlineMachineStatusSection variable
 
     // Function to reset all dynamic meter fields
     function resetMeterFields() {
         const fieldsToReset = [
             'total_in', 'total_out', 'bills_in', 'handpay_cash_gambee', 'jp',
             'coins_in', 'coins_out', 'coins_drop', 'bets_coins', 'handpay_coins',
-            'manual_reading_notes'
+            // Removed 'manual_reading_notes'
+            'notes'
         ];
         fieldsToReset.forEach(id => {
             const element = document.getElementById(id);
@@ -75,10 +76,10 @@ document.addEventListener('DOMContentLoaded', function () {
         // Hide all dynamic sections initially
         cashGambeeMeterFields.style.display = 'none';
         coinsMachineMeterFields.style.display = 'none';
-        offlineMachineStatusSection.style.display = 'none';
+        // Removed offlineMachineStatusSection.style.display = 'none';
 
         if (systemComp === 'offline') {
-            offlineMachineStatusSection.style.display = 'block';
+            // Removed offlineMachineStatusSection.style.display = 'block';
             if (machineType === 'COINS') {
                 coinsMachineMeterFields.style.display = 'block';
             } else { // CASH or GAMBEE
@@ -104,3 +105,4 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 });
+

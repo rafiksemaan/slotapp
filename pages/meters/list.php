@@ -43,7 +43,6 @@ $query = "
         rm.handpay,
         rm.jp,
         rm.notes,
-        rm.manual_reading_notes,
         rm.is_initial_reading,
         rm.prev_bills_in,
         rm.prev_handpay,
@@ -93,8 +92,7 @@ try {
         FROM transactions t
         JOIN transaction_types tt ON t.transaction_type_id = tt.id
         WHERE t.operation_date BETWEEN ? AND ?
-        GROUP BY t.machine_id, t.operation_date
-    ";
+        GROUP BY t.machine_id, t.operation_date";
     $sums_stmt = $conn->prepare($transaction_sums_query);
     $sums_stmt->execute([$start_date_for_transactions, $end_date_for_transactions]);
     $transaction_sums = [];
@@ -266,3 +264,6 @@ $meter_types_options = ['online', 'coins', 'offline'];
         </div>
     </div>
 </div>
+
+<script src="assets/js/common_utils.js"></script>
+

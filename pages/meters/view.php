@@ -203,12 +203,6 @@ try {
                         <?php endif; ?>
                         <div class="col-12">
                             <div class="detail-group">
-                                <strong>Manual Reading Notes:</strong>
-                                <span><?php echo nl2br(htmlspecialchars($meter['manual_reading_notes'] ?? 'N/A')); ?></span>
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <div class="detail-group">
                                 <strong>General Notes:</strong>
                                 <span><?php echo nl2br(htmlspecialchars($meter['notes'] ?? 'N/A')); ?></span>
                             </div>
@@ -228,3 +222,4 @@ try {
         </div>
     </div>
 </div>
+
