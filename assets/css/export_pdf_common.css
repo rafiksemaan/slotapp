@@ -196,7 +196,7 @@
             border-right: 1px solid var(--neutral-300);
 			background-color: var(--neutral-100);
             color: var(--text-primary);
-            padding: 8px 6px;
+            padding: 5px 4px; /* Made more compact */
             text-align: center;
             font-weight: 700;
             font-size: 9px;
@@ -211,7 +211,7 @@
 
         td {
             border-right: 1px solid var(--neutral-300);
-			padding: 4px 6px;
+			padding: 3px 4px; /* Made more compact */
             border-bottom: 1px solid var(--border-light);
             font-size: 8px;
             line-height: 1.2;
@@ -283,7 +283,7 @@
             color: var(--text-muted);
             font-size: 14px;
             background-color: var(--bg-secondary);
-            border-radius: 8px;
+            border-radius: 88px;
             border: 2px dashed var(--border-medium);
         }
 
@@ -398,12 +398,20 @@
                 print-color-adjust: exact;
                 padding: 6px 4px;
                 font-size: 7px;
+                border-right: 1px solid var(--neutral-300) !important; /* Vertical border for print */
             }
 
             td {
                 padding: 3px 4px;
                 font-size: 7px;
                 line-height: 1.1;
+                border-right: 1px solid var(--neutral-300) !important; /* Vertical border for print */
+            }
+
+            /* Remove right border from last column for print */
+            th:last-child,
+            td:last-child {
+                border-right: none !important;
             }
 
             tr:nth-child(even) {
@@ -627,4 +635,10 @@
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
+}
+
+/* New styles for meter list */
+.variance-anomaly-cell {
+    font-size: 7px; /* Smaller for print */
+    color: var(--text-muted);
 }

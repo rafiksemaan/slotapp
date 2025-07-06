@@ -6,7 +6,7 @@
 $page = $_GET['page'] ?? 'meters';
 
 // Define allowed actions
-$allowed_actions = ['list', 'create', 'edit', 'delete', 'view', 'upload'];
+$allowed_actions = ['list', 'create', 'edit', 'delete', 'view', 'upload', 'machine_entries'];
 $action = isset($_GET['action']) ? $_GET['action'] : 'list';
 
 // Validate action
@@ -60,8 +60,11 @@ switch ($action) {
         
     case 'view':
         // View action might require an ID
-        // Example: include 'meters/view.php';
-        echo "<h2>View Meter Entry</h2><p>This page will display details of a specific meter entry.</p>";
+        include 'meters/view.php';
+        break;
+
+    case 'machine_entries':
+        include 'meters/machine_entries.php';
         break;
         
     case 'list':
