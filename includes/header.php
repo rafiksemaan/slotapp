@@ -83,6 +83,12 @@ ob_start();
                 <span class="menu-icon"><img src="<?= icon('home') ?>" alt="Dashboard" /></span>
                 <span class="menu-text">Dashboard</span>
             </a></li>
+			<?php if (has_permission('editor')): // This condition allows both admin and editor ?>
+			<li><a href="index.php?page=operation_day" class="<?= $page == 'operation_day' ? 'active' : '' ?>">
+				<span class="menu-icon"><img src="<?= icon('calendar') ?>" alt="operation_day" /></span>
+				<span class="menu-text">Operation Day</span>
+			</a></li>
+			<?php endif; ?>
             <li><a href="index.php?page=transactions" class="<?= $page == 'transactions' ? 'active' : '' ?>">
                 <span class="menu-icon"><img src="<?= icon('dollar-sign') ?>" alt="transactions" /></span>
                 <span class="menu-text">Transactions</span>
@@ -95,12 +101,6 @@ ob_start();
                 <span class="menu-icon"><img src="<?= icon('calendar') ?>" alt="weekly_tracking" /></span>
                 <span class="menu-text">Weekly Tracking</span>
             </a></li>
-			<?php if (has_permission('editor')): // This condition allows both admin and editor ?>
-			<li><a href="index.php?page=operation_day" class="<?= $page == 'operation_day' ? 'active' : '' ?>">
-				<span class="menu-icon"><img src="<?= icon('calendar') ?>" alt="operation_day" /></span>
-				<span class="menu-text">Operation Day</span>
-			</a></li>
-			<?php endif; ?>
             <li><a href="index.php?page=meters" class="<?= $page == 'meters' ? 'active' : '' ?>">
                 <span class="menu-icon"><img src="<?= icon('meters') ?>" alt="meters" /></span>
                 <span class="menu-text">Meters</span>
