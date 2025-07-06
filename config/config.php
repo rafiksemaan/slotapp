@@ -15,6 +15,9 @@ define('SECURE_MODE', true);
 define('FORCE_HTTPS', false); // Set to true in production
 define('ENABLE_SECURITY_HEADERS', true);
 
+// Define base URL or path to icons
+define('ICON_PATH', 'assets/icons'); // ADD THIS LINE
+
 // Include security functions
 require_once __DIR__ . '/security.php';
 
@@ -112,17 +115,6 @@ try {
             break;
         default:
             $user_message .= "Please contact the administrator.";
-    }
-    
-    // Show detailed error in development mode
-    if (isset($_GET['debug']) && $_GET['debug'] === 'true') {
-        $user_message .= "<br><br><strong>Debug Info:</strong><br>";
-        $user_message .= "Error: " . htmlspecialchars($error_message) . "<br>";
-        $user_message .= "Code: " . htmlspecialchars($error_code) . "<br>";
-        $user_message .= "Host: " . htmlspecialchars($db_host) . "<br>";
-        $user_message .= "Database: " . htmlspecialchars($db_name) . "<br>";
-        $user_message .= "User: " . htmlspecialchars($db_user) . "<br>";
-        $user_message .= "MySQL Version: " . htmlspecialchars($mysql_version ?? 'Unknown');
     }
     
     // Display user-friendly error page
