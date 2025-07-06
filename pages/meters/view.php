@@ -97,81 +97,80 @@ try {
                             </div>
                         </div>
                     </div>
+					<h4 class="section-title" style="margin-top: 2rem;">Meter Readings (Raw Values)</h4>
+					<div class="row">
+						<?php if ($meter['meter_type'] === 'online' || $meter['meter_type'] === 'offline'): ?>
+							<div class="col-6">
+								<div class="detail-group">
+									<strong>Total In:</strong>
+									<span><?php echo number_format($meter['total_in'] ?? 0, 0); ?></span>
+								</div>
+							</div>
+							<div class="col-6">
+								<div class="detail-group">
+									<strong>Total Out:</strong>
+									<span><?php echo number_format($meter['total_out'] ?? 0, 0); ?></span>
+								</div>
+							</div>
+							<div class="col-6">
+								<div class="detail-group">
+									<strong>Bills In:</strong>
+									<span><?php echo number_format($meter['bills_in'] ?? 0, 0); ?></span>
+								</div>
+							</div>
+							<div class="col-6">
+								<div class="detail-group">
+									<strong>Handpay:</strong>
+									<span><?php echo number_format($meter['handpay'] ?? 0, 0); ?></span>
+								</div>
+							</div>
+							<div class="col-6">
+								<div class="detail-group">
+									<strong>JP:</strong>
+									<span><?php echo number_format($meter['jp'] ?? 0, 0); ?></span>
+								</div>
+							</div>
+							<div class="col-6">
+								<div class="detail-group">
+									<strong>Bets:</strong>
+									<span><?php echo number_format($meter['bets'] ?? 0, 0); ?></span>
+								</div>
+							</div>
+						<?php endif; ?>
 
-                    <h4 class="section-title" style="margin-top: 2rem;">Meter Readings (Multiplied by Credit Value)</h4>
-                    <div class="row">
-                        <?php if ($meter['meter_type'] === 'online' || $meter['meter_type'] === 'offline'): ?>
-                            <div class="col-6">
-                                <div class="detail-group">
-                                    <strong>Total In:</strong>
-                                    <span><?php echo number_format(($meter['total_in'] ?? 0) * $meter['credit_value']); ?></span>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="detail-group">
-                                    <strong>Total Out:</strong>
-                                    <span><?php echo number_format(($meter['total_out'] ?? 0) * $meter['credit_value']); ?></span>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="detail-group">
-                                    <strong>Bills In:</strong>
-                                    <span><?php echo number_format(($meter['bills_in'] ?? 0) * $meter['credit_value']); ?></span>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="detail-group">
-                                    <strong>Handpay:</strong>
-                                    <span><?php echo number_format(($meter['handpay'] ?? 0) * $meter['credit_value']); ?></span>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="detail-group">
-                                    <strong>JP:</strong>
-                                    <span><?php echo number_format(($meter['jp'] ?? 0) * $meter['credit_value']); ?></span>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="detail-group">
-                                    <strong>Bets:</strong>
-                                    <span><?php echo number_format(($meter['bets'] ?? 0) * $meter['credit_value']); ?></span>
-                                </div>
-                            </div>
-                        <?php endif; ?>
-
-                        <?php if ($meter['meter_type'] === 'coins'): ?>
-                            <div class="col-6">
-                                <div class="detail-group">
-                                    <strong>Coins In:</strong>
-                                    <span><?php echo number_format(($meter['coins_in'] ?? 0) * $meter['credit_value']); ?></span>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="detail-group">
-                                    <strong>Coins Out:</strong>
-                                    <span><?php echo number_format(($meter['coins_out'] ?? 0) * $meter['credit_value']); ?></span>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="detail-group">
-                                    <strong>Coins Drop:</strong>
-                                    <span><?php echo number_format(($meter['coins_drop'] ?? 0) * $meter['credit_value']); ?></span>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="detail-group">
-                                    <strong>Bets:</strong>
-                                    <span><?php echo number_format(($meter['bets'] ?? 0) * $meter['credit_value']); ?></span>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="detail-group">
-                                    <strong>Handpay:</strong>
-                                    <span><?php echo number_format(($meter['handpay'] ?? 0) * $meter['credit_value']); ?></span>
-                                </div>
-                            </div>
-                        <?php endif; ?>
-                    </div>
+						<?php if ($meter['meter_type'] === 'coins'): ?>
+							<div class="col-6">
+								<div class="detail-group">
+									<strong>Coins In:</strong>
+									<span><?php echo number_format($meter['coins_in'] ?? 0, 0); ?></span>
+								</div>
+							</div>
+							<div class="col-6">
+								<div class="detail-group">
+									<strong>Coins Out:</strong>
+									<span><?php echo number_format($meter['coins_out'] ?? 0, 0); ?></span>
+								</div>
+							</div>
+							<div class="col-6">
+								<div class="detail-group">
+									<strong>Coins Drop:</strong>
+									<span><?php echo number_format($meter['coins_drop'] ?? 0, 0); ?></span>
+								</div>
+							</div>
+							<div class="col-6">
+								<div class="detail-group">
+									<strong>Bets:</strong>
+									<span><?php echo number_format($meter['bets'] ?? 0, 0); ?></span>
+								</div>
+							</div>
+							<div class="col-6">
+								<div class="detail-group">
+									<strong>Handpay:</strong>
+									<span><?php echo number_format($meter['handpay'] ?? 0, 0); ?></span>
+								</div>
+							</div>
+						<?php endif; ?>
+					</div>
 
                     <h4 class="section-title" style="margin-top: 2rem;">Audit Information</h4>
                     <div class="row">

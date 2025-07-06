@@ -236,21 +236,21 @@ $meter_types_options = ['online', 'coins', 'offline'];
                                     <td class="px-4 py-2 table-cell-nowrap"><?php echo htmlspecialchars($meter['operation_date'] ? format_date($meter['operation_date']) : 'N/A'); ?></td>
                                     <td class="px-4 py-2 table-cell-nowrap"><?php echo htmlspecialchars($meter['machine_number']); ?></td>
                                     <td class="px-4 py-2 table-cell-nowrap"><?php echo htmlspecialchars(ucfirst($meter['meter_type'] ?? 'N/A')); ?></td>
-                                    <td class="px-4 py-2 table-cell-nowrap"><?php echo number_format($meter['total_in'] ?? 0); ?></td>
-                                    <td class="px-4 py-2 table-cell-nowrap"><?php echo number_format($meter['total_out'] ?? 0); ?></td>
-                                    <td class="px-4 py-2 table-cell-nowrap"><?php echo number_format($meter['bills_in'] ?? 0); ?></td>
-                                    <td class="px-4 py-2 table-cell-nowrap variance-anomaly-cell"><?php echo is_numeric($meter['bills_in_variance']) ? number_format($meter['bills_in_variance']) : $meter['bills_in_variance']; ?></td>
-                                    <td class="px-4 py-2 table-cell-nowrap variance-anomaly-cell"><?php echo is_numeric($meter['bills_in_anomaly']) ? number_format($meter['bills_in_anomaly']) : $meter['bills_in_anomaly']; ?></td>
-                                    <td class="px-4 py-2 table-cell-nowrap"><?php echo number_format($meter['coins_in'] ?? 0); ?></td>
-                                    <td class="px-4 py-2 table-cell-nowrap"><?php echo number_format($meter['coins_out'] ?? 0); ?></td>
-                                    <td class="px-4 py-2 table-cell-nowrap"><?php echo number_format($meter['coins_drop'] ?? 0); ?></td>
-                                    <td class="px-4 py-2 table-cell-nowrap variance-anomaly-cell"><?php echo is_numeric($meter['coins_drop_variance']) ? number_format($meter['coins_drop_variance']) : $meter['coins_drop_variance']; ?></td>
-                                    <td class="px-4 py-2 table-cell-nowrap variance-anomaly-cell"><?php echo is_numeric($meter['coins_drop_anomaly']) ? number_format($meter['coins_drop_anomaly']) : $meter['coins_drop_anomaly']; ?></td>
-                                    <td class="px-4 py-2 table-cell-nowrap"><?php echo number_format($meter['bets'] ?? 0); ?></td>
-                                    <td class="px-4 py-2 table-cell-nowrap"><?php echo number_format($meter['handpay'] ?? 0); ?></td>
-                                    <td class="px-4 py-2 table-cell-nowrap variance-anomaly-cell"><?php echo is_numeric($meter['handpay_variance']) ? number_format($meter['handpay_variance']) : $meter['handpay_variance']; ?></td>
-                                    <td class="px-4 py-2 table-cell-nowrap variance-anomaly-cell"><?php echo is_numeric($meter['handpay_anomaly']) ? number_format($meter['handpay_anomaly']) : $meter['handpay_anomaly']; ?></td>
-                                    <td class="px-4 py-2 table-cell-nowrap"><?php echo number_format($meter['jp'] ?? 0); ?></td>
+									<td class="px-4 py-2 table-cell-nowrap"><?php echo number_format($meter['total_in'] ?? 0, 0); ?></td>
+									<td class="px-4 py-2 table-cell-nowrap"><?php echo number_format($meter['total_out'] ?? 0, 0); ?></td>
+									<td class="px-4 py-2 table-cell-nowrap"><?php echo number_format($meter['bills_in'] ?? 0, 0); ?></td>
+									<td class="px-4 py-2 table-cell-nowrap variance-anomaly-cell"><?php echo is_numeric($meter['bills_in_variance']) ? number_format($meter['bills_in_variance'], 0) : $meter['bills_in_variance']; ?></td>
+									<td class="px-4 py-2 table-cell-nowrap variance-anomaly-cell"><?php echo is_numeric($meter['bills_in_anomaly']) ? number_format($meter['bills_in_anomaly'], 0) : $meter['bills_in_anomaly']; ?></td>
+									<td class="px-4 py-2 table-cell-nowrap"><?php echo number_format($meter['coins_in'] ?? 0, 0); ?></td>
+									<td class="px-4 py-2 table-cell-nowrap"><?php echo number_format($meter['coins_out'] ?? 0, 0); ?></td>
+									<td class="px-4 py-2 table-cell-nowrap"><?php echo number_format($meter['coins_drop'] ?? 0, 0); ?></td>
+									<td class="px-4 py-2 table-cell-nowrap variance-anomaly-cell"><?php echo is_numeric($meter['coins_drop_variance']) ? number_format($meter['coins_drop_variance'], 0) : $meter['coins_drop_variance']; ?></td>
+									<td class="px-4 py-2 table-cell-nowrap variance-anomaly-cell"><?php echo is_numeric($meter['coins_drop_anomaly']) ? number_format($meter['coins_drop_anomaly'], 0) : $meter['coins_drop_anomaly']; ?></td>
+									<td class="px-4 py-2 table-cell-nowrap"><?php echo number_format($meter['bets'] ?? 0, 0); ?></td>
+									<td class="px-4 py-2 table-cell-nowrap"><?php echo number_format($meter['handpay'] ?? 0, 0); ?></td>
+									<td class="px-4 py-2 table-cell-nowrap variance-anomaly-cell"><?php echo is_numeric($meter['handpay_variance']) ? number_format($meter['handpay_variance'], 0) : $meter['handpay_variance']; ?></td>
+									<td class="px-4 py-2 table-cell-nowrap variance-anomaly-cell"><?php echo is_numeric($meter['handpay_anomaly']) ? number_format($meter['handpay_anomaly'], 0) : $meter['handpay_anomaly']; ?></td>
+									<td class="px-4 py-2 table-cell-nowrap"><?php echo number_format($meter['jp'] ?? 0, 0); ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>

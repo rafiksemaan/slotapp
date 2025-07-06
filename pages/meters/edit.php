@@ -208,52 +208,99 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <!-- Dynamic Meter Fields Section -->
                 <div class="form-section" id="dynamicMeterFields">
                     <h4>Meter Readings</h4>
-                    <div id="cashGambeeMeterFields" style="display: none;">
-                        <div class="row">
-                            <div class="col">
-                                <div class="form-group">
-                                    <label for="total_in">Total In</label>
-                                    <input type="number" id="total_in" name="total_in" class="form-control" step="0.01" min="0"
-                                           value="<?php echo htmlspecialchars($meter_data['total_in'] ?? ''); ?>">
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="form-group">
-                                    <label for="total_out">Total Out</label>
-                                    <input type="number" id="total_out" name="total_out" class="form-control" step="0.01" min="0"
-                                           value="<?php echo htmlspecialchars($meter_data['total_out'] ?? ''); ?>">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col">
-                                <div class="form-group">
-                                    <label for="bills_in">Bills In</label>
-                                    <input type="number" id="bills_in" name="bills_in" class="form-control" step="0.01" min="0"
-                                           value="<?php echo htmlspecialchars($meter_data['bills_in'] ?? ''); ?>">
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="form-group">
-                                    <label for="handpay_cash_gambee">Handpay</label>
-                                    <input type="number" id="handpay_cash_gambee" name="handpay_cash_gambee" class="form-control" step="0.01" min="0"
-                                           value="<?php echo htmlspecialchars($meter_data['handpay'] ?? ''); ?>">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col">
-                                <div class="form-group">
-                                    <label for="jp">JP</label>
-                                    <input type="number" id="jp" name="jp" class="form-control" step="0.01" min="0"
-                                           value="<?php echo htmlspecialchars($meter_data['jp'] ?? ''); ?>">
-                                </div>
-                            </div>
-                            <div class="col">
-                                <!-- Empty for layout balance -->
-                            </div>
-                        </div>
-                    </div>
+				<div id="cashGambeeMeterFields" style="display: none;">
+					<div class="row">
+						<div class="col">
+							<div class="form-group">
+								<label for="total_in">Total In</label>
+								<input type="number" id="total_in" name="total_in" class="form-control" step="1" min="0"
+									   value="<?php echo htmlspecialchars($meter_data['total_in'] ?? ''); ?>">
+							</div>
+						</div>
+						<div class="col">
+							<div class="form-group">
+								<label for="total_out">Total Out</label>
+								<input type="number" id="total_out" name="total_out" class="form-control" step="1" min="0"
+									   value="<?php echo htmlspecialchars($meter_data['total_out'] ?? ''); ?>">
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col">
+							<div class="form-group">
+								<label for="bills_in">Bills In</label>
+								<input type="number" id="bills_in" name="bills_in" class="form-control" step="1" min="0"
+									   value="<?php echo htmlspecialchars($meter_data['bills_in'] ?? ''); ?>">
+							</div>
+						</div>
+						<div class="col">
+							<div class="form-group">
+								<label for="handpay_cash_gambee">Handpay</label>
+								<input type="number" id="handpay_cash_gambee" name="handpay_cash_gambee" class="form-control" step="1" min="0"
+									   value="<?php echo htmlspecialchars($meter_data['handpay'] ?? ''); ?>">
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col">
+							<div class="form-group">
+								<label for="jp">JP</label>
+								<input type="number" id="jp" name="jp" class="form-control" step="1" min="0"
+									   value="<?php echo htmlspecialchars($meter_data['jp'] ?? ''); ?>">
+							</div>
+						</div>
+						<div class="col">
+							<!-- Empty for layout balance -->
+						</div>
+					</div>
+				</div>
+
+				<div id="coinsMachineMeterFields" style="display: none;">
+					<div class="row">
+						<div class="col">
+							<div class="form-group">
+								<label for="coins_in">Coins In</label>
+								<input type="number" id="coins_in" name="coins_in" class="form-control" step="1" min="0"
+									   value="<?php echo htmlspecialchars($meter_data['coins_in'] ?? ''); ?>">
+							</div>
+						</div>
+						<div class="col">
+							<div class="form-group">
+								<label for="coins_out">Coins Out</label>
+								<input type="number" id="coins_out" name="coins_out" class="form-control" step="1" min="0"
+									   value="<?php echo htmlspecialchars($meter_data['coins_out'] ?? ''); ?>">
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col">
+							<div class="form-group">
+								<label for="coins_drop">Coins Drop</label>
+								<input type="number" id="coins_drop" name="coins_drop" class="form-control" step="1" min="0"
+									   value="<?php echo htmlspecialchars($meter_data['coins_drop'] ?? ''); ?>">
+							</div>
+						</div>
+						<div class="col">
+							<div class="form-group">
+								<label for="bets_coins">Bets</label>
+								<input type="number" id="bets_coins" name="bets_coins" class="form-control" step="1" min="0"
+									   value="<?php echo htmlspecialchars($meter_data['bets'] ?? ''); ?>">
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col">
+							<div class="form-group">
+								<label for="handpay_coins">Handpay</label>
+								<input type="number" id="handpay_coins" name="handpay_coins" class="form-control" step="1" min="0"
+									   value="<?php echo htmlspecialchars($meter_data['handpay'] ?? ''); ?>">
+							</div>
+						</div>
+						<div class="col">
+							<!-- Empty for layout balance -->
+						</div>
+					</div>
+				</div>
 
                     <div id="coinsMachineMeterFields" style="display: none;">
                         <div class="row">
