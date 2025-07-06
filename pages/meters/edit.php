@@ -98,17 +98,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Populate fields based on determined meter_type from submission
         if ($meter_type === 'coins') {
-            $coins_in = empty($_POST['coins_in']) ? null : floatval($_POST['coins_in']);
-            $coins_out = empty($_POST['coins_out']) ? null : floatval($_POST['coins_out']);
-            $coins_drop = empty($_POST['coins_drop']) ? null : floatval($_POST['coins_drop']);
-            $bets = empty($_POST['bets_coins']) ? null : floatval($_POST['bets_coins']);
-            $handpay = empty($_POST['handpay_coins']) ? null : floatval($_POST['handpay_coins']);
+            $coins_in = empty($_POST['coins_in']) ? null : intval($_POST['coins_in']);
+            $coins_out = empty($_POST['coins_out']) ? null : intval($_POST['coins_out']);
+            $coins_drop = empty($_POST['coins_drop']) ? null : intval($_POST['coins_drop']);
+            $bets = empty($_POST['bets_coins']) ? null : intval($_POST['bets_coins']);
+            $handpay = empty($_POST['handpay_coins']) ? null : intval($_POST['handpay_coins']);
         } elseif ($meter_type === 'offline') { // For offline CASH/GAMBEE
-            $total_in = empty($_POST['total_in']) ? null : floatval($_POST['total_in']);
-            $total_out = empty($_POST['total_out']) ? null : floatval($_POST['total_out']);
-            $bills_in = empty($_POST['bills_in']) ? null : floatval($_POST['bills_in']);
-            $handpay = empty($_POST['handpay_cash_gambee']) ? null : floatval($_POST['handpay_cash_gambee']);
-            $jp = empty($_POST['jp']) ? null : floatval($_POST['jp']);
+            $total_in = empty($_POST['total_in']) ? null : intval($_POST['total_in']);
+            $total_out = empty($_POST['total_out']) ? null : intval($_POST['total_out']);
+            $bills_in = empty($_POST['bills_in']) ? null : intval($_POST['bills_in']);
+            $handpay = empty($_POST['handpay_cash_gambee']) ? null : intval($_POST['handpay_cash_gambee']);
+            $jp = empty($_POST['jp']) ? null : intval($_POST['jp']);
         }
         // Note: 'online' meter_type is handled by upload, not manual form.
 
