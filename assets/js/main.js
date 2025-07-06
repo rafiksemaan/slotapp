@@ -20,6 +20,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
    // Initialize delete confirmations
     initDeleteConfirmations();
+
+    // Initialize clickable rows
+    initClickableRows(); // NEW: Call the new function
 });
 
 /**
@@ -208,6 +211,35 @@ function initDeleteConfirmations() {
             
             if (confirm(confirmMessage)) {
                 window.location.href = this.getAttribute('href');
+            }
+        });
+    });
+}
+
+/**
+ * NEW: Initialize clickable table rows
+ */
+function initClickableRows() {
+    const clickableRows = document.querySelectorAll('.clickable-row');
+
+    clickableRows.forEach(row => {
+        row.addEventListener('click', function(event) {
+            // Check if the click target or any of its parents is an action-btn
+            let target = event.target;
+            let isActionButton = false;
+            while (target && target !== this) { // Traverse up to the row itself
+                if (target.classList.contains('action-btn') || target.closest('.action-btn')) {
+                    isActionButton = true;
+                    break;
+                }
+                target = target.parentNode;
+            }
+
+            if (!isActionButton) {
+                const machineId = this.dataset.machineId;
+                if (machineId) {
+                    window.location.href = `index.php?page=meters&action=machine_entries&id=${machineId}`;
+                }
             }
         });
     });
