@@ -21,9 +21,9 @@ $query = "
         SELECT
             me.*,
             ROW_NUMBER() OVER (PARTITION BY me.machine_id ORDER BY me.operation_date DESC, me.created_at DESC) as rn,
-            LAG(me.bills_in, 1, NULL) OVER (PARTITION BY me.machine_id ORDER BY me.operation_date ASC, me.created_at ASC) AS prev_bills_in,
-            LAG(me.handpay, 1, NULL) OVER (PARTITION BY me.machine_id ORDER BY me.operation_date ASC, me.created_at ASC) AS prev_handpay,
-            LAG(me.coins_drop, 1, NULL) OVER (PARTITION BY me.machine_id ORDER BY me.operation_date ASC, me.created_at ASC) AS prev_coins_drop
+            LAG(me.bills_in, 1, 0) OVER (PARTITION BY me.machine_id ORDER BY me.operation_date ASC, me.created_at ASC) AS prev_bills_in,
+            LAG(me.handpay, 1, 0) OVER (PARTITION BY me.machine_id ORDER BY me.operation_date ASC, me.created_at ASC) AS prev_handpay,
+            LAG(me.coins_drop, 1, 0) OVER (PARTITION BY me.machine_id ORDER BY me.operation_date ASC, me.created_at ASC) AS prev_coins_drop
         FROM meters me
     )
     SELECT
@@ -115,17 +115,11 @@ try {
         $meter['coins_drop_anomaly'] = '---';
 
         // Calculate Variance
-        // Only calculate if not an initial reading AND previous values exist
-        if ($meter['operation_date'] !== null && !$meter['is_initial_reading']) { // Ensure there's an actual meter reading
-            if ($meter['bills_in'] !== null && $meter['prev_bills_in'] !== null) {
-                $meter['bills_in_variance'] = ($meter['bills_in'] - $meter['prev_bills_in']);
-            }
-            if ($meter['handpay'] !== null && $meter['prev_handpay'] !== null) {
-                $meter['handpay_variance'] = ($meter['handpay'] - $meter['prev_handpay']);
-            }
-            if ($meter['coins_drop'] !== null && $meter['prev_coins_drop'] !== null) {
-                $meter['coins_drop_variance'] = ($meter['coins_drop'] - $meter['prev_coins_drop']);
-            }
+        // Always calculate variance, treating null/empty previous values as 0
+        if ($meter['operation_date'] !== null) { // Ensure there's an actual meter reading
+            $meter['bills_in_variance'] = (float)($meter['bills_in'] ?? 0) - (float)($meter['prev_bills_in'] ?? 0);
+            $meter['handpay_variance'] = (float)($meter['handpay'] ?? 0) - (float)($meter['prev_handpay'] ?? 0);
+            $meter['coins_drop_variance'] = (float)($meter['coins_drop'] ?? 0) - (float)($meter['prev_coins_drop'] ?? 0);
         }
 
         // Calculate Anomaly
@@ -266,4 +260,3 @@ $meter_types_options = ['online', 'coins', 'offline'];
 </div>
 
 <script src="assets/js/common_utils.js"></script>
-

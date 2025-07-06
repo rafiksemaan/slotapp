@@ -1,4 +1,3 @@
-// install.php
 <?php
 /**
  * Installation script for Slot Management System
