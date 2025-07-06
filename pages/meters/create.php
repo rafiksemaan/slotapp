@@ -142,8 +142,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 // Get machines for dropdown with brand, system_comp, machine_type, and credit_value information
 // Filter to only show 'offline' machines for manual entry
 try {
+    // Fetch latest meter readings for each machine
     $stmt = $conn->query("
-        SELECT m.id, m.machine_number, b.name as brand_name, m.system_comp, mt.name AS machine_type, m.credit_value
+        SELECT
+            m.id,
+            m.machine_number,
+            b.name as brand_name,
+            m.system_comp,
+            mt.name AS machine_type,
+            m.credit_value,
+            (SELECT bills_in FROM meters WHERE machine_id = m.id AND meter_type = 'offline' ORDER BY operation_date DESC, created_at DESC LIMIT 1) AS latest_bills_in,
+            (SELECT coins_drop FROM meters WHERE machine_id = m.id AND meter_type = 'coins' ORDER BY operation_date DESC, created_at DESC LIMIT 1) AS latest_coins_drop,
+            (SELECT handpay FROM meters WHERE machine_id = m.id AND (meter_type = 'offline' OR meter_type = 'coins') ORDER BY operation_date DESC, created_at DESC LIMIT 1) AS latest_handpay
         FROM machines m
         LEFT JOIN brands b ON m.brand_id = b.id
         LEFT JOIN machine_types mt ON m.type_id = mt.id
@@ -194,6 +204,9 @@ try {
                                                 <option value="<?php echo $machine_option['id']; ?>"
                                                         data-system-comp="<?php echo htmlspecialchars($machine_option['system_comp']); ?>"
                                                         data-machine-type="<?php echo htmlspecialchars($machine_option['machine_type']); ?>"
+                                                        data-latest-bills-in="<?php echo htmlspecialchars($machine_option['latest_bills_in'] ?? 'N/A'); ?>"
+                                                        data-latest-coins-drop="<?php echo htmlspecialchars($machine_option['latest_coins_drop'] ?? 'N/A'); ?>"
+                                                        data-latest-handpay="<?php echo htmlspecialchars($machine_option['latest_handpay'] ?? 'N/A'); ?>"
                                                         <?php echo $meter['machine_id'] == $machine_option['id'] ? 'selected' : ''; ?>>
                                                     <?php echo htmlspecialchars($machine_option['machine_number']); ?>
                                                     <?php if ($machine_option['brand_name']): ?>
@@ -226,95 +239,109 @@ try {
                 <div class="form-section" id="dynamicMeterFields">
                     <h4>Meter Readings</h4>
 				<div id="cashGambeeMeterFields" style="display: none;">
-					<div class="row">
-						<div class="col">
-							<div class="form-group">
-								<label for="total_in">Total In</label>
-								<input type="number" id="total_in" name="total_in" class="form-control"
-									   value="<?php echo htmlspecialchars($meter['total_in']); ?>" step="1" min="0">
-							</div>
-						</div>
-						<div class="col">
-							<div class="form-group">
-								<label for="total_out">Total Out</label>
-								<input type="number" id="total_out" name="total_out" class="form-control"
-									   value="<?php echo htmlspecialchars($meter['total_out']); ?>" step="1" min="0">
-							</div>
+					<div class="meter-input-group">
+						<div class="form-group current-reading-input">
+							<label for="total_in">Total In</label>
+							<input type="number" id="total_in" name="total_in" class="form-control"
+								   value="<?php echo htmlspecialchars($meter['total_in']); ?>" step="1" min="0">
 						</div>
 					</div>
-					<div class="row">
-						<div class="col">
-							<div class="form-group">
-								<label for="bills_in">Bills In</label>
-								<input type="number" id="bills_in" name="bills_in" class="form-control"
-									   value="<?php echo htmlspecialchars($meter['bills_in']); ?>" step="1" min="0">
-							</div>
-						</div>
-						<div class="col">
-							<div class="form-group">
-								<label for="handpay_cash_gambee">Handpay</label>
-								<input type="number" id="handpay_cash_gambee" name="handpay_cash_gambee" class="form-control"
-									   value="<?php echo htmlspecialchars($meter['handpay']); ?>" step="1" min="0">
-							</div>
+					<div class="meter-input-group">
+						<div class="form-group current-reading-input">
+							<label for="total_out">Total Out</label>
+							<input type="number" id="total_out" name="total_out" class="form-control"
+								   value="<?php echo htmlspecialchars($meter['total_out']); ?>" step="1" min="0">
 						</div>
 					</div>
-					<div class="row">
-						<div class="col">
-							<div class="form-group">
-								<label for="jp">JP</label>
-								<input type="number" id="jp" name="jp" class="form-control"
-									   value="<?php echo htmlspecialchars($meter['jp']); ?>" step="1" min="0">
-							</div>
+					<div class="meter-input-group">
+						<div class="form-group current-reading-input">
+							<label for="bills_in">Bills In</label>
+							<input type="number" id="bills_in" name="bills_in" class="form-control"
+								   value="<?php echo htmlspecialchars($meter['bills_in']); ?>" step="1" min="0">
 						</div>
-						<div class="col">
-							<!-- Empty for layout balance -->
+						<div class="latest-reading-display">
+							<span class="latest-reading-label">Latest:</span>
+							<span class="latest-reading-value" id="latest_bills_in">N/A</span>
+						</div>
+						<div class="variance-display">
+							<span class="variance-label">Variance:</span>
+							<span class="variance-value" id="variance_bills_in">N/A</span>
+						</div>
+					</div>
+					<div class="meter-input-group">
+						<div class="form-group current-reading-input">
+							<label for="handpay_cash_gambee">Handpay</label>
+							<input type="number" id="handpay_cash_gambee" name="handpay_cash_gambee" class="form-control"
+								   value="<?php echo htmlspecialchars($meter['handpay']); ?>" step="1" min="0">
+						</div>
+						<div class="latest-reading-display">
+							<span class="latest-reading-label">Latest:</span>
+							<span class="latest-reading-value" id="latest_handpay_cash_gambee">N/A</span>
+						</div>
+						<div class="variance-display">
+							<span class="variance-label">Variance:</span>
+							<span class="variance-value" id="variance_handpay_cash_gambee">N/A</span>
+						</div>
+					</div>
+					<div class="meter-input-group">
+						<div class="form-group current-reading-input">
+							<label for="jp">JP</label>
+							<input type="number" id="jp" name="jp" class="form-control"
+								   value="<?php echo htmlspecialchars($meter['jp']); ?>" step="1" min="0">
 						</div>
 					</div>
 				</div>
 
 				<div id="coinsMachineMeterFields" style="display: none;">
-					<div class="row">
-						<div class="col">
-							<div class="form-group">
-								<label for="coins_in">Coins In</label>
-								<input type="number" id="coins_in" name="coins_in" class="form-control"
-									   value="<?php echo htmlspecialchars($meter['coins_in']); ?>" step="1" min="0">
-							</div>
-						</div>
-						<div class="col">
-							<div class="form-group">
-								<label for="coins_out">Coins Out</label>
-								<input type="number" id="coins_out" name="coins_out" class="form-control"
-									   value="<?php echo htmlspecialchars($meter['coins_out']); ?>" step="1" min="0">
-							</div>
+					<div class="meter-input-group">
+						<div class="form-group current-reading-input">
+							<label for="coins_in">Coins In</label>
+							<input type="number" id="coins_in" name="coins_in" class="form-control"
+								   value="<?php echo htmlspecialchars($meter['coins_in']); ?>" step="1" min="0">
 						</div>
 					</div>
-					<div class="row">
-						<div class="col">
-							<div class="form-group">
-								<label for="coins_drop">Coins Drop</label>
-								<input type="number" id="coins_drop" name="coins_drop" class="form-control"
-									   value="<?php echo htmlspecialchars($meter['coins_drop']); ?>" step="1" min="0">
-							</div>
-						</div>
-						<div class="col">
-							<div class="form-group">
-								<label for="bets_coins">Bets</label>
-								<input type="number" id="bets_coins" name="bets_coins" class="form-control"
-									   value="<?php echo htmlspecialchars($meter['bets']); ?>" step="1" min="0">
-							</div>
+					<div class="meter-input-group">
+						<div class="form-group current-reading-input">
+							<label for="coins_out">Coins Out</label>
+							<input type="number" id="coins_out" name="coins_out" class="form-control"
+								   value="<?php echo htmlspecialchars($meter['coins_out']); ?>" step="1" min="0">
 						</div>
 					</div>
-					<div class="row">
-						<div class="col">
-							<div class="form-group">
-								<label for="handpay_coins">Handpay</label>
-								<input type="number" id="handpay_coins" name="handpay_coins" class="form-control"
-									   value="<?php echo htmlspecialchars($meter['handpay']); ?>" step="1" min="0">
-							</div>
+					<div class="meter-input-group">
+						<div class="form-group current-reading-input">
+							<label for="coins_drop">Coins Drop</label>
+							<input type="number" id="coins_drop" name="coins_drop" class="form-control"
+								   value="<?php echo htmlspecialchars($meter['coins_drop']); ?>" step="1" min="0">
 						</div>
-						<div class="col">
-							<!-- Empty for layout balance -->
+						<div class="latest-reading-display">
+							<span class="latest-reading-label">Latest:</span>
+							<span class="latest-reading-value" id="latest_coins_drop">N/A</span>
+						</div>
+						<div class="variance-display">
+							<span class="variance-label">Variance:</span>
+							<span class="variance-value" id="variance_coins_drop">N/A</span>
+						</div>
+					</div>
+					<div class="meter-input-group">
+						<div class="form-group current-reading-input">
+							<label for="bets_coins">Bets</label>
+							<input type="number" id="bets_coins" name="bets_coins" class="form-control"
+								   value="<?php echo htmlspecialchars($meter['bets']); ?>" step="1" min="0">
+						</div>
+					</div>
+					<div class="meter-input-group">
+						<div class="form-group current-reading-input">
+							<label for="handpay_coins">Handpay</label>
+							<input type="number" id="handpay_coins" name="handpay_coins" class="form-control"
+								   value="<?php echo htmlspecialchars($meter['handpay']); ?>" step="1" min="0">
+						</div>
+						<div class="latest-reading-display">
+							<span class="latest-reading-label">Latest:</span>
+							<span class="latest-reading-value" id="latest_handpay_coins">N/A</span>
+						</div>
+						<div class="variance-display">
+							<span class="variance-label">Variance:</span>
+							<span class="variance-value" id="variance_handpay_coins">N/A</span>
 						</div>
 					</div>
 				</div>
@@ -349,3 +376,4 @@ try {
     </div>
 </div>
 <script type="module" src="assets/js/meters_create.js"></script>
+

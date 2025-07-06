@@ -40,6 +40,35 @@ function validateMeterForm(form) {
     return true;
 }
 
+// Function to update variance displays
+function updateVarianceDisplay(inputElementId, latestElementId, varianceElementId) {
+    const inputElement = document.getElementById(inputElementId);
+    const latestElement = document.getElementById(latestElementId);
+    const varianceElement = document.getElementById(varianceElementId);
+
+    if (inputElement && latestElement && varianceElement) {
+        const currentValue = parseFloat(inputElement.value) || 0;
+        const latestValue = parseFloat(latestElement.textContent); // Use textContent as it's from data-attribute
+
+        if (!isNaN(latestValue)) {
+            const variance = currentValue - latestValue;
+            varianceElement.textContent = variance.toLocaleString();
+            if (variance < 0) {
+                varianceElement.classList.remove('positive');
+                varianceElement.classList.add('negative');
+            } else if (variance > 0) {
+                varianceElement.classList.remove('negative');
+                varianceElement.classList.add('positive');
+            } else {
+                varianceElement.classList.remove('positive', 'negative');
+            }
+        } else {
+            varianceElement.textContent = 'N/A';
+            varianceElement.classList.remove('positive', 'negative');
+        }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     const machineSelect = document.getElementById('machine_id');
 
@@ -60,6 +89,20 @@ document.addEventListener('DOMContentLoaded', function () {
             if (element) {
                 element.value = '';
             }
+        });
+
+        // Reset latest and variance displays
+        document.getElementById('latest_bills_in').textContent = 'N/A';
+        document.getElementById('variance_bills_in').textContent = 'N/A';
+        document.getElementById('latest_coins_drop').textContent = 'N/A';
+        document.getElementById('variance_coins_drop').textContent = 'N/A';
+        document.getElementById('latest_handpay_cash_gambee').textContent = 'N/A';
+        document.getElementById('variance_handpay_cash_gambee').textContent = 'N/A';
+        document.getElementById('latest_handpay_coins').textContent = 'N/A';
+        document.getElementById('variance_handpay_coins').textContent = 'N/A';
+
+        document.querySelectorAll('.variance-value').forEach(el => {
+            el.classList.remove('positive', 'negative');
         });
     }
 
@@ -84,9 +127,26 @@ document.addEventListener('DOMContentLoaded', function () {
             if (machineType === 'COINS') {
                 coinsMachineMeterFields.style.display = 'block';
                 console.log('Showing Coins Meter Fields');
+
+                // Populate latest readings for Coins machine
+                document.getElementById('latest_coins_drop').textContent = selectedMachineOption.dataset.latestCoinsDrop || 'N/A';
+                document.getElementById('latest_handpay_coins').textContent = selectedMachineOption.dataset.latestHandpay || 'N/A';
+
+                // Update variances for Coins machine
+                updateVarianceDisplay('coins_drop', 'latest_coins_drop', 'variance_coins_drop');
+                updateVarianceDisplay('handpay_coins', 'latest_handpay_coins', 'variance_handpay_coins');
+
             } else { // CASH or GAMBEE
                 cashGambeeMeterFields.style.display = 'block';
                 console.log('Showing Cash/Gambee Meter Fields');
+
+                // Populate latest readings for Cash/Gambee machine
+                document.getElementById('latest_bills_in').textContent = selectedMachineOption.dataset.latestBillsIn || 'N/A';
+                document.getElementById('latest_handpay_cash_gambee').textContent = selectedMachineOption.dataset.latestHandpay || 'N/A';
+
+                // Update variances for Cash/Gambee machine
+                updateVarianceDisplay('bills_in', 'latest_bills_in', 'variance_bills_in');
+                updateVarianceDisplay('handpay_cash_gambee', 'latest_handpay_cash_gambee', 'variance_handpay_cash_gambee');
             }
         } else {
             console.log('System Comp is not offline, hiding all meter fields.');
@@ -97,6 +157,13 @@ document.addEventListener('DOMContentLoaded', function () {
     if (machineSelect) {
         machineSelect.addEventListener('change', toggleMeterForms);
     }
+
+    // Attach input event listeners for real-time variance calculation
+    document.getElementById('bills_in')?.addEventListener('input', () => updateVarianceDisplay('bills_in', 'latest_bills_in', 'variance_bills_in'));
+    document.getElementById('coins_drop')?.addEventListener('input', () => updateVarianceDisplay('coins_drop', 'latest_coins_drop', 'variance_coins_drop'));
+    document.getElementById('handpay_cash_gambee')?.addEventListener('input', () => updateVarianceDisplay('handpay_cash_gambee', 'latest_handpay_cash_gambee', 'variance_handpay_cash_gambee'));
+    document.getElementById('handpay_coins')?.addEventListener('input', () => updateVarianceDisplay('handpay_coins', 'latest_handpay_coins', 'variance_handpay_coins'));
+
 
     // Initial call to set correct form state on page load
     toggleMeterForms();
@@ -110,3 +177,4 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 });
+

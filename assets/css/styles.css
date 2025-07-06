@@ -464,6 +464,7 @@ optgroup {
 
 .btn-danger:hover {
     background-color: #c0392b;
+    color: white;
 }
 
 .btn-block {
@@ -1538,7 +1539,6 @@ option:focus {
 }
 
 .breakdown-amount {
-    font-weight: 600;
     margin-left: 0.5rem;
 }
 
@@ -1795,11 +1795,9 @@ input[disabled] {
 @keyframes slideDown {
     from {
         opacity: 0;
-        transform: translateY(-10px);
     }
     to {
         opacity: 1;
-        transform: translateY(0);
     }
 }
 
@@ -2011,3 +2009,65 @@ input[disabled] {
 .variance-anomaly-header {
 	color: var(--text-muted);
 }
+
+/* Meter Input Group for vertical layout with latest/variance */
+.meter-input-group {
+    display: flex;
+    flex-direction: column; /* Stack elements vertically */
+    margin-bottom: var(--spacing-lg); /* Space between groups */
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-sm);
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+.meter-input-group .form-group.current-reading-input {
+    margin-bottom: var(--spacing-xs); /* Space between input and displays */
+}
+
+.meter-input-group .form-group.current-reading-input label {
+    font-weight: bold;
+    color: var(--text-light);
+}
+
+.latest-reading-display,
+.variance-display {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: var(--font-sm);
+    padding: var(--spacing-xs) 0;
+    border-top: 1px dashed rgba(255, 255, 255, 0.1);
+    margin-top: var(--spacing-xs);
+}
+
+.latest-reading-label,
+.variance-label {
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.latest-reading-value,
+.variance-value {
+    font-weight: bold;
+    color: var(--text-light);
+}
+
+.variance-value.positive {
+    color: var(--success-color);
+}
+
+.variance-value.negative {
+    color: var(--danger-color);
+}
+
+/* Adjustments for form-group within meter-input-group to remove default margin */
+.meter-input-group .form-group {
+    margin-bottom: 0;
+}
+
+/* Ensure inputs inside meter-input-group take full width */
+.meter-input-group .form-control {
+    width: 100%;
+}
+

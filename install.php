@@ -441,7 +441,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 
                 <?php if (!empty($success)): ?>
                     <div class="alert alert-success"><?php echo $success; ?></div>
-                <?php else: ?>
+                <? else: ?>
                     <form method="POST" action="install.php" id="installForm">
                         <div class="form-group">
                             <label for="admin_username">Admin Username *</label>
@@ -498,3 +498,4 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	
 </body>
 </html>
+
