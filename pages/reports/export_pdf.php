@@ -47,15 +47,15 @@ header('Pragma: no-cache');
         <div class="summary-stats">
             <div class="stat-box">
                 <div class="stat-title">Total DROP</div>
-                <div class="stat-value"><?= '$' . number_format($grand_total_drop, 0) ?></div>
+                <div class="stat-value"><?= '$' . number_format($grand_total_drop, 2) ?></div>
             </div>
             <div class="stat-box">
                 <div class="stat-title">Total OUT</div>
-                <div class="stat-value"><?= '$' . number_format($grand_total_out, 0) ?></div>
+                <div class="stat-value"><?= '$' . number_format($grand_total_out, 2) ?></div>
             </div>
             <div class="stat-box">
                 <div class="stat-title">Result</div>
-                <div class="stat-value <?= $grand_total_result >= 0 ? 'positive' : 'negative' ?>"><?= '$' . number_format($grand_total_result, 0) ?></div>
+                <div class="stat-value <?= $grand_total_result >= 0 ? 'positive' : 'negative' ?>"><?= '$' . number_format($grand_total_result, 2) ?></div>
             </div>
         </div>
 
@@ -78,8 +78,8 @@ header('Pragma: no-cache');
                 <tbody>
                     <?php foreach ($filtered_data as $data): ?>
                         <tr>
-                            <td><?= htmlspecialchars($data['machine_number']) ?></td>
-                            <td><?= htmlspecialchars($data['type']) ?></td>
+                            <td><?= htmlspecialchars($data['machine_number'] ?? 'N/A') ?></td>
+                            <td><?= htmlspecialchars($data['type'] ?? 'N/A') ?></td>
                             <?php
                             $handpay = $ticket = $refill = $coins_drop = $cash_drop = 0;
                             if (!empty($data['transactions']) && is_array($data['transactions'])) {
@@ -128,7 +128,3 @@ header('Pragma: no-cache');
     </div>
 </body>
 </html>
-<?php
-// Ensure no additional output after HTML
-exit;
-?>
