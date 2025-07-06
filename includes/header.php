@@ -95,6 +95,12 @@ ob_start();
                 <span class="menu-icon"><img src="<?= icon('calendar') ?>" alt="weekly_tracking" /></span>
                 <span class="menu-text">Weekly Tracking</span>
             </a></li>
+			<?php if (has_permission('editor')): // This condition allows both admin and editor ?>
+			<li><a href="index.php?page=operation_day" class="<?= $page == 'operation_day' ? 'active' : '' ?>">
+				<span class="menu-icon"><img src="<?= icon('calendar') ?>" alt="operation_day" /></span>
+				<span class="menu-text">Operation Day</span>
+			</a></li>
+			<?php endif; ?>
             <li><a href="index.php?page=meters" class="<?= $page == 'meters' ? 'active' : '' ?>">
                 <span class="menu-icon"><img src="<?= icon('meters') ?>" alt="meters" /></span>
                 <span class="menu-text">Meters</span>
@@ -129,10 +135,6 @@ ob_start();
                     <span class="submenu-arrow">▾</span>
                 </a>
                 <ul class="submenu">
-                    <li><a href="index.php?page=operation_day" class="<?= $page == 'operation_day' ? 'active' : '' ?>">
-                        <span class="submenu-icon"><img src="<?= icon('calendar') ?>" alt="operation_day" /></span>
-                        <span class="menu-text">Operation Day</span>
-                    </a></li>
                     <li><a href="index.php?page=machines" class="<?= $page == 'machines' ? 'active' : '' ?>">
                         <span class="submenu-icon"><img src="<?= icon('machines') ?>" alt="machines" /></span>
                         <span class="menu-text">Machines</span>
