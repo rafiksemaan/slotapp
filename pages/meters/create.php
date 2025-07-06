@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $handpay = empty($_POST['handpay_cash_gambee']) ? null : floatval($_POST['handpay_cash_gambee']);
             $jp = empty($_POST['jp']) ? null : floatval($_POST['jp']);
         }
-        // Note: 'online' meter_type is handled by upload, not manual form.
+        // Note: 'online' meter_type is handled by upload, not manual.
 
         try {
             // Insert new meter entry
@@ -128,26 +128,42 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // The page will naturally re-render with the updated $meter array and flash message.
             
         } catch (PDOException $e) {
-            set_flash_message('danger', "Database error: " . $e->getMessage());
+            // Check for duplicate entry error (SQLSTATE 23000 is for integrity constraint violation)
+            if ($e->getCode() === '23000') {
+                set_flash_message('danger', "A meter entry for this machine on this date already exists. Please edit the existing entry.");
+            } else {
+                set_flash_message('danger', "Database error: " . $e->getMessage());
+            }
             // No redirect here, allow form to re-render with error
         }
     }
 }
 
-// Get machines for dropdown with brand, system_comp, and machine_type information
+// Get machines for dropdown with brand, system_comp, machine_type, and credit_value information
 // Filter to only show 'offline' machines for manual entry
 try {
     $stmt = $conn->query("
-        SELECT m.id, m.machine_number, b.name as brand_name, m.system_comp, mt.name AS machine_type
+        SELECT m.id, m.machine_number, b.name as brand_name, m.system_comp, mt.name AS machine_type, m.credit_value
         FROM machines m
         LEFT JOIN brands b ON m.brand_id = b.id
         LEFT JOIN machine_types mt ON m.type_id = mt.id
         WHERE m.system_comp = 'offline'
-        ORDER BY CAST(m.machine_number AS UNSIGNED) ASC
+        ORDER BY mt.name ASC, CAST(m.machine_number AS UNSIGNED) ASC
     ");
-    $machines = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $raw_machines = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Group machines by type for optgroup
+    $grouped_machines = [];
+    foreach ($raw_machines as $machine_option) {
+        $type = $machine_option['machine_type'];
+        if (!isset($grouped_machines[$type])) {
+            $grouped_machines[$type] = [];
+        }
+        $grouped_machines[$type][] = $machine_option;
+    }
+
 } catch (PDOException $e) {
-    $machines = [];
+    $grouped_machines = [];
 }
 ?>
 
@@ -172,16 +188,21 @@ try {
                                 <label for="machine_id">Machine *</label>
                                 <select id="machine_id" name="machine_id" class="form-control" required>
                                     <option value="">Select Machine</option>
-                                    <?php foreach ($machines as $machine_option): ?>
-                                        <option value="<?php echo $machine_option['id']; ?>"
-                                                data-system-comp="<?php echo htmlspecialchars($machine_option['system_comp']); ?>"
-                                                data-machine-type="<?php echo htmlspecialchars($machine_option['machine_type']); ?>"
-                                                <?php echo $meter['machine_id'] == $machine_option['id'] ? 'selected' : ''; ?>>
-                                            <?php echo htmlspecialchars($machine_option['machine_number']); ?>
-                                            <?php if ($machine_option['brand_name']): ?>
-                                                (<?php echo htmlspecialchars($machine_option['brand_name']); ?>)
-                                            <?php endif; ?>
-                                        </option>
+                                    <?php foreach ($grouped_machines as $type_name => $machines_in_group): ?>
+                                        <optgroup label="<?= htmlspecialchars($type_name) ?> Machines">
+                                            <?php foreach ($machines_in_group as $machine_option): ?>
+                                                <option value="<?php echo $machine_option['id']; ?>"
+                                                        data-system-comp="<?php echo htmlspecialchars($machine_option['system_comp']); ?>"
+                                                        data-machine-type="<?php echo htmlspecialchars($machine_option['machine_type']); ?>"
+                                                        <?php echo $meter['machine_id'] == $machine_option['id'] ? 'selected' : ''; ?>>
+                                                    <?php echo htmlspecialchars($machine_option['machine_number']); ?>
+                                                    <?php if ($machine_option['brand_name']): ?>
+                                                        (<?php echo htmlspecialchars($machine_option['brand_name']); ?>)
+                                                    <?php endif; ?>
+                                                    - <?php echo format_currency($machine_option['credit_value']); ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </optgroup>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
