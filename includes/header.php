@@ -187,7 +187,14 @@ ob_start();
         $flash_messages = get_flash_messages();
         if (!empty($flash_messages)) {
             foreach ($flash_messages as $msg) {
-                echo '<div class="alert alert-' . htmlspecialchars($msg['type']) . '">' . htmlspecialchars($msg['message']) . '</div>';
+                echo '<div class="alert alert-' . htmlspecialchars($msg['type']) . '">';
+                if ($msg['is_html']) {
+                    echo $msg['message'];
+                } else {
+                    echo htmlspecialchars($msg['message']);
+                }
+                echo '</div>';
             }
         }
         ?>
+

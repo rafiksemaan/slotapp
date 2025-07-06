@@ -322,18 +322,19 @@ function get_monday_sunday_week_info($date_string) {
  *
  * @param string $type The type of message (e.g., 'success', 'error', 'info', 'warning').
  * @param string $message The message content.
+ * @param bool $is_html Whether the message content is HTML and should not be escaped.
  */
-function set_flash_message($type, $message) {
+function set_flash_message($type, $message, $is_html = false) {
     if (!isset($_SESSION['flash_messages'])) {
         $_SESSION['flash_messages'] = [];
     }
-    $_SESSION['flash_messages'][] = ['type' => $type, 'message' => $message];
+    $_SESSION['flash_messages'][] = ['type' => $type, 'message' => $message, 'is_html' => $is_html];
 }
 
 /**
  * Retrieves and clears all flash messages.
  *
- * @return array An array of flash messages.
+ * @return array An array of flash messages, each with 'type', 'message', and 'is_html' keys.
  */
 function get_flash_messages() {
     $messages = $_SESSION['flash_messages'] ?? [];

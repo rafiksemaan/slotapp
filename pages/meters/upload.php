@@ -28,12 +28,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['csv_file'])) {
                 
                 if ($upload_result['success']) {
                     $upload_stats = $upload_result['stats'];
-                    set_flash_message('success', "CSV file uploaded and processed successfully!");
+                    $message_text = "CSV file uploaded and processed successfully!";
+                    $is_html_message = false;
+
+                    if (!empty($upload_stats['errors'])) {
+                        $message_text .= "<br>Some entries were skipped. Please review:<br><ul>";
+                        foreach ($upload_stats['errors'] as $error_item) {
+                            $message_text .= "<li>" . htmlspecialchars($error_item) . "</li>";
+                        }
+                        $message_text .= "</ul>";
+                        $is_html_message = true;
+                        set_flash_message('warning', $message_text, $is_html_message); // Change to warning if there are skipped entries
+                    } else {
+                        set_flash_message('success', $message_text, $is_html_message);
+                    }
                     
                     // Log action
                     log_action('upload_meter_data', "Uploaded meter data for date: $upload_date, Records: {$upload_stats['total_records']}");
                 } else {
-                    set_flash_message('danger', $upload_result['error']);
+                    set_flash_message('danger', $upload_result['error']); // This error is plain text
                 }
             } catch (Exception $e) {
                 set_flash_message('danger', "Error processing file: " . $e->getMessage());
@@ -283,3 +296,4 @@ M003,2023-01-01,800.50,700.25,600.00,25.00,10.00,0.00,5000.00,0.00</pre>
         </div>
     </div>
 </div>
+
