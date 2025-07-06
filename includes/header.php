@@ -36,7 +36,7 @@ ob_start();
 	// Add Chart.js from CDN
 	echo '<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>';
 	// Define base URL or path to icons
-	define('ICON_PATH', 'assets/icons'); // Make sure this matches your actual folder name
+//	define('ICON_PATH', 'assets/icons'); // Make sure this matches your actual folder name
 	?>
 </head>
 
