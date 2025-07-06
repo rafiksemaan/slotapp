@@ -2007,3 +2007,7 @@ input[disabled] {
 .table-cell-nowrap {
     white-space: nowrap;
 }
+
+.variance-anomaly-header {
+	color: var(--text-muted);
+}
