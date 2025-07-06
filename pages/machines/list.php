@@ -234,7 +234,6 @@ try {
                                     <?php endif; ?>
                                 </a>
                             </th>
-                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>

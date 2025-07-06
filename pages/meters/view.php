@@ -93,7 +93,7 @@ try {
                         <div class="col-6">
                             <div class="detail-group">
                                 <strong>Credit Value:</strong>
-                                <span><?php echo number_format($meter['credit_value']); ?></span>
+                                <span><?php echo format_currency($meter['credit_value']); ?></span>
                             </div>
                         </div>
                     </div>

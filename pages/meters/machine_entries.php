@@ -89,13 +89,13 @@ try {
         // Calculate Variance
         if (!$meter['is_initial_reading']) { // Only calculate if not an initial reading
             if ($meter['bills_in'] !== null && $meter['prev_bills_in'] !== null) {
-                $meter['bills_in_variance'] = ($meter['bills_in'] - $meter['prev_bills_in']) * $credit_value;
+                $meter['bills_in_variance'] = ($meter['bills_in'] - $meter['prev_bills_in']);
             }
             if ($meter['handpay'] !== null && $meter['prev_handpay'] !== null) {
-                $meter['handpay_variance'] = ($meter['handpay'] - $meter['prev_handpay']) * $credit_value;
+                $meter['handpay_variance'] = ($meter['handpay'] - $meter['prev_handpay']);
             }
             if ($meter['coins_drop'] !== null && $meter['prev_coins_drop'] !== null) {
-                $meter['coins_drop_variance'] = ($meter['coins_drop'] - $meter['prev_coins_drop']) * $credit_value;
+                $meter['coins_drop_variance'] = ($meter['coins_drop'] - $meter['prev_coins_drop']);
             }
         }
 
@@ -136,7 +136,7 @@ try {
             <p class="text-muted">
                 Brand: <?php echo htmlspecialchars($machine_details['brand_name'] ?? 'N/A'); ?> |
                 Type: <?php echo htmlspecialchars($machine_details['machine_type_name'] ?? 'N/A'); ?> |
-                Credit Value: <?php echo number_format($machine_details['credit_value'] ?? 0); ?>
+                Credit Value: <?php echo format_currency($machine_details['credit_value'] ?? 0); ?>
             </p>
         </div>
         <div class="card-body p-6">

@@ -334,11 +334,6 @@ $has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !emp
                             <th class="px-4 py-2 text-center">Handpay Variance</th>
                             <th class="px-4 py-2 text-center">Handpay Anomaly</th>
                             <th class="px-4 py-2 text-center">JP</th>
-                            <th class="px-4 py-2 text-left">Notes</th>
-                            <th class="px-4 py-2 text-left sortable-header" data-sort-column="created_by_username" data-sort-order="<?php echo $sort_column == 'created_by_username' ? '▲' : '▼'; ?>">
-                                Created By <?php if ($sort_column == 'created_by_username') echo $sort_order == 'ASC' ? '▲' : '▼'; ?>
-                            </th>
-                            <th class="px-4 py-2 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-700">
@@ -348,7 +343,7 @@ $has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !emp
                             </tr>
                         <?php else: ?>
                             <?php foreach ($meters as $meter): ?>
-                                <tr class="hover:bg-gray-800 transition duration-150 clickable-row" onclick="window.location.href='index.php?page=meters&action=machine_entries&id=<?php echo $meter['machine_id']; ?>'">
+                                <tr class="hover:bg-gray-800 transition duration-150 clickable-row" data-machine-id="<?php echo $meter['machine_id']; ?>">
                                     <td class="px-4 py-2 table-cell-nowrap"><?php echo htmlspecialchars(format_date($meter['operation_date'])); ?></td>
                                     <td class="px-4 py-2 table-cell-nowrap"><?php echo htmlspecialchars($meter['machine_number']); ?></td>
                                     <td class="px-4 py-2 table-cell-nowrap"><?php echo htmlspecialchars(ucfirst($meter['meter_type'])); ?></td>
@@ -367,15 +362,6 @@ $has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !emp
                                     <td class="px-4 py-2 table-cell-nowrap variance-anomaly-cell"><?php echo is_numeric($meter['handpay_variance']) ? number_format($meter['handpay_variance']) : $meter['handpay_variance']; ?></td>
                                     <td class="px-4 py-2 table-cell-nowrap variance-anomaly-cell"><?php echo is_numeric($meter['handpay_anomaly']) ? number_format($meter['handpay_anomaly']) : $meter['handpay_anomaly']; ?></td>
                                     <td class="px-4 py-2 table-cell-nowrap"><?php echo number_format($meter['jp'] ?? 0); ?></td>
-                                    <td class="px-4 py-2 table-cell-nowrap text-sm"><?php echo htmlspecialchars($meter['notes'] ?? ''); ?></td>
-                                    <td class="px-4 py-2 table-cell-nowrap"><?php echo htmlspecialchars($meter['created_by_username'] ?? 'N/A'); ?></td>
-                                    <td class="px-4 py-2 table-cell-nowrap">
-                                        <a href="index.php?page=meters&action=view&id=<?php echo $meter['id']; ?>" class="action-btn view-btn" data-tooltip="View Details"><span class="menu-icon"><img src="<?= icon('view2') ?>"/></span></a>
-                                        <?php if ($can_edit): ?>
-                                            <a href="index.php?page=meters&action=edit&id=<?php echo $meter['id']; ?>" class="action-btn edit-btn" data-tooltip="Edit"><span class="menu-icon"><img src="<?= icon('edit') ?>"/></span></a>
-                                            <a href="index.php?page=meters&action=delete&id=<?php echo $meter['id']; ?>" class="action-btn delete-btn" data-tooltip="Delete" data-confirm="Are you sure you want to delete this meter entry?"><span class="menu-icon"><img src="<?= icon('delete') ?>"/></span></a>
-                                        <?php endif; ?>
-                                    </td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>

@@ -105,7 +105,7 @@ try {
         SELECT m.id, m.machine_number, b.name as brand_name 
         FROM machines m 
         LEFT JOIN brands b ON m.brand_id = b.id 
-        ORDER BY m.machine_number
+        ORDER BY CAST(m.machine_number AS UNSIGNED)
     ");
     $machines = $stmt->fetchAll();
 } catch (PDOException $e) {

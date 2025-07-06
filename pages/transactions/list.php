@@ -109,12 +109,13 @@ try {
     $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Get machines for dropdown with brand information
-    $machines_stmt = $conn->query("
-        SELECT m.id, m.machine_number, b.name as brand_name 
-        FROM machines m 
-        LEFT JOIN brands b ON m.brand_id = b.id 
-        ORDER BY m.machine_number
+        $machines_stmt = $conn->query("
+        SELECT m.id, m.machine_number, b.name as brand_name
+        FROM machines m
+        LEFT JOIN brands b ON m.brand_id = b.id
+        ORDER BY CAST(m.machine_number AS UNSIGNED)
     ");
+
     $machines = $machines_stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Get transaction types for category dropdown
