@@ -9,49 +9,72 @@ $sort_column = $_GET['sort'] ?? 'machine_number'; // Changed default sort column
 $sort_order = $_GET['order'] ?? 'ASC'; // Changed default sort order
 $toggle_order = $sort_order === 'ASC' ? 'DESC' : 'ASC';
 
-// Set a wide date range to effectively show all entries if no specific date filter is applied
-// This ensures all machines are listed as requested, without date filtering.
-$start_date = '1900-01-01'; // Very old date
-$end_date = '2100-12-31';   // Very future date
+// No date range filtering for this view, as we want all machines
+// The date range for transaction sums will be wide to cover all possible transactions
+$start_date_for_transactions = '1900-01-01'; // Very old date
+$end_date_for_transactions = '2100-12-31';   // Very future date
 
-// Build query for fetching meter data with LAG for previous readings
+// Build query for fetching the LATEST meter data for each machine
+// Using a CTE to rank meters by date and then select the latest one per machine
 $query = "
+    WITH RankedMeters AS (
+        SELECT
+            me.*,
+            ROW_NUMBER() OVER (PARTITION BY me.machine_id ORDER BY me.operation_date DESC, me.created_at DESC) as rn,
+            LAG(me.bills_in, 1, NULL) OVER (PARTITION BY me.machine_id ORDER BY me.operation_date ASC, me.created_at ASC) AS prev_bills_in,
+            LAG(me.handpay, 1, NULL) OVER (PARTITION BY me.machine_id ORDER BY me.operation_date ASC, me.created_at ASC) AS prev_handpay,
+            LAG(me.coins_drop, 1, NULL) OVER (PARTITION BY me.machine_id ORDER BY me.operation_date ASC, me.created_at ASC) AS prev_coins_drop
+        FROM meters me
+    )
     SELECT
-        me.*,
+        m.id AS machine_id,
         m.machine_number,
         m.credit_value,
         mt.name AS machine_type_name,
-        u.username AS created_by_username,
-        LAG(me.bills_in, 1, NULL) OVER (PARTITION BY me.machine_id ORDER BY me.operation_date) AS prev_bills_in,
-        LAG(me.handpay, 1, NULL) OVER (PARTITION BY me.machine_id ORDER BY me.operation_date) AS prev_handpay,
-        LAG(me.coins_drop, 1, NULL) OVER (PARTITION BY me.machine_id ORDER BY me.operation_date) AS prev_coins_drop
-    FROM meters me
-    JOIN machines m ON me.machine_id = m.id
+        rm.operation_date,
+        rm.meter_type,
+        rm.total_in,
+        rm.total_out,
+        rm.bills_in,
+        rm.coins_in,
+        rm.coins_out,
+        rm.coins_drop,
+        rm.bets,
+        rm.handpay,
+        rm.jp,
+        rm.notes,
+        rm.manual_reading_notes,
+        rm.is_initial_reading,
+        rm.prev_bills_in,
+        rm.prev_handpay,
+        rm.prev_coins_drop,
+        u.username AS created_by_username -- This will be the user who created the latest meter entry
+    FROM machines m
     LEFT JOIN machine_types mt ON m.type_id = mt.id
-    LEFT JOIN users u ON me.created_by = u.id
-    WHERE 1=1
+    LEFT JOIN RankedMeters rm ON m.id = rm.machine_id AND rm.rn = 1
+    LEFT JOIN users u ON rm.created_by = u.id -- Join with users for the latest entry's creator
 ";
 
-$params = []; // No initial parameters as date filtering is removed from query
+$params = []; // No parameters for the main query as filters are removed
 
-// Add sorting
+// Add sorting for the main query
 $sort_map = [
-    'operation_date' => 'me.operation_date',
+    'operation_date' => 'rm.operation_date', // Sort by latest meter entry date
     'machine_number' => 'CAST(m.machine_number AS UNSIGNED)', // Sort numerically
-    'meter_type' => 'me.meter_type',
-    'total_in' => 'me.total_in',
-    'total_out' => 'me.total_out',
-    'bills_in' => 'me.bills_in',
-    'coins_in' => 'me.coins_in',
-    'coins_out' => 'me.coins_out',
-    'coins_drop' => 'me.coins_drop',
-    'bets' => 'me.bets',
-    'handpay' => 'me.handpay',
-    'jp' => 'me.jp',
+    'meter_type' => 'rm.meter_type',
+    'total_in' => 'rm.total_in',
+    'total_out' => 'rm.total_out',
+    'bills_in' => 'rm.bills_in',
+    'coins_in' => 'rm.coins_in',
+    'coins_out' => 'rm.coins_out',
+    'coins_drop' => 'rm.coins_drop',
+    'bets' => 'rm.bets',
+    'handpay' => 'rm.handpay',
+    'jp' => 'rm.jp',
     'created_by_username' => 'u.username'
 ];
 
-$actual_sort_column = $sort_map[$sort_column] ?? 'me.machine_number'; // Default to machine_number
+$actual_sort_column = $sort_map[$sort_column] ?? 'CAST(m.machine_number AS UNSIGNED)'; // Default to machine_number
 $query .= " ORDER BY $actual_sort_column $sort_order";
 
 try {
@@ -59,7 +82,7 @@ try {
     $stmt->execute($params);
     $meters = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Fetch transaction sums for anomaly calculation
+    // Fetch transaction sums for anomaly calculation (using wide date range)
     $transaction_sums_query = "
         SELECT
             t.machine_id,
@@ -70,14 +93,10 @@ try {
         FROM transactions t
         JOIN transaction_types tt ON t.transaction_type_id = tt.id
         WHERE t.operation_date BETWEEN ? AND ?
+        GROUP BY t.machine_id, t.operation_date
     ";
-    // Use the wide date range for transaction sums as well
-    $transaction_sums_params = [$start_date, $end_date];
-    
-    $transaction_sums_query .= " GROUP BY t.machine_id, t.operation_date";
-
     $sums_stmt = $conn->prepare($transaction_sums_query);
-    $sums_stmt->execute($transaction_sums_params);
+    $sums_stmt->execute([$start_date_for_transactions, $end_date_for_transactions]);
     $transaction_sums = [];
     foreach ($sums_stmt->fetchAll(PDO::FETCH_ASSOC) as $sum_row) {
         $transaction_sums[$sum_row['machine_id'] . '_' . $sum_row['operation_date']] = $sum_row;
@@ -98,7 +117,8 @@ try {
         $meter['coins_drop_anomaly'] = '---';
 
         // Calculate Variance
-        if (!$meter['is_initial_reading']) { // Only calculate if not an initial reading
+        // Only calculate if not an initial reading AND previous values exist
+        if ($meter['operation_date'] !== null && !$meter['is_initial_reading']) { // Ensure there's an actual meter reading
             if ($meter['bills_in'] !== null && $meter['prev_bills_in'] !== null) {
                 $meter['bills_in_variance'] = ($meter['bills_in'] - $meter['prev_bills_in']);
             }
@@ -111,23 +131,25 @@ try {
         }
 
         // Calculate Anomaly
-        $sum_key = $machine_id . '_' . $operation_date;
-        if (isset($transaction_sums[$sum_key])) {
-            $current_transaction_sums = $transaction_sums[$sum_key];
+        if ($operation_date !== null) { // Only calculate if there's an actual meter reading
+            $sum_key = $machine_id . '_' . $operation_date;
+            if (isset($transaction_sums[$sum_key])) {
+                $current_transaction_sums = $transaction_sums[$sum_key];
 
-            // Bills In Anomaly (vs Cash Drop Transaction)
-            if ($meter['bills_in_variance'] !== '---' && $current_transaction_sums['cash_drop_sum'] !== null) {
-                $meter['bills_in_anomaly'] = $meter['bills_in_variance'] - (float)$current_transaction_sums['cash_drop_sum'];
-            }
+                // Bills In Anomaly (vs Cash Drop Transaction)
+                if ($meter['bills_in_variance'] !== '---' && $current_transaction_sums['cash_drop_sum'] !== null) {
+                    $meter['bills_in_anomaly'] = $meter['bills_in_variance'] - (float)$current_transaction_sums['cash_drop_sum'];
+                }
 
-            // Handpay Anomaly (vs Handpay Transaction)
-            if ($meter['handpay_variance'] !== '---' && $current_transaction_sums['handpay_sum'] !== null) {
-                $meter['handpay_anomaly'] = $meter['handpay_variance'] - (float)$current_transaction_sums['handpay_sum'];
-            }
+                // Handpay Anomaly (vs Handpay Transaction)
+                if ($meter['handpay_variance'] !== '---' && $current_transaction_sums['handpay_sum'] !== null) {
+                    $meter['handpay_anomaly'] = $meter['handpay_variance'] - (float)$current_transaction_sums['handpay_sum'];
+                }
 
-            // Coins Drop Anomaly (vs Coins Drop Transaction)
-            if ($meter['coins_drop_variance'] !== '---' && $current_transaction_sums['coins_drop_sum'] !== null) {
-                $meter['coins_drop_anomaly'] = $meter['coins_drop_variance'] - (float)$current_transaction_sums['coins_drop_sum'];
+                // Coins Drop Anomaly (vs Coins Drop Transaction)
+                if ($meter['coins_drop_variance'] !== '---' && $current_transaction_sums['coins_drop_sum'] !== null) {
+                    $meter['coins_drop_anomaly'] = $meter['coins_drop_variance'] - (float)$current_transaction_sums['coins_drop_sum'];
+                }
             }
         }
     }
@@ -180,7 +202,7 @@ $meter_types_options = ['online', 'coins', 'offline'];
                     <thead class="bg-gray-800 text-white">
                         <tr>
                             <th class="px-4 py-2 text-left sortable-header" data-sort-column="operation_date" data-sort-order="<?php echo $sort_column == 'operation_date' ? $toggle_order : 'ASC'; ?>">
-                                Date <?php if ($sort_column == 'operation_date') echo $sort_order == 'ASC' ? '▲' : '▼'; ?>
+                                Last Input Date <?php if ($sort_column == 'operation_date') echo $sort_order == 'ASC' ? '▲' : '▼'; ?>
                             </th>
                             <th class="px-4 py-2 text-left sortable-header" data-sort-column="machine_number" data-sort-order="<?php echo $sort_column == 'machine_number' ? $toggle_order : 'ASC'; ?>">
                                 Machine <?php if ($sort_column == 'machine_number') echo $sort_order == 'ASC' ? '▲' : '▼'; ?>
@@ -213,9 +235,9 @@ $meter_types_options = ['online', 'coins', 'offline'];
                         <?php else: ?>
                             <?php foreach ($meters as $meter): ?>
                                 <tr class="hover:bg-gray-800 transition duration-150 clickable-row" data-machine-id="<?php echo $meter['machine_id']; ?>">
-                                    <td class="px-4 py-2 table-cell-nowrap"><?php echo htmlspecialchars(format_date($meter['operation_date'])); ?></td>
+                                    <td class="px-4 py-2 table-cell-nowrap"><?php echo htmlspecialchars($meter['operation_date'] ? format_date($meter['operation_date']) : 'N/A'); ?></td>
                                     <td class="px-4 py-2 table-cell-nowrap"><?php echo htmlspecialchars($meter['machine_number']); ?></td>
-                                    <td class="px-4 py-2 table-cell-nowrap"><?php echo htmlspecialchars(ucfirst($meter['meter_type'])); ?></td>
+                                    <td class="px-4 py-2 table-cell-nowrap"><?php echo htmlspecialchars(ucfirst($meter['meter_type'] ?? 'N/A')); ?></td>
                                     <td class="px-4 py-2 table-cell-nowrap"><?php echo number_format($meter['total_in'] ?? 0); ?></td>
                                     <td class="px-4 py-2 table-cell-nowrap"><?php echo number_format($meter['total_out'] ?? 0); ?></td>
                                     <td class="px-4 py-2 table-cell-nowrap"><?php echo number_format($meter['bills_in'] ?? 0); ?></td>
@@ -244,4 +266,3 @@ $meter_types_options = ['online', 'coins', 'offline'];
         </div>
     </div>
 </div>
-
