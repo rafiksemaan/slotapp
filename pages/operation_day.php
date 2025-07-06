@@ -1,12 +1,12 @@
 <?php
 /**
- * Operation Day management page - Admin only
+ * Operation Day management page - Admin & Editor only
  */
 
 $page = $_GET['page'] ?? 'operation_day';
 
-// Check if user is admin
-if ($_SESSION['user_role'] !== 'admin') {
+// Check if user is editor
+if (!has_permission('editor')) {
     include 'pages/access_denied.php';
     exit;
 }
