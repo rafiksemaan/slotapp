@@ -47,15 +47,15 @@ header('Pragma: no-cache');
         <div class="summary-stats">
             <div class="stat-box">
                 <div class="stat-title">Total DROP</div>
-                <div class="stat-value"><?= '$' . number_format($grand_total_drop, 0) ?></div>
+                <div class="stat-value"><?= format_currency($grand_total_drop) ?></div>
             </div>
             <div class="stat-box">
                 <div class="stat-title">Total OUT</div>
-                <div class="stat-value"><?= '$' . number_format($grand_total_out, 0) ?></div>
+                <div class="stat-value"><?= format_currency($grand_total_out) ?></div>
             </div>
             <div class="stat-box">
                 <div class="stat-title">Result</div>
-                <div class="stat-value <?= $grand_total_result >= 0 ? 'positive' : 'negative' ?>"><?= '$' . number_format($grand_total_result, 0) ?></div>
+                <div class="stat-value <?= $grand_total_result >= 0 ? 'positive' : 'negative' ?>"><?= format_currency($grand_total_result) ?></div>
             </div>
         </div>
 
@@ -66,7 +66,3 @@ header('Pragma: no-cache');
     </div>
 </body>
 </html>
-<?php
-// Ensure no additional output after HTML
-exit;
-?>
