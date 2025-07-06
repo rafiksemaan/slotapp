@@ -1,3 +1,4 @@
+/* assets/css/styles.css */
 /* Main Styles for Slot Management System */
 
 /* Variables */
@@ -269,7 +270,6 @@ a:hover {
 .sidebar.collapsed .main-nav a {
     padding: var(--spacing-md);
     justify-content: center;
-    margin: 0 auto;
     width: var(--sidebar-width-collapsed);
 }
 
@@ -458,7 +458,7 @@ optgroup {
 }
 
 .btn-danger {
-    background-color: var(--danger-color);
+    background-color: var(--accent-color);
     color: white;
 }
 
@@ -1328,6 +1328,11 @@ option:focus {
     padding: 1rem;
     background-color: rgba(255, 255, 255, 0.05);
     border-radius: var(--border-radius);
+    transition: background-color var(--transition-speed);
+}
+
+.stat-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 .stat-item .stat-value {
@@ -1539,6 +1544,7 @@ option:focus {
 }
 
 .breakdown-amount {
+    font-weight: 600;
     margin-left: 0.5rem;
 }
 
@@ -1795,9 +1801,11 @@ input[disabled] {
 @keyframes slideDown {
     from {
         opacity: 0;
+        transform: translateY(-10px);
     }
     to {
         opacity: 1;
+        transform: translateY(0);
     }
 }
 
@@ -2070,4 +2078,3 @@ input[disabled] {
 .meter-input-group .form-control {
     width: 100%;
 }
-

@@ -75,9 +75,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const cashGambeeMeterFields = document.getElementById('cashGambeeMeterFields');
     const coinsMachineMeterFields = document.getElementById('coinsMachineMeterFields');
-    const offlineMachineStatusSection = document.getElementById('offlineMachineStatusSection');
 
-    // Function to toggle visibility of meter fields and offline section
+    // Function to toggle visibility of meter fields
     function toggleMeterForms() {
         const selectedMachineOption = machineSelect.options[machineSelect.selectedIndex];
         const systemComp = selectedMachineOption ? selectedMachineOption.dataset.systemComp : '';
@@ -86,7 +85,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // Hide all dynamic sections initially
         cashGambeeMeterFields.style.display = 'none';
         coinsMachineMeterFields.style.display = 'none';
-        offlineMachineStatusSection.style.display = 'none';
 
         // Reset latest and variance displays
         document.getElementById('latest_bills_in').textContent = 'N/A';
@@ -103,7 +101,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         if (systemComp === 'offline') {
-            offlineMachineStatusSection.style.display = 'block';
             if (machineType === 'COINS') {
                 coinsMachineMeterFields.style.display = 'block';
 
@@ -174,4 +171,3 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
-

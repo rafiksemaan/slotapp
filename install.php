@@ -1,3 +1,4 @@
+// install.php
 <?php
 /**
  * Installation script for Slot Management System
@@ -277,9 +278,8 @@ function createTables($conn) {
 			`coins_in` INT DEFAULT NULL,
 			`coins_out` INT DEFAULT NULL,
 			`coins_drop` INT DEFAULT NULL,
-			`manual_reading_notes` TEXT COLLATE utf8mb4_general_ci DEFAULT NULL, /* ADD THIS LINE */
-			`notes` TEXT COLLATE utf8mb4_general_ci DEFAULT NULL, /* ADD THIS LINE */
-            `is_initial_reading` BOOLEAN NOT NULL DEFAULT FALSE, /* ADD THIS LINE */
+			`notes` TEXT COLLATE utf8mb4_general_ci DEFAULT NULL,
+            `is_initial_reading` BOOLEAN NOT NULL DEFAULT FALSE,
 			`created_by` INT NOT NULL,
 			`created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
 			`updated_by` INT DEFAULT NULL,
@@ -441,7 +441,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 
                 <?php if (!empty($success)): ?>
                     <div class="alert alert-success"><?php echo $success; ?></div>
-                <? else: ?>
+                <?php else: ?>
                     <form method="POST" action="install.php" id="installForm">
                         <div class="form-group">
                             <label for="admin_username">Admin Username *</label>
@@ -498,4 +498,3 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	
 </body>
 </html>
-

@@ -74,14 +74,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const cashGambeeMeterFields = document.getElementById('cashGambeeMeterFields');
     const coinsMachineMeterFields = document.getElementById('coinsMachineMeterFields');
-    const offlineMachineStatusSection = document.getElementById('offlineMachineStatusSection'); // Re-added variable
 
     // Function to reset all dynamic meter fields
     function resetMeterFields() {
         const fieldsToReset = [
             'total_in', 'total_out', 'bills_in', 'handpay_cash_gambee', 'jp',
             'coins_in', 'coins_out', 'coins_drop', 'bets_coins', 'handpay_coins',
-            'manual_reading_notes', // Re-added manual_reading_notes
             'notes'
         ];
         fieldsToReset.forEach(id => {
@@ -106,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Function to toggle visibility of meter fields and offline section
+    // Function to toggle visibility of meter fields
     function toggleMeterForms() {
         resetMeterFields(); // Always reset fields when changing selection
 
@@ -120,10 +118,8 @@ document.addEventListener('DOMContentLoaded', function () {
         // Hide all dynamic sections initially
         cashGambeeMeterFields.style.display = 'none';
         coinsMachineMeterFields.style.display = 'none';
-        offlineMachineStatusSection.style.display = 'none'; // Control this section
 
         if (systemComp === 'offline') {
-            offlineMachineStatusSection.style.display = 'block'; // Show offline section
             if (machineType === 'COINS') {
                 coinsMachineMeterFields.style.display = 'block';
                 console.log('Showing Coins Meter Fields');
@@ -177,4 +173,3 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 });
-

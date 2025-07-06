@@ -109,7 +109,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Sanitize and validate input
     $machine_id = sanitize_input($_POST['machine_id'] ?? '');
     $operation_date = sanitize_input($_POST['operation_date'] ?? '');
-    $manual_reading_notes = sanitize_input($_POST['manual_reading_notes'] ?? ''); // Re-added
     $notes = sanitize_input($_POST['notes'] ?? '');
     $is_initial_reading = isset($_POST['is_initial_reading']) ? 1 : 0; // Capture checkbox value
 
@@ -163,7 +162,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     machine_id = ?, operation_date = ?, meter_type = ?, 
                     total_in = ?, total_out = ?, bills_in = ?, ticket_in = ?, ticket_out = ?, jp = ?, bets = ?, handpay = ?, 
                     coins_in = ?, coins_out = ?, coins_drop = ?, 
-                    manual_reading_notes = ?, notes = ?, is_initial_reading = ?, updated_by = ?, updated_at = NOW()
+                    notes = ?, is_initial_reading = ?, updated_by = ?, updated_at = NOW()
                 WHERE id = ?
             ");
             
@@ -182,7 +181,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $coins_in,
                 $coins_out,
                 $coins_drop,
-                $manual_reading_notes ?: null, // Re-added
                 $notes ?: null,
                 $is_initial_reading, // New field
                 $_SESSION['user_id'],
@@ -370,16 +368,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 				</div>
                 </div>
 
-                <!-- Manual Reading Notes Section (applies to all offline machines) -->
-                <div class="form-section" id="offlineMachineStatusSection" style="display: none;">
-                    <h4>Offline Machine Details</h4>
-                    <div class="form-group">
-                        <label for="manual_reading_notes">Manual Reading Notes</label>
-                        <textarea id="manual_reading_notes" name="manual_reading_notes" class="form-control" rows="3"
-                                  placeholder="Notes for manual meter readings on offline machines..."><?php echo htmlspecialchars($meter_data['manual_reading_notes'] ?? ''); ?></textarea>
-                    </div>
-                </div>
-
                 <!-- Additional Information Section -->
                 <div class="form-section">
                     <h4>Additional Information</h4>
@@ -399,4 +387,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </div>
 <script type="module" src="assets/js/meters_edit.js"></script>
-
