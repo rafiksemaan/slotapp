@@ -5,27 +5,14 @@
  */
 
 // Get sorting parameters
-$sort_column = $_GET['sort'] ?? 'operation_date';
-$sort_order = $_GET['order'] ?? 'DESC';
+$sort_column = $_GET['sort'] ?? 'machine_number'; // Changed default sort column
+$sort_order = $_GET['order'] ?? 'ASC'; // Changed default sort order
 $toggle_order = $sort_order === 'ASC' ? 'DESC' : 'ASC';
 
-// Get filter parameters
-$filter_machine = $_GET['machine'] ?? 'all';
-$date_range_type = $_GET['date_range_type'] ?? 'month';
-$filter_date_from = $_GET['date_from'] ?? date('Y-m-01');
-$filter_date_to = $_GET['date_to'] ?? date('Y-m-t');
-$filter_month = $_GET['month'] ?? date('Y-m');
-$filter_meter_type = $_GET['meter_type'] ?? 'all'; // e.g., 'online', 'coins', 'offline'
-
-// Calculate start and end dates based on filter
-if ($date_range_type === 'range') {
-    $start_date = $filter_date_from;
-    $end_date = $filter_date_to;
-} else {
-    list($year, $month_num) = explode('-', $filter_month);
-    $start_date = "$year-$month_num-01";
-    $end_date = date("Y-m-t", strtotime($start_date));
-}
+// Set a wide date range to effectively show all entries if no specific date filter is applied
+// This ensures all machines are listed as requested, without date filtering.
+$start_date = '1900-01-01'; // Very old date
+$end_date = '2100-12-31';   // Very future date
 
 // Build query for fetching meter data with LAG for previous readings
 $query = "
@@ -42,20 +29,10 @@ $query = "
     JOIN machines m ON me.machine_id = m.id
     LEFT JOIN machine_types mt ON m.type_id = mt.id
     LEFT JOIN users u ON me.created_by = u.id
-    WHERE me.operation_date BETWEEN ? AND ?
+    WHERE 1=1
 ";
 
-$params = [$start_date, $end_date];
-
-// Apply filters
-if ($filter_machine !== 'all') {
-    $query .= " AND me.machine_id = ?";
-    $params[] = $filter_machine;
-}
-if ($filter_meter_type !== 'all') {
-    $query .= " AND me.meter_type = ?";
-    $params[] = $filter_meter_type;
-}
+$params = []; // No initial parameters as date filtering is removed from query
 
 // Add sorting
 $sort_map = [
@@ -74,7 +51,7 @@ $sort_map = [
     'created_by_username' => 'u.username'
 ];
 
-$actual_sort_column = $sort_map[$sort_column] ?? 'me.operation_date';
+$actual_sort_column = $sort_map[$sort_column] ?? 'me.machine_number'; // Default to machine_number
 $query .= " ORDER BY $actual_sort_column $sort_order";
 
 try {
@@ -94,12 +71,9 @@ try {
         JOIN transaction_types tt ON t.transaction_type_id = tt.id
         WHERE t.operation_date BETWEEN ? AND ?
     ";
-    // Add machine filter to transaction sums query if applicable
+    // Use the wide date range for transaction sums as well
     $transaction_sums_params = [$start_date, $end_date];
-    if ($filter_machine !== 'all') {
-        $transaction_sums_query .= " AND t.machine_id = ?";
-        $transaction_sums_params[] = $filter_machine;
-    }
+    
     $transaction_sums_query .= " GROUP BY t.machine_id, t.operation_date";
 
     $sums_stmt = $conn->prepare($transaction_sums_query);
@@ -126,13 +100,13 @@ try {
         // Calculate Variance
         if (!$meter['is_initial_reading']) { // Only calculate if not an initial reading
             if ($meter['bills_in'] !== null && $meter['prev_bills_in'] !== null) {
-                $meter['bills_in_variance'] = ($meter['bills_in'] - $meter['prev_bills_in']) * $credit_value;
+                $meter['bills_in_variance'] = ($meter['bills_in'] - $meter['prev_bills_in']);
             }
             if ($meter['handpay'] !== null && $meter['prev_handpay'] !== null) {
-                $meter['handpay_variance'] = ($meter['handpay'] - $meter['prev_handpay']) * $credit_value;
+                $meter['handpay_variance'] = ($meter['handpay'] - $meter['prev_handpay']);
             }
             if ($meter['coins_drop'] !== null && $meter['prev_coins_drop'] !== null) {
-                $meter['coins_drop_variance'] = ($meter['coins_drop'] - $meter['prev_coins_drop']) * $credit_value;
+                $meter['coins_drop_variance'] = ($meter['coins_drop'] - $meter['prev_coins_drop']);
             }
         }
 
@@ -159,7 +133,7 @@ try {
     }
     unset($meter); // Break the reference
 
-    // Get machines for filter dropdown
+    // Get machines for filter dropdown (still needed for machine_entries link)
     $machines_stmt = $conn->query("
         SELECT m.id, m.machine_number, b.name as brand_name
         FROM machines m
@@ -178,114 +152,9 @@ try {
 // Meter types for dropdown (from database ENUM or fixed list)
 $meter_types_options = ['online', 'coins', 'offline'];
 
-// Check if we have filter parameters (indicating filters were applied)
-$has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !empty($_GET['date_from']) || !empty($_GET['date_to']) || !empty($_GET['month']) || $filter_meter_type !== 'all';
-
 ?>
 
 <div class="meters-list fade-in">
-    <!-- Collapsible Filters -->
-    <div class="filters-container card mb-6">
-        <div class="card-header">
-            <div class="filter-header-content">
-                <h4 style="margin: 0;">Meter Filters</h4>
-                <span id="filter-toggle-icon" class="filter-toggle-icon">
-                    <?php echo $has_filters ? '▼' : '▲'; ?>
-                </span>
-            </div>
-        </div>
-        <div class="card-body" id="filters-body" style="<?php echo $has_filters ? 'display: none;' : ''; ?>">
-            <form action="index.php" method="GET">
-                <input type="hidden" name="page" value="meters">
-                <input type="hidden" name="sort" value="<?php echo $sort_column; ?>">
-                <input type="hidden" name="order" value="<?php echo $sort_order; ?>">
-
-                <!-- Date Range Section -->
-                <div class="form-section">
-                    <h4>Date Range</h4>
-                    <div class="row">
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="date_range_type">Date Range Type</label>
-                                <select name="date_range_type" id="date_range_type" class="form-control">
-                                    <option value="month" <?= $date_range_type === 'month' ? 'selected' : '' ?>>Full Month</option>
-                                    <option value="range" <?= $date_range_type === 'range' ? 'selected' : '' ?>>Custom Range</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="month">Select Month</label>
-                                <input type="month" name="month" id="month" class="form-control"
-                                       value="<?= $filter_month ?>" <?= $date_range_type !== 'month' ? 'disabled' : '' ?>>
-                            </div>
-                        </div>
-                        
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="date_from">From Date</label>
-                                <input type="date" name="date_from" id="date_from" class="form-control"
-                                       value="<?= $filter_date_from ?>" <?= $date_range_type !== 'range' ? 'disabled' : '' ?>>
-                            </div>
-                        </div>
-                        
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="date_to">To Date</label>
-                                <input type="date" name="date_to" id="date_to" class="form-control"
-                                       value="<?= $filter_date_to ?>" <?= $date_range_type !== 'range' ? 'disabled' : '' ?>>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Filter Options Section -->
-                <div class="form-section">
-                    <h4>Filter Options</h4>
-                    <div class="row">
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="machine">Machine</label>
-                                <select name="machine" id="machine" class="form-control">
-                                    <option value="all" <?= $filter_machine === 'all' ? 'selected' : '' ?>>All Machines</option>
-                                    <?php foreach ($machines as $m): ?>
-                                        <option value="<?= $m['id'] ?>" <?= $filter_machine == $m['id'] ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($m['machine_number']) ?>
-                                            <?php if ($m['brand_name']): ?>
-                                                (<?= htmlspecialchars($m['brand_name']) ?>)
-                                            <?php endif; ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="meter_type">Meter Type</label>
-                                <select name="meter_type" id="meter_type" class="form-control">
-                                    <option value="all" <?= $filter_meter_type === 'all' ? 'selected' : '' ?>>All Types</option>
-                                    <?php foreach ($meter_types_options as $type): ?>
-                                        <option value="<?= $type ?>" <?= $filter_meter_type === $type ? 'selected' : '' ?>>
-                                            <?= ucfirst($type) ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Submit Buttons -->
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Apply Filters</button>
-                    <a href="index.php?page=meters" class="btn btn-danger">Reset</a>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <!-- Action Buttons -->
     <div class="action-buttons mb-6 flex justify-between">
         <div>
@@ -322,24 +191,24 @@ $has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !emp
                             <th class="px-4 py-2 text-center">Total In</th>
                             <th class="px-4 py-2 text-center">Total Out</th>
                             <th class="px-4 py-2 text-center">Bills In</th>
-                            <th class="px-4 py-2 text-center">Bills In Variance</th>
-                            <th class="px-4 py-2 text-center">Bills In Anomaly</th>
+                            <th class="px-4 py-2 text-center variance-anomaly-header">Bills In Variance</th>
+                            <th class="px-4 py-2 text-center variance-anomaly-header">Bills In Anomaly</th>
                             <th class="px-4 py-2 text-center">Coins In</th>
                             <th class="px-4 py-2 text-center">Coins Out</th>
                             <th class="px-4 py-2 text-center">Coins Drop</th>
-                            <th class="px-4 py-2 text-center">Coins Drop Variance</th>
-                            <th class="px-4 py-2 text-center">Coins Drop Anomaly</th>
+                            <th class="px-4 py-2 text-center variance-anomaly-header">Coins Drop Variance</th>
+                            <th class="px-4 py-2 text-center variance-anomaly-header">Coins Drop Anomaly</th>
                             <th class="px-4 py-2 text-center">Bets</th>
                             <th class="px-4 py-2 text-center">Handpay</th>
-                            <th class="px-4 py-2 text-center">Handpay Variance</th>
-                            <th class="px-4 py-2 text-center">Handpay Anomaly</th>
+                            <th class="px-4 py-2 text-center variance-anomaly-header">Handpay Variance</th>
+                            <th class="px-4 py-2 text-center variance-anomaly-header">Handpay Anomaly</th>
                             <th class="px-4 py-2 text-center">JP</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-700">
                         <?php if (empty($meters)): ?>
                             <tr>
-                                <td colspan="21" class="text-center px-4 py-6">No meter entries found</td>
+                                <td colspan="18" class="text-center px-4 py-6">No meter entries found</td>
                             </tr>
                         <?php else: ?>
                             <?php foreach ($meters as $meter): ?>
@@ -368,8 +237,11 @@ $has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !emp
                     </tbody>
                 </table>
             </div>
+            
+            <div class="form-group mt-6">
+                <a href="index.php?page=meters" class="btn btn-primary">Back to All Meters</a>
+            </div>
         </div>
     </div>
 </div>
 
-<script src="assets/js/common_utils.js"></script>
