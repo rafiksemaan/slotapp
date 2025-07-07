@@ -41,7 +41,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $brand['name'] = get_input(INPUT_POST, 'name', 'string');
 	$brand['description'] = get_input(INPUT_POST, 'description', 'string');
 
-
     // Validate required fields
     if (empty($brand['name'])) {
         set_flash_message('danger', "Brand name is required.");
@@ -113,3 +112,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </div>
 <script type="module" src="assets/js/brands_edit.js"></script>
+
