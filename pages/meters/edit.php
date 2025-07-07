@@ -212,7 +212,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 data-original-coins-drop="<?php echo htmlspecialchars($prev_meter_data['coins_drop']); ?>"
                 data-original-handpay="<?php echo htmlspecialchars($prev_meter_data['handpay']); ?>"
                 data-current-meter-type="<?php echo htmlspecialchars($meter_data['meter_type']); ?>"
-                data-current-system-comp="<?php echo htmlspecialchars($meter_data['system_comp']); ?>">
+                data-current-system-comp="<?php echo htmlspecialchars($meter_data['system_comp']); ?>"
+				data-current-machine-type="<?php echo htmlspecialchars($meter_data['machine_type_name']); ?>">
                 <!-- Basic Information Section -->
                 <div class="form-section">
                     <h4>Basic Information</h4>
