@@ -14,7 +14,7 @@ $toggle_order = $sort_order === 'ASC' ? 'DESC' : 'ASC';
 
 // Get filter values
 $filter_role = get_input(INPUT_GET, 'role', 'string', '');
-$filter_status = get_input(INPUT_GET, 'status', 'string', '');
+	$filter_status = get_input(INPUT_GET, 'status', 'string', '');
 
 try {
     $query = "SELECT * FROM users WHERE 1=1";
