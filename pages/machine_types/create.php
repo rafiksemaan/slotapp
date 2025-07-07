@@ -82,3 +82,4 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
 </div>
 <script type="module" src="assets/js/machine_types_create.js"></script>
+
