@@ -4,8 +4,8 @@
  */
 
 // Get sorting parameters
-$sort_column = isset($_GET['sort']) ? $_GET['sort'] : 'machine_number';
-$sort_order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
+$sort_column = get_input(INPUT_GET, 'sort', 'string', 'machine_number');
+$sort_order = get_input(INPUT_GET, 'order', 'string', 'ASC');
 
 // Validate sort column
 $allowed_columns = ['machine_number', 'brand_id', 'game', 'type_id', 'credit_value', 'status'];
@@ -22,10 +22,10 @@ if (!in_array(strtoupper($sort_order), ['ASC', 'DESC'])) {
 $toggle_order = $sort_order == 'ASC' ? 'DESC' : 'ASC';
 
 // Get filter parameters
-$filter_brand = isset($_GET['brand']) ? $_GET['brand'] : '';
-$filter_type = isset($_GET['type']) ? $_GET['type'] : '';
-$filter_status = isset($_GET['status']) ? $_GET['status'] : '';
-$filter_game = isset($_GET['game']) ? $_GET['game'] : '';
+$filter_brand = get_input(INPUT_GET, 'brand', 'string', '');
+$filter_type = get_input(INPUT_GET, 'type', 'string', '');
+$filter_status = get_input(INPUT_GET, 'status', 'string', '');
+$filter_game = get_input(INPUT_GET, 'game', 'string', '');
 
 // Build query
 $query = "

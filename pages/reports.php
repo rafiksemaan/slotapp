@@ -8,20 +8,20 @@ $page = $_GET['page'] ?? 'reports';
 
 // Handle export requests first
 if (isset($_GET['export'])) {
-    $export_type = $_GET['export']; // 'pdf' or 'excel'
+     $export_type = get_input(INPUT_GET, 'export', 'string'); // 'pdf' or 'excel'
     
     // Get all the same parameters as the main report
-    $date_range_type = $_GET['date_range_type'] ?? 'month';
-    $date_from = $_GET['date_from'] ?? date('Y-m-01');
-    $date_to = $_GET['date_to'] ?? date('Y-m-t');
-    $month = $_GET['month'] ?? date('Y-m');
-    $machine_id = $_GET['machine_id'] ?? 'all'; // Changed from $machine to $machine_id for consistency
-    $brand_id = $_GET['brand_id'] ?? 'all';
-    $machine_group_id = $_GET['machine_group_id'] ?? 'all'; // New filter parameter
-    $category = $_GET['category'] ?? ''; // This filter is not used in this report, but kept for consistency if needed
-    $transaction_type = $_GET['transaction_type'] ?? 'all'; // This filter is not used in this report, but kept for consistency if needed
-    $sort_column = $_GET['sort'] ?? 'timestamp'; // This report doesn't have a sortable table, but kept for consistency if needed
-    $sort_order = $_GET['order'] ?? 'DESC'; // This report doesn't have a sortable table, but kept for consistency if needed
+    $date_range_type = get_input(INPUT_GET, 'date_range_type', 'string', 'month');
+    $date_from = get_input(INPUT_GET, 'date_from', 'string', date('Y-m-01'));
+    $date_to = get_input(INPUT_GET, 'date_to', 'string', date('Y-m-t'));
+    $month = get_input(INPUT_GET, 'month', 'string', date('Y-m'));
+    $machine_id = get_input(INPUT_GET, 'machine_id', 'string', 'all'); // Changed from $machine to $machine_id for consistency
+    $brand_id = get_input(INPUT_GET, 'brand_id', 'string', 'all');
+    $machine_group_id = get_input(INPUT_GET, 'machine_group_id', 'string', 'all'); // New filter parameter
+    $category = get_input(INPUT_GET, 'category', 'string', ''); // This filter is not used in this report, but kept for consistency if needed
+    $transaction_type = get_input(INPUT_GET, 'transaction_type', 'string', 'all'); // This filter is not used in this report, but kept for consistency if needed
+    $sort_column = get_input(INPUT_GET, 'sort', 'string', 'timestamp'); // This report doesn't have a sortable table, but kept for consistency if needed
+    $sort_order = get_input(INPUT_GET, 'order', 'string', 'DESC'); // This report doesn't have a sortable table, but kept for consistency if needed
     
     // Define the export handler constant
     define('EXPORT_HANDLER', true);
@@ -34,13 +34,13 @@ if (isset($_GET['export'])) {
 
 
 // Get filter values from URL
-$machine_id = $_GET['machine_id'] ?? 'all';
-$brand_id = $_GET['brand_id'] ?? 'all';
-$machine_group_id = $_GET['machine_group_id'] ?? 'all'; // New filter parameter
-$date_range_type = $_GET['date_range_type'] ?? 'month';
-$date_from = $_GET['date_from'] ?? date('Y-m-01');
-$date_to = $_GET['date_to'] ?? date('Y-m-t');
-$month = $_GET['month'] ?? date('Y-m');
+$machine_id = get_input(INPUT_GET, 'machine_id', 'string', 'all');
+$brand_id = get_input(INPUT_GET, 'brand_id', 'string', 'all');
+$machine_group_id = get_input(INPUT_GET, 'machine_group_id', 'string', 'all'); // New filter parameter
+$date_range_type = get_input(INPUT_GET, 'date_range_type', 'string', 'month');
+$date_from = get_input(INPUT_GET, 'date_from', 'string', date('Y-m-01'));
+$date_to = get_input(INPUT_GET, 'date_to', 'string', date('Y-m-t'));
+$month = get_input(INPUT_GET, 'month', 'string', date('Y-m'));
 
 // Calculate start and end dates
 if ($date_range_type === 'range') {
@@ -222,7 +222,7 @@ $machines = $machines_stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
 // Check if we have filter parameters (indicating a report was generated)
-$has_filters = !empty($_GET['machine_id']) || !empty($_GET['brand_id']) || !empty($_GET['machine_group_id']) || !empty($_GET['date_range_type']) || !empty($_GET['date_from']) || !empty($_GET['date_to']) || !empty($_GET['month']);
+$has_filters = $machine_id !== 'all' || $brand_id !== 'all' || $machine_group_id !== 'all' || $date_range_type !== 'month' || !empty($date_from) || !empty($date_to) || !empty($month);
 
 // Build export URLs
 $export_params = [

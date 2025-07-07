@@ -8,13 +8,13 @@
 $can_edit = true; // Replace with actual permission check if available
 
 // Get sorting parameters
-$sort_column = $_GET['sort'] ?? 'username';
-$sort_order = $_GET['order'] ?? 'ASC';
+$sort_column = get_input(INPUT_GET, 'sort', 'string', 'username');
+$sort_order = get_input(INPUT_GET, 'order', 'string', 'ASC');
 $toggle_order = $sort_order === 'ASC' ? 'DESC' : 'ASC';
 
 // Get filter values
-$filter_role = $_GET['role'] ?? '';
-$filter_status = $_GET['status'] ?? '';
+$filter_role = get_input(INPUT_GET, 'role', 'string', '');
+$filter_status = get_input(INPUT_GET, 'status', 'string', '');
 
 try {
     $query = "SELECT * FROM users WHERE 1=1";

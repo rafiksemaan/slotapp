@@ -5,8 +5,8 @@
  */
 
 // Get sorting parameters
-$sort_column = $_GET['sort'] ?? 'machine_number'; // Changed default sort column
-$sort_order = $_GET['order'] ?? 'ASC'; // Changed default sort order
+$sort_column = get_input(INPUT_GET, 'sort', 'string', 'machine_number'); // Changed default sort column
+$sort_order = get_input(INPUT_GET, 'order', 'string', 'ASC'); // Changed default sort order
 $toggle_order = $sort_order === 'ASC' ? 'DESC' : 'ASC';
 
 // No date range filtering for this view, as we want all machines

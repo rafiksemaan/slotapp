@@ -6,15 +6,15 @@
  */
 
 // Get filter values
-$date_range_type = $_GET['date_range_type'] ?? 'latest_upload';
-$date_from = $_GET['date_from'] ?? date('Y-m-01');
-$date_to = $_GET['date_to'] ?? date('Y-m-t');
-$month = $_GET['month'] ?? date('Y-m');
-$guest_search = $_GET['guest_search'] ?? '';
+$date_range_type = get_input(INPUT_GET, 'date_range_type', 'string', 'latest_upload');
+$date_from = get_input(INPUT_GET, 'date_from', 'string', date('Y-m-01'));
+$date_to = get_input(INPUT_GET, 'date_to', 'string', date('Y-m-t'));
+$month = get_input(INPUT_GET, 'month', 'string', date('Y-m'));
+$guest_search = get_input(INPUT_GET, 'guest_search', 'string', '');
 
 // Get sorting parameters
-$sort_column = $_GET['sort'] ?? 'total_drop';
-$sort_order = $_GET['order'] ?? 'DESC';
+$sort_column = get_input(INPUT_GET, 'sort', 'string', 'total_drop');
+$sort_order = get_input(INPUT_GET, 'order', 'string', 'DESC');
 
 // Validate sort column
 $allowed_columns = ['guest_code_id', 'guest_name', 'total_drop', 'total_result', 'total_visits', 'last_visit'];
@@ -147,7 +147,7 @@ $pdf_export_url = $export_url_base . '&export=pdf';
 $excel_export_url = $export_url_base . '&export=excel';
 
 // Check if we have filter parameters
-$has_filters = $date_range_type !== 'latest_upload' || !empty($guest_search);
+$has_filters = $date_range_type !== 'latest_upload' || !empty($guest_search) || !empty($date_from) || !empty($date_to) || !empty($month);
 
 // Generate filter description for display
 $filter_description = '';

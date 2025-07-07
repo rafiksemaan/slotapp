@@ -5,12 +5,12 @@
  */
 
 // Pagination parameters
-$page_num = 1; // Always start with page 1 for initial load
+$page_num = 1; // Always start with page 1 for initial load, as AJAX handles subsequent pages
 $per_page = 500;
 
 // Sorting parameters
-$sort_column = $_GET['sort'] ?? 'operation_date';
-$sort_order = $_GET['order'] ?? 'DESC';
+$sort_column = get_input(INPUT_GET, 'sort', 'string', 'operation_date');
+$sort_order = get_input(INPUT_GET, 'order', 'string', 'DESC');
 
 // Validate sort column
 $allowed_columns = ['operation_date', 'machine_number', 'transaction_type', 'amount', 'username'];
@@ -22,13 +22,13 @@ if (!in_array($sort_column, $allowed_columns)) {
 $toggle_order = $sort_order === 'ASC' ? 'DESC' : 'ASC';
 
 // Filter parameters
-$filter_machine = $_GET['machine'] ?? 'all';
-$date_range_type = $_GET['date_range_type'] ?? 'month';
-$filter_date_from = $_GET['date_from'] ?? date('Y-m-01');
-$filter_date_to = $_GET['date_to'] ?? date('Y-m-t');
-$filter_month = $_GET['month'] ?? date('Y-m');
-$filter_category = $_GET['category'] ?? '';
-$filter_transaction_type = $_GET['transaction_type'] ?? 'all';
+$filter_machine = get_input(INPUT_GET, 'machine', 'string', 'all');
+$date_range_type = get_input(INPUT_GET, 'date_range_type', 'string', 'month');
+$filter_date_from = get_input(INPUT_GET, 'date_from', 'string', date('Y-m-01'));
+$filter_date_to = get_input(INPUT_GET, 'date_to', 'string', date('Y-m-t'));
+$filter_month = get_input(INPUT_GET, 'month', 'string', date('Y-m'));
+$filter_category = get_input(INPUT_GET, 'category', 'string', '');
+$filter_transaction_type = get_input(INPUT_GET, 'transaction_type', 'string', 'all');
 
 // Calculate start and end dates
 if ($date_range_type === 'range') {
@@ -218,7 +218,7 @@ $pdf_export_url = $export_url_base . '&export=pdf';
 $excel_export_url = $export_url_base . '&export=excel';
 
 // Check if we have filter parameters (indicating a report was generated)
-$has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !empty($_GET['date_from']) || !empty($_GET['date_to']) || !empty($_GET['month']) || !empty($filter_category) || $filter_transaction_type !== 'all';
+$has_filters = $filter_machine !== 'all' || $date_range_type !== 'month' || !empty($filter_date_from) || !empty($filter_date_to) || !empty($filter_month) || !empty($filter_category) || $filter_transaction_type !== 'all';
 ?>
 
 <div class="transactions-page fade-in">

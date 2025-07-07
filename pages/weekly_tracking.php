@@ -5,15 +5,14 @@
  */
 
 // Get filter values
-$filter_year = $_GET['year'] ?? date('Y');
+$filter_year = get_input(INPUT_GET, 'year', 'int', date('Y'));
 
 // Validate year
-if (!is_numeric($filter_year) || $filter_year < 2000 || $filter_year > 2100) {
+if (empty($filter_year) || $filter_year < 2000 || $filter_year > 2100) {
     $filter_year = date('Y');
 }
-$filter_week_number = $_GET['week_number'] ?? ''; // This line should be outside the if block
-
-
+$filter_week_number = get_input(INPUT_GET, 'week_number', 'string', ''); // This line should be outside the if block
+ 
 // Get all daily tracking data for the selected year
 $daily_data = [];
 try {

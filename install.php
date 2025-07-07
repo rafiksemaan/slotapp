@@ -391,10 +391,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         
         if ($result === true) {
             // Create admin user
-            $admin_username = validateInput($_POST['admin_username'] ?? '', 'alphanumeric');
-            $admin_password = $_POST['admin_password'] ?? '';
-            $admin_name = validateInput($_POST['admin_name'] ?? '', 'string');
-            $admin_email = validateInput($_POST['admin_email'] ?? '', 'email');
+			$admin_username = get_input(INPUT_POST, 'admin_username', 'alphanumeric');
+            $admin_password = get_input(INPUT_POST, 'admin_password', 'string');
+            $admin_name = get_input(INPUT_POST, 'admin_name', 'string');
+            $admin_email = get_input(INPUT_POST, 'admin_email', 'email');
             
             if (empty($admin_username) || empty($admin_password) || empty($admin_name) || !$admin_email) {
                 $error = "All fields are required and must be valid";

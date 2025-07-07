@@ -13,13 +13,13 @@ if (session_status() === PHP_SESSION_NONE) {
 $page = $_GET['page'] ?? 'general_report';
 
 // Get filter values
-$date_range_type = $_GET['date_range_type'] ?? 'month';
-$date_from = $_GET['date_from'] ?? date('Y-m-01');
-$date_to = $_GET['date_to'] ?? date('Y-m-t');
-$month = $_GET['month'] ?? date('Y-m');
-$machine_id = $_GET['machine_id'] ?? 'all';
-$brand_id = $_GET['brand_id'] ?? 'all';
-$machine_group_id = $_GET['machine_group_id'] ?? 'all';
+$date_range_type = get_input(INPUT_GET, 'date_range_type', 'string', 'month');
+$date_from = get_input(INPUT_GET, 'date_from', 'string', date('Y-m-01'));
+$date_to = get_input(INPUT_GET, 'date_to', 'string', date('Y-m-t'));
+$month = get_input(INPUT_GET, 'month', 'string', date('Y-m'));
+$machine_id = get_input(INPUT_GET, 'machine_id', 'string', 'all');
+$brand_id = get_input(INPUT_GET, 'brand_id', 'string', 'all');
+$machine_group_id = get_input(INPUT_GET, 'machine_group_id', 'string', 'all');
 
 // Calculate start/end dates
 if ($date_range_type === 'range') {
@@ -181,7 +181,7 @@ if ($date_range_type === 'range') {
 }
 
 // Check if we have filter parameters (indicating a report was generated)
-$has_filters = !empty($_GET['machine_id']) || !empty($_GET['brand_id']) || !empty($_GET['machine_group_id']) || !empty($_GET['date_range_type']) || !empty($_GET['date_from']) || !empty($_GET['date_to']) || !empty($_GET['month']);
+$has_filters = $machine_id !== 'all' || $brand_id !== 'all' || $machine_group_id !== 'all' || $date_range_type !== 'month' || !empty($date_from) || !empty($date_to) || !empty($month);
 ?>
 
 <div class="general-report-page fade-in">

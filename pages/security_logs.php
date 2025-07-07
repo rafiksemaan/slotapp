@@ -10,13 +10,13 @@ if ($_SESSION['user_role'] !== 'admin') {
 }
 
 // Pagination parameters
-$page_num = isset($_GET['page_num']) ? (int)$_GET['page_num'] : 1;
+$page_num = get_input(INPUT_GET, 'page_num', 'int', 1);
 $per_page = 20;
 $offset = ($page_num - 1) * $per_page;
 
 // Sorting parameters
-$sort_column = $_GET['sort'] ?? 'created_at';
-$sort_order = $_GET['order'] ?? 'DESC';
+$sort_column = get_input(INPUT_GET, 'sort', 'string', 'created_at');
+$sort_order = get_input(INPUT_GET, 'order', 'string', 'DESC');
 
 // Validate sort column
 $allowed_sort_columns = ['created_at', 'event_type', 'severity', 'ip_address', 'user_id'];
@@ -32,12 +32,12 @@ if (!in_array($sort_order, ['ASC', 'DESC'])) {
 $toggle_order = $sort_order === 'ASC' ? 'DESC' : 'ASC';
 
 // Filter parameters
-$filter_event_type = $_GET['event_type'] ?? '';
-$filter_severity = $_GET['severity'] ?? '';
-$filter_ip_address = $_GET['ip_address'] ?? '';
-$filter_user_id = $_GET['user_id'] ?? 'all';
-$filter_date_from = $_GET['date_from'] ?? '';
-$filter_date_to = $_GET['date_to'] ?? '';
+$filter_event_type = get_input(INPUT_GET, 'event_type', 'string', '');
+$filter_severity = get_input(INPUT_GET, 'severity', 'string', '');
+$filter_ip_address = get_input(INPUT_GET, 'ip_address', 'string', '');
+$filter_user_id = get_input(INPUT_GET, 'user_id', 'string', 'all');
+$filter_date_from = get_input(INPUT_GET, 'date_from', 'string', '');
+$filter_date_to = get_input(INPUT_GET, 'date_to', 'string', '');
 
 $query_params = [];
 $where_clauses = ["1=1"];

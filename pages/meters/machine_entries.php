@@ -5,13 +5,12 @@
  */
 
 // Check if machine ID is provided
-if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    set_flash_message('danger', "Machine ID not provided.");
+$machine_id = get_input(INPUT_GET, 'id', 'int');
+if (empty($machine_id)) {
+    set_flash_message('danger', "Machine ID not provided or invalid.");
     header("Location: index.php?page=meters");
     exit;
 }
-
-$machine_id = $_GET['id'];
 
 // Check permissions
 $can_edit = has_permission('editor');

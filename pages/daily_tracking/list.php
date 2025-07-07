@@ -5,8 +5,8 @@
  */
 
 // Get sorting parameters
-$sort_column = $_GET['sort'] ?? 'tracking_date';
-$sort_order = $_GET['order'] ?? 'DESC';
+$sort_column = get_input(INPUT_GET, 'sort', 'string', 'tracking_date');
+$sort_order = get_input(INPUT_GET, 'order', 'string', 'DESC');
 
 // Validate sort column
 $allowed_columns = ['tracking_date'];
@@ -23,10 +23,10 @@ if (!in_array($sort_order, ['ASC', 'DESC'])) {
 $toggle_order = $sort_order === 'ASC' ? 'DESC' : 'ASC';
 
 // Get filter values
-$date_range_type = $_GET['date_range_type'] ?? 'month';
-$date_from = $_GET['date_from'] ?? date('Y-m-01');
-$date_to = $_GET['date_to'] ?? date('Y-m-t');
-$month = $_GET['month'] ?? date('Y-m');
+$date_range_type = get_input(INPUT_GET, 'date_range_type', 'string', 'month');
+$date_from = get_input(INPUT_GET, 'date_from', 'string', date('Y-m-01'));
+$date_to = get_input(INPUT_GET, 'date_to', 'string', date('Y-m-t'));
+$month = get_input(INPUT_GET, 'month', 'string', date('Y-m'));
 
 // Calculate start and end dates
 if ($date_range_type === 'range') {
@@ -88,7 +88,7 @@ try {
 }
 
 // Check if we have filter parameters
-$has_filters = $date_range_type !== 'month' || !empty($_GET['date_from']) || !empty($_GET['date_to']) || !empty($_GET['month']);
+$has_filters = $date_range_type !== 'month' || !empty($date_from) || !empty($date_to) || !empty($month);
 
 // Generate report title
 if ($date_range_type === 'range') {
