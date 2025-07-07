@@ -21,20 +21,22 @@ if (isset($_GET['timeout'])) {
 
 // Process login form
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Use get_input for all POST data
+    $username = get_input(INPUT_POST, 'username', 'alphanumeric');
+    $password = get_input(INPUT_POST, 'password', 'string');
+    $csrf_token_post = get_input(INPUT_POST, 'csrf_token', 'string');
+    $ip_address = $_SERVER['REMOTE_ADDR'] ?? '';
+    
     // Verify CSRF token
-    if (!isset($_POST['csrf_token']) || !verifyCSRFToken($_POST['csrf_token'])) {
+    if (!isset($csrf_token_post) || !verifyCSRFToken($csrf_token_post)) {
         $error = "Invalid request. Please try again.";
         logSecurityEvent('CSRF_TOKEN_INVALID', 'Invalid CSRF token on login', 'WARNING');
     } else {
-        $username = validateInput($_POST['username'] ?? '', 'alphanumeric');
-        $password = $_POST['password'] ?? '';
-        $ip_address = $_SERVER['REMOTE_ADDR'] ?? '';
-        
         if (empty($username) || empty($password)) {
             $error = "Please enter both username and password";
         } elseif (!checkLoginAttempts($username, $ip_address)) {
             $lockout_message = "Too many failed login attempts. Please try again in " . (LOGIN_LOCKOUT_TIME / 60) . " minutes.";
-            logSecurityEvent('LOGIN_LOCKOUT', "Username: $username, IP: $ip_address", 'WARNING');
+            logSecurityEvent('LOGIN_LOCKOUT', "Username: {$username}, IP: {$ip_address}", 'WARNING');
         } else {
             try {
                 $stmt = $conn->prepare("SELECT id, username, password, role, status FROM users WHERE username = ? AND status = 'Active'");
@@ -59,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     clearLoginAttempts($username, $ip_address);
                     
                     // Log successful login
-                    logSecurityEvent('LOGIN_SUCCESS', "Username: $username");
+                    logSecurityEvent('LOGIN_SUCCESS', "Username: {$username}");
                     log_action('login', 'User logged in successfully');
                     
                     // Check if password is old (older than 90 days)
@@ -73,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 } else {
                     // Record failed login attempt
                     recordFailedLogin($username, $ip_address);
-                    logSecurityEvent('LOGIN_FAILED', "Username: $username, IP: $ip_address", 'WARNING');
+                    logSecurityEvent('LOGIN_FAILED', "Username: {$username}, IP: {$ip_address}", 'WARNING');
                     
                     $error = "Invalid username or password";
                     
@@ -108,11 +110,11 @@ $csrf_token = generateCSRFToken();
             </div>
             <div class="login-body">
                 <?php if (!empty($lockout_message)): ?>
-                    <div class="lockout-message"><?php echo $lockout_message; ?></div>
+                    <div class="lockout-message"><?php echo escape_html_output($lockout_message); ?></div>
                 <?php endif; ?>
                 
                 <?php if (!empty($error)): ?>
-                    <div class="alert alert-danger"><?php echo $error; ?></div>
+                    <div class="alert alert-danger"><?php echo escape_html_output($error); ?></div>
                 <?php endif; ?>
                 
                 <div class="security-notice">
@@ -121,12 +123,12 @@ $csrf_token = generateCSRFToken();
                 </div>
                 
                 <form method="POST" action="login.php" id="loginForm">
-                    <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
+                    <input type="hidden" name="csrf_token" value="<?php echo escape_html_output($csrf_token); ?>">
                     
                     <div class="form-group">
                         <label for="username">Username</label>
                         <input type="text" id="username" name="username" class="form-control" 
-                               value="<?php echo htmlspecialchars($_POST['username'] ?? ''); ?>" 
+                               value="<?php echo escape_html_output(get_input(INPUT_POST, 'username', 'string', '')); ?>" 
                                required autocomplete="username" maxlength="50">
                     </div>
                     
