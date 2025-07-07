@@ -4,13 +4,12 @@
  */
 
 // Check if ID is provided
-if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+$meter_id = get_input(INPUT_GET, 'id', 'int');
+if (empty($meter_id)) {
     set_flash_message('danger', "Meter ID not provided.");
     header("Location: index.php?page=meters");
     exit;
 }
-
-$meter_id = $_GET['id'];
 
 try {
     // Check if meter entry exists

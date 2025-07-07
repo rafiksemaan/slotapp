@@ -11,13 +11,12 @@ if (!$can_edit) {
 }
 
 // Validate machine ID
-if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+$machine_id = get_input(INPUT_GET, 'id', 'int');
+if (empty($machine_id)) {
     set_flash_message('danger', "Invalid machine ID.");
     header("Location: index.php?page=machines");
     exit;
 }
-
-$machine_id = $_GET['id'];
 
 try {
     // Check if machine exists

@@ -26,15 +26,15 @@ $tracking_data = [
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Sanitize and validate input
-    $tracking_data['tracking_date'] = sanitize_input($_POST['tracking_date'] ?? '');
-    $tracking_data['slots_drop'] = sanitize_input($_POST['slots_drop'] ?? '');
-    $tracking_data['slots_out'] = sanitize_input($_POST['slots_out'] ?? '');
-    $tracking_data['gambee_drop'] = sanitize_input($_POST['gambee_drop'] ?? '');
-    $tracking_data['gambee_out'] = sanitize_input($_POST['gambee_out'] ?? '');
-    $tracking_data['coins_drop'] = sanitize_input($_POST['coins_drop'] ?? '');
-    $tracking_data['coins_out'] = sanitize_input($_POST['coins_out'] ?? '');
-    $tracking_data['notes'] = sanitize_input($_POST['notes'] ?? '');
-
+    $tracking_data['tracking_date'] = get_input(INPUT_POST, 'tracking_date', 'string');
+    $tracking_data['slots_drop'] = get_input(INPUT_POST, 'slots_drop', 'float');
+    $tracking_data['slots_out'] = get_input(INPUT_POST, 'slots_out', 'float');
+    $tracking_data['gambee_drop'] = get_input(INPUT_POST, 'gambee_drop', 'float');
+    $tracking_data['gambee_out'] = get_input(INPUT_POST, 'gambee_out', 'float');
+    $tracking_data['coins_drop'] = get_input(INPUT_POST, 'coins_drop', 'float');
+    $tracking_data['coins_out'] = get_input(INPUT_POST, 'coins_out', 'float');
+    $tracking_data['notes'] = get_input(INPUT_POST, 'notes', 'string');
+ 
     // Validate required fields
     if (empty($tracking_data['tracking_date'])) {
         set_flash_message('danger', "Tracking date is required.");

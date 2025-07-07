@@ -38,8 +38,8 @@ try {
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name = sanitize_input($_POST['name'] ?? '');
-    $description = sanitize_input($_POST['description'] ?? '');
+	$name = get_input(INPUT_POST, 'name', 'string');
+    $description = get_input(INPUT_POST, 'description', 'string');
 
     // Validate required fields
     if (empty($name)) {

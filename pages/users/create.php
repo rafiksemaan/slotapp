@@ -14,11 +14,11 @@ $user = [
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $user['username'] = trim($_POST['username'] ?? '');
-    $user['name'] = trim($_POST['name'] ?? '');
-    $user['email'] = trim($_POST['email'] ?? '');
-    $user['role'] = trim($_POST['role'] ?? '');
-    $user['status'] = trim($_POST['status'] ?? '');
+    $user['username'] = get_input(INPUT_POST, 'username', 'string');
+    $user['name'] = get_input(INPUT_POST, 'name', 'string');
+    $user['email'] = get_input(INPUT_POST, 'email', 'email');
+    $user['role'] = get_input(INPUT_POST, 'role', 'string');
+    $user['status'] = get_input(INPUT_POST, 'status', 'string');
 
     if (empty($user['username']) || empty($user['name']) || empty($user['email'])) {
         set_flash_message('danger', "All required fields must be filled out.");

@@ -11,13 +11,12 @@ if (!$can_edit) {
 }
 
 // Check if an ID was provided
-if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+$transaction_id = get_input(INPUT_GET, 'id', 'int');
+if (empty($transaction_id)) {
     set_flash_message('danger', "Invalid transaction ID");
     header("Location: index.php?page=transactions");
     exit;
 }
-
-$transaction_id = $_GET['id'];
 
 // Get current transaction data
 try {

@@ -20,8 +20,8 @@ try {
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name = sanitize_input($_POST['name'] ?? '');
-    $email = sanitize_input($_POST['email'] ?? '');
+    $name = get_input(INPUT_POST, 'name', 'string');
+    $email = get_input(INPUT_POST, 'email', 'email');
     $current_password = $_POST['current_password'] ?? '';
     $new_password = $_POST['new_password'] ?? '';
     $confirm_password = $_POST['confirm_password'] ?? '';

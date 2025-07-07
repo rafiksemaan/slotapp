@@ -6,8 +6,8 @@
 $operation_date = date('Y-m-d'); // Default to today
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $operation_date = sanitize_input($_POST['operation_date'] ?? '');
-    $notes = sanitize_input($_POST['notes'] ?? '');
+     $operation_date = get_input(INPUT_POST, 'operation_date', 'string');
+    $notes = get_input(INPUT_POST, 'notes', 'string');
     
     // Validate required fields
     if (empty($operation_date)) {

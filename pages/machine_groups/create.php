@@ -12,8 +12,8 @@ $group = [
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Sanitize and validate input
-    $group['name'] = sanitize_input($_POST['name'] ?? '');
-    $group['description'] = sanitize_input($_POST['description'] ?? '');
+    $group['name'] = get_input(INPUT_POST, 'name', 'string');
+    $group['description'] = get_input(INPUT_POST, 'description', 'string');
     $group['machine_ids'] = $_POST['machine_ids'] ?? [];
     
     // Validate required fields

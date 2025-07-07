@@ -31,12 +31,12 @@ $transaction = [
 // Process form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Sanitize and validate input
-    $transaction['machine_id'] = sanitize_input($_POST['machine_id'] ?? '');
-    $transaction['transaction_type_id'] = sanitize_input($_POST['transaction_type_id'] ?? '');
-    $transaction['amount'] = sanitize_input($_POST['amount'] ?? '');
-    $transaction['timestamp'] = sanitize_input($_POST['timestamp'] ?? date('Y-m-d H:i:s'));
-    $transaction['operation_date'] = sanitize_input($_POST['operation_date'] ?? $operation_date);
-    $transaction['notes'] = sanitize_input($_POST['notes'] ?? '');
+    $transaction['machine_id'] = get_input(INPUT_POST, 'machine_id', 'int');
+    $transaction['transaction_type_id'] = get_input(INPUT_POST, 'transaction_type_id', 'int');
+    $transaction['amount'] = get_input(INPUT_POST, 'amount', 'float');
+    $transaction['timestamp'] = get_input(INPUT_POST, 'timestamp', 'string', cairo_time('Y-m-d H:i:s'));
+    $transaction['operation_date'] = get_input(INPUT_POST, 'operation_date', 'string', $operation_date);
+    $transaction['notes'] = get_input(INPUT_POST, 'notes', 'string');
 
     // Validate required fields
     if (empty($transaction['machine_id']) || empty($transaction['transaction_type_id']) ||

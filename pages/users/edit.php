@@ -3,7 +3,7 @@
  * Edit User Page
  */
 
-$user_id = $_GET['id'] ?? 0;
+$user_id = get_input(INPUT_GET, 'id', 'int', 0);
 
 // Load current user
 try {
@@ -21,11 +21,11 @@ try {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $can_edit) {
-    $user['name'] = trim($_POST['name'] ?? '');
-    $user['email'] = trim($_POST['email'] ?? '');
-    $user['role'] = trim($_POST['role'] ?? '');
-    $user['status'] = trim($_POST['status'] ?? '');
-    $password = trim($_POST['password'] ?? '');
+    $user['name'] = get_input(INPUT_POST, 'name', 'string');
+    $user['email'] = get_input(INPUT_POST, 'email', 'email');
+    $user['role'] = get_input(INPUT_POST, 'role', 'string');
+    $user['status'] = get_input(INPUT_POST, 'status', 'string');
+    $password = get_input(INPUT_POST, 'password', 'string');
 
     if (empty($user['name']) || empty($user['email'])) {
         set_flash_message('danger', "Name and email are required.");

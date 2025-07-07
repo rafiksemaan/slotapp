@@ -4,13 +4,12 @@
  */
 
 // Check if an ID was provided
-if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+$tracking_id = get_input(INPUT_GET, 'id', 'int');
+if (empty($tracking_id)) {
     set_flash_message('danger', "Invalid daily tracking ID.");
     header("Location: index.php?page=daily_tracking");
     exit;
 }
-
-$tracking_id = $_GET['id'];
 
 // Get current tracking data
 try {
@@ -31,14 +30,14 @@ try {
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $tracking_date = sanitize_input($_POST['tracking_date'] ?? '');
-    $slots_drop = sanitize_input($_POST['slots_drop'] ?? '');
-    $slots_out = sanitize_input($_POST['slots_out'] ?? '');
-    $gambee_drop = sanitize_input($_POST['gambee_drop'] ?? '');
-    $gambee_out = sanitize_input($_POST['gambee_out'] ?? '');
-    $coins_drop = sanitize_input($_POST['coins_drop'] ?? '');
-    $coins_out = sanitize_input($_POST['coins_out'] ?? '');
-    $notes = sanitize_input($_POST['notes'] ?? '');
+	$tracking_date = get_input(INPUT_POST, 'tracking_date', 'string');
+    $slots_drop = get_input(INPUT_POST, 'slots_drop', 'float');
+    $slots_out = get_input(INPUT_POST, 'slots_out', 'float');
+    $gambee_drop = get_input(INPUT_POST, 'gambee_drop', 'float');
+    $gambee_out = get_input(INPUT_POST, 'gambee_out', 'float');
+    $coins_drop = get_input(INPUT_POST, 'coins_drop', 'float');
+    $coins_out = get_input(INPUT_POST, 'coins_out', 'float');
+    $notes = get_input(INPUT_POST, 'notes', 'string');
 
     // Validate required fields
     if (empty($tracking_date)) {

@@ -4,13 +4,12 @@
  */
 
 // Check if an ID was provided
-if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+$group_id = get_input(INPUT_GET, 'id', 'int');
+if (empty($group_id)) {
     set_flash_message('danger', "Invalid group ID.");
     header("Location: index.php?page=machine_groups");
     exit;
 }
-
-$group_id = $_GET['id'];
 
 // Get current group data
 try {
@@ -37,8 +36,8 @@ try {
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name = sanitize_input($_POST['name'] ?? '');
-    $description = sanitize_input($_POST['description'] ?? '');
+	$name = get_input(INPUT_POST, 'name', 'string');
+    $description = get_input(INPUT_POST, 'description', 'string');
     $machine_ids = $_POST['machine_ids'] ?? [];
 
     // Validate required fields

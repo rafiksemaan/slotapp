@@ -4,13 +4,12 @@
  */
 
 // Ensure we have an ID
-if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+$machine_id = get_input(INPUT_GET, 'id', 'int');
+if (empty($machine_id)) {
     set_flash_message('danger', "Invalid machine ID.");
     header("Location: index.php?page=machines");
     exit;
 }
-
-$machine_id = $_GET['id'];
 
 // Get machine data
 try {
@@ -56,19 +55,19 @@ try {
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Sanitize inputs
-    $machine_number = sanitize_input($_POST['machine_number'] ?? '');
-    $brand_id = sanitize_input($_POST['brand_id'] ?? '');
-    $model = sanitize_input($_POST['model'] ?? '');
-    $game = sanitize_input($_POST['game'] ?? '');
-    $type_id = sanitize_input($_POST['type_id'] ?? '');
-    $credit_value = sanitize_input($_POST['credit_value'] ?? '');
-    $manufacturing_year = sanitize_input($_POST['manufacturing_year'] ?? '');
-    $ip_address = sanitize_input($_POST['ip_address'] ?? '');
-    $mac_address = sanitize_input($_POST['mac_address'] ?? '');
-    $serial_number = sanitize_input($_POST['serial_number'] ?? '');
-    $status = sanitize_input($_POST['status'] ?? 'Active');
-    $ticket_printer = sanitize_input($_POST['ticket_printer'] ?? 'N/A');
-    $system_comp = sanitize_input($_POST['system_comp'] ?? 'offline');
+	$machine_number = get_input(INPUT_POST, 'machine_number', 'string');
+    $brand_id = get_input(INPUT_POST, 'brand_id', 'int');
+    $model = get_input(INPUT_POST, 'model', 'string');
+    $game = get_input(INPUT_POST, 'game', 'string');
+    $type_id = get_input(INPUT_POST, 'type_id', 'int');
+    $credit_value = get_input(INPUT_POST, 'credit_value', 'float');
+    $manufacturing_year = get_input(INPUT_POST, 'manufacturing_year', 'int');
+    $ip_address = get_input(INPUT_POST, 'ip_address', 'ip');
+    $mac_address = get_input(INPUT_POST, 'mac_address', 'mac');
+    $serial_number = get_input(INPUT_POST, 'serial_number', 'string');
+    $status = get_input(INPUT_POST, 'status', 'string', 'Active');
+    $ticket_printer = get_input(INPUT_POST, 'ticket_printer', 'string', 'N/A');
+    $system_comp = get_input(INPUT_POST, 'system_comp', 'string', 'offline');
 
     // Validate required fields
     if (empty($machine_number) || empty($brand_id) || empty($game) ||

@@ -4,13 +4,12 @@
  */
 
 // Check if ID is provided
-if (!isset($_GET['id'])) {
+$group_id = get_input(INPUT_GET, 'id', 'int');
+if (empty($group_id)) {
     set_flash_message('danger', "Group ID not provided.");
     header("Location: index.php?page=machine_groups");
     exit;
 }
-
-$group_id = $_GET['id'];
 
 try {
     // Check if group exists

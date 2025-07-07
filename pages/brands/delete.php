@@ -11,7 +11,6 @@ if (empty($brand_id)) {
     exit;
 }
 
-
 try {
     // Check if brand exists
     $stmt = $conn->prepare("SELECT id, name FROM brands WHERE id = ?");

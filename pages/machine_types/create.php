@@ -11,8 +11,8 @@ $machine_type = [
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Sanitize and validate input
-    $machine_type['name'] = sanitize_input($_POST['name'] ?? '');
-    $machine_type['description'] = sanitize_input($_POST['description'] ?? '');
+	$machine_type['name'] = get_input(INPUT_POST, 'name', 'string');
+    $machine_type['description'] = get_input(INPUT_POST, 'description', 'string');
     
     // Validate required fields
     if (empty($machine_type['name'])) {

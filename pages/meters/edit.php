@@ -4,13 +4,12 @@
  */
 
 // Check if an ID was provided
-if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+$meter_id = get_input(INPUT_GET, 'id', 'int');
+if (empty($meter_id)) {
     set_flash_message('danger', "Invalid meter ID.");
     header("Location: index.php?page=meters");
     exit;
 }
-
-$meter_id = $_GET['id'];
 
 // Get current meter data
 try {
@@ -107,10 +106,10 @@ try {
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Sanitize and validate input
-    $machine_id = sanitize_input($_POST['machine_id'] ?? '');
-    $operation_date = sanitize_input($_POST['operation_date'] ?? '');
-    $notes = sanitize_input($_POST['notes'] ?? '');
-    $is_initial_reading = isset($_POST['is_initial_reading']) ? 1 : 0; // Capture checkbox value
+    $machine_id = get_input(INPUT_POST, 'machine_id', 'int');
+    $operation_date = get_input(INPUT_POST, 'operation_date', 'string');
+    $notes = get_input(INPUT_POST, 'notes', 'string');
+    $is_initial_reading = get_input(INPUT_POST, 'is_initial_reading', 'bool', false); // Capture checkbox value
 
     // Fetch machine details to determine meter type and expected fields for submission
     $machine_details_for_submit = null;

@@ -4,13 +4,12 @@
  */
 
 // Check if ID is provided
-if (!isset($_GET['id'])) {
+$type_id = get_input(INPUT_GET, 'id', 'int');
+if (empty($type_id)) {
     set_flash_message('danger', "Machine type ID not provided.");
     header("Location: index.php?page=machine_types");
     exit;
 }
-
-$type_id = $_GET['id'];
 
 try {
     // Check if machine type exists

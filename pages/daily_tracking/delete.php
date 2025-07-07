@@ -11,13 +11,12 @@ if (!has_permission('editor')) {
 }
 
 // Check if ID was provided and is valid
-if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+$tracking_id = get_input(INPUT_GET, 'id', 'int');
+if (empty($tracking_id)) {
     set_flash_message('danger', "Invalid daily tracking ID.");
     header("Location: index.php?page=daily_tracking");
     exit;
 }
-
-$tracking_id = $_GET['id'];
 
 try {
     // Fetch the tracking date before deleting for logging purposes

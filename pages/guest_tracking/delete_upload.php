@@ -11,13 +11,12 @@ if (!$can_edit) {
 }
 
 // Check if upload date is provided
-if (!isset($_GET['upload_date'])) {
+$upload_date = get_input(INPUT_GET, 'upload_date', 'string');
+if (empty($upload_date)) {
     set_flash_message('danger', "Upload date is required.");
     header("Location: index.php?page=guest_tracking");
     exit;
 }
-
-$upload_date = $_GET['upload_date'];
 
 try {
     // Check if upload exists

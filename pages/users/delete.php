@@ -11,13 +11,12 @@ if (!$can_edit) {
 }
 
 // Check if ID is provided
-if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+$user_id = get_input(INPUT_GET, 'id', 'int');
+if (empty($user_id)) {
     set_flash_message('danger', "Invalid user ID.");
     header("Location: index.php?page=users");
     exit;
 }
-
-$user_id = $_GET['id'];
 
 try {
     // Check if user exists

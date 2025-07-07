@@ -23,19 +23,19 @@ $machine = [
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Sanitize and validate input
-	$machine['machine_number'] = sanitize_input($_POST['machine_number'] ?? '');
-	$machine['brand_id'] = sanitize_input($_POST['brand_id'] ?? '');
-	$machine['model'] = sanitize_input($_POST['model'] ?? '');
-	$machine['game'] = sanitize_input($_POST['game'] ?? '');
-	$machine['type_id'] = sanitize_input($_POST['type_id'] ?? '');
-	$machine['credit_value'] = sanitize_input($_POST['credit_value'] ?? '');
-	$machine['manufacturing_year'] = sanitize_input($_POST['manufacturing_year'] ?? '');
-	$machine['ip_address'] = sanitize_input($_POST['ip_address'] ?? '');
-	$machine['mac_address'] = sanitize_input($_POST['mac_address'] ?? '');
-	$machine['serial_number'] = sanitize_input($_POST['serial_number'] ?? '');
-	$machine['status'] = sanitize_input($_POST['status'] ?? 'Active');
-	$machine['ticket_printer'] = sanitize_input($_POST['ticket_printer'] ?? 'N/A');
-	$machine['system_comp'] = sanitize_input($_POST['system_comp'] ?? 'offline');
+	$machine['machine_number'] = get_input(INPUT_POST, 'machine_number', 'string');
+	$machine['brand_id'] = get_input(INPUT_POST, 'brand_id', 'int');
+	$machine['model'] = get_input(INPUT_POST, 'model', 'string');
+	$machine['game'] = get_input(INPUT_POST, 'game', 'string');
+	$machine['type_id'] = get_input(INPUT_POST, 'type_id', 'int');
+	$machine['credit_value'] = get_input(INPUT_POST, 'credit_value', 'float');
+	$machine['manufacturing_year'] = get_input(INPUT_POST, 'manufacturing_year', 'int');
+	$machine['ip_address'] = get_input(INPUT_POST, 'ip_address', 'ip');
+	$machine['mac_address'] = get_input(INPUT_POST, 'mac_address', 'mac');
+	$machine['serial_number'] = get_input(INPUT_POST, 'serial_number', 'string');
+	$machine['status'] = get_input(INPUT_POST, 'status', 'string', 'Active');
+	$machine['ticket_printer'] = get_input(INPUT_POST, 'ticket_printer', 'string', 'N/A');
+	$machine['system_comp'] = get_input(INPUT_POST, 'system_comp', 'string', 'offline');
 
     // Validate required fields
     if (empty($machine['machine_number']) || empty($machine['brand_id']) || empty($machine['game']) ||

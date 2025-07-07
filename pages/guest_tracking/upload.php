@@ -8,7 +8,7 @@ $error = '';
 $upload_stats = null;
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['excel_file'])) {
-    $upload_date = sanitize_input($_POST['upload_date'] ?? date('Y-m-d'));
+	$upload_date = get_input(INPUT_POST, 'upload_date', 'string', date('Y-m-d'));
     
     // Validate file upload
     if ($_FILES['excel_file']['error'] !== UPLOAD_ERR_OK) {
