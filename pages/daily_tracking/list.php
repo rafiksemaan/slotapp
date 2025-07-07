@@ -67,11 +67,24 @@ try {
     $grand_total_out = $total_slots_out + $total_gambee_out + $total_coins_out;
     $grand_total_result = $grand_total_drop - $grand_total_out;
     $grand_total_percentage = $grand_total_drop > 0 ? (($grand_total_result / $grand_total_drop) * 100) : 0;
+
+    // Calculate individual machine type totals and percentages
+    $total_slots_result = $total_slots_drop - $total_slots_out;
+    $total_slots_percentage = $total_slots_drop > 0 ? (($total_slots_result / $total_slots_drop) * 100) : 0;
+
+    $total_gambee_result = $total_gambee_drop - $total_gambee_out;
+    $total_gambee_percentage = $total_gambee_drop > 0 ? (($total_gambee_result / $total_gambee_drop) * 100) : 0;
+
+    $total_coins_result = $total_coins_drop - $total_coins_out;
+    $total_coins_percentage = $total_coins_drop > 0 ? (($total_coins_result / $total_coins_drop) * 100) : 0;
     
 } catch (PDOException $e) {
     $error = "Database error: " . $e->getMessage();
     $tracking_data = [];
     $grand_total_drop = $grand_total_out = $grand_total_result = $grand_total_percentage = 0;
+    $total_slots_drop = $total_slots_out = $total_slots_result = $total_slots_percentage = 0;
+    $total_gambee_drop = $total_gambee_out = $total_gambee_result = $total_gambee_percentage = 0;
+    $total_coins_drop = $total_coins_out = $total_coins_result = $total_coins_percentage = 0;
 }
 
 // Check if we have filter parameters
@@ -174,18 +187,74 @@ if ($date_range_type === 'range') {
         <div class="stat-card in p-4 rounded bg-opacity-10 bg-success-color text-center">
             <div class="stat-title uppercase text-sm text-muted">Total DROP</div>
             <div class="stat-value text-lg font-bold"><?php echo format_currency($grand_total_drop); ?></div>
+            <div class="stat-breakdown">
+                <div class="breakdown-item">
+                    <span class="breakdown-type">Slots Drop</span>
+                    <span class="breakdown-amount"><?php echo format_currency($total_slots_drop); ?></span>
+                </div>
+                <div class="breakdown-item">
+                    <span class="breakdown-type">Gambee Drop</span>
+                    <span class="breakdown-amount"><?php echo format_currency($total_gambee_drop); ?></span>
+                </div>
+                <div class="breakdown-item">
+                    <span class="breakdown-type">Coins Drop</span>
+                    <span class="breakdown-amount"><?php echo format_currency($total_coins_drop); ?></span>
+                </div>
+            </div>
         </div>
         <div class="stat-card out p-4 rounded bg-opacity-10 bg-danger-color text-center">
             <div class="stat-title uppercase text-sm text-muted">Total OUT</div>
             <div class="stat-value text-lg font-bold"><?php echo format_currency($grand_total_out); ?></div>
+            <div class="stat-breakdown">
+                <div class="breakdown-item">
+                    <span class="breakdown-type">Slots Out</span>
+                    <span class="breakdown-amount"><?php echo format_currency($total_slots_out); ?></span>
+                </div>
+                <div class="breakdown-item">
+                    <span class="breakdown-type">Gambee Out</span>
+                    <span class="breakdown-amount"><?php echo format_currency($total_gambee_out); ?></span>
+                </div>
+                <div class="breakdown-item">
+                    <span class="breakdown-type">Coins Out</span>
+                    <span class="breakdown-amount"><?php echo format_currency($total_coins_out); ?></span>
+                </div>
+            </div>
         </div>
         <div class="stat-card <?php echo $grand_total_result >= 0 ? 'in' : 'out'; ?> p-4 rounded text-center bg-opacity-10 <?php echo $grand_total_result >= 0 ? 'bg-success-color' : 'bg-danger-color'; ?>">
             <div class="stat-title uppercase text-sm text-muted">Total Result</div>
             <div class="stat-value text-lg font-bold"><?php echo format_currency($grand_total_result); ?></div>
+            <div class="stat-breakdown">
+                <div class="breakdown-item">
+                    <span class="breakdown-type">Slots Result</span>
+                    <span class="breakdown-amount <?php echo $total_slots_result >= 0 ? 'positive' : 'negative'; ?>"><?php echo format_currency($total_slots_result); ?></span>
+                </div>
+                <div class="breakdown-item">
+                    <span class="breakdown-type">Gambee Result</span>
+                    <span class="breakdown-amount <?php echo $total_gambee_result >= 0 ? 'positive' : 'negative'; ?>"><?php echo format_currency($total_gambee_result); ?></span>
+                </div>
+                <div class="breakdown-item">
+                    <span class="breakdown-type">Coins Result</span>
+                    <span class="breakdown-amount <?php echo $total_coins_result >= 0 ? 'positive' : 'negative'; ?>"><?php echo format_currency($total_coins_result); ?></span>
+                </div>
+            </div>
         </div>
         <div class="stat-card p-4 rounded bg-opacity-10 bg-warning-color text-center">
             <div class="stat-title uppercase text-sm text-muted">Result %</div>
             <div class="stat-value text-lg font-bold"><?php echo number_format($grand_total_percentage, 2); ?>%</div>
+            <div class="stat-breakdown">
+                <div class="breakdown-item">
+                    <span class="breakdown-type">Slots %</span>
+                    <span class="breakdown-amount"><?php echo number_format($total_slots_percentage, 2); ?>%</span>
+                </div>
+                <div class="breakdown-item">
+                    <span class="breakdown-type">Gambee %</span>
+                    <span class="breakdown-amount"><?php echo number_format($total_gambee_percentage, 2); ?>%</span>
+                </div>
+                <div class="breakdown-item">
+                    <span class="breakdown-type">Coins %</span>
+                    <span class="breakdown-amount"><?php echo number_format($total_coins_percentage, 2); ?>%</span>
+                </div>
+            </div>
         </div>
     </div>
 
