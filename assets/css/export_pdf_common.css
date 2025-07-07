@@ -196,7 +196,7 @@
             border-right: 1px solid var(--neutral-300);
 			background-color: var(--neutral-100);
             color: var(--text-primary);
-            padding: 5px 4px; /* Made more compact */
+            padding: 8px 12px; /* Made more compact */
             text-align: center;
             font-weight: 700;
             font-size: 9px;
@@ -206,12 +206,14 @@
             letter-spacing: 0.5px;
         }
 
-        /* Right-align number columns 
-        th:nth-child(4) { text-align: right; } /* Amount */
+        /* Right-align number columns */
+        th.numeric, td.numeric {
+            text-align: right;
+        }
 
         td {
             border-right: 1px solid var(--neutral-300);
-			padding: 3px 4px; /* Made more compact */
+			padding: 8px 12px; /* Made more compact */
             border-bottom: 1px solid var(--border-light);
             font-size: 8px;
             line-height: 1.2;
@@ -266,7 +268,7 @@
 
         .totals-row td {
             border-top: 3px solid var(--primary-blue-dark);
-            padding: 8px 6px;
+            padding: 12px 16px; /* Increased padding */
             font-size: 9px;
             font-weight: 700;
         }
@@ -355,7 +357,7 @@
             }
 
             .stat-box .stat-value {
-                font-size: 10px;
+                font-size: 12px; /* Adjusted for print */
             }
 
             /* Ensure number colors print correctly */
@@ -396,13 +398,13 @@
                 border-bottom: 2px solid var(--primary-blue) !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
-                padding: 6px 4px;
+                padding: 8px 12px; /* Adjusted for print */
                 font-size: 7px;
                 border-right: 1px solid var(--neutral-300) !important; /* Vertical border for print */
             }
 
             td {
-                padding: 3px 4px;
+                padding: 8px 12px; /* Adjusted for print */
                 font-size: 7px;
                 line-height: 1.1;
                 border-right: 1px solid var(--neutral-300) !important; /* Vertical border for print */
@@ -449,7 +451,7 @@
                 border-top: 3px solid var(--primary-blue-dark) !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
-                padding: 6px 4px;
+                padding: 10px 14px; /* Adjusted for print */
                 font-size: 7px;
             }
 
