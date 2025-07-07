@@ -88,13 +88,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Insert new meter entry
             $stmt = $conn->prepare("
                 INSERT INTO meters (
-                    machine_id, operation_date, meter_type, 
-                    total_in, total_out, bills_in, ticket_in, ticket_out, jp, bets, handpay, 
-                    coins_in, coins_out, coins_drop, 
+                    machine_id, operation_date, meter_type,
+                    total_in, total_out, bills_in, ticket_in, ticket_out, jp, bets, handpay,
+                    coins_in, coins_out, coins_drop,
                     notes, is_initial_reading, created_by
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
-            
+
             $stmt->execute([
                 $meter['machine_id'],
                 $meter['operation_date'],
@@ -114,16 +114,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $meter['is_initial_reading'], // New field
                 $_SESSION['user_id']
             ]);
-            
+
             // Log action
             log_action('create_meter', "Created meter entry for machine ID: {$meter['machine_id']}, Type: {$meter_type}");
-            
+
             set_flash_message('success', "Meter entry created successfully!");
-            
+
             // Clear machine_id to deselect the machine in the dropdown
             $meter['machine_id'] = '';
             // The page will naturally re-render with the updated $meter array and flash message.
-            
+
         } catch (PDOException $e) {
             // Check for duplicate entry error (SQLSTATE 23000 is for integrity constraint violation)
             if ($e->getCode() === '23000') {
@@ -154,7 +154,7 @@ try {
         FROM machines m
         LEFT JOIN brands b ON m.brand_id = b.id
         LEFT JOIN machine_types mt ON m.type_id = mt.id
-        WHERE m.system_comp = 'offline'
+        WHERE m.system_comp = 'offline' AND m.status IN ('Active', 'Maintenance')
         ORDER BY mt.name ASC, CAST(m.machine_number AS UNSIGNED) ASC
     ");
     $raw_machines = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -184,7 +184,7 @@ try {
                 <strong>📅 Current Operation Day:</strong> <?php echo format_date($operation_date); ?>
                 <br><small>This meter entry will be recorded for the above operation day.</small>
             </div>
-            
+
             <form action="index.php?page=meters&action=create" method="POST" id="meterCreateForm">
                 <!-- Basic Information Section -->
                 <div class="form-section">
@@ -352,7 +352,7 @@ try {
                         <textarea id="notes" name="notes" class="form-control" rows="3" placeholder="Optional notes about this meter entry..."><?php echo htmlspecialchars($meter['notes']); ?></textarea>
                     </div>
                 </div>
-                
+
                 <!-- Form Actions -->
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Save Meter Entry</button>

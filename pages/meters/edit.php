@@ -87,6 +87,7 @@ try {
         FROM machines m
         LEFT JOIN brands b ON m.brand_id = b.id
         LEFT JOIN machine_types mt ON m.type_id = mt.id
+        WHERE m.status IN ('Active', 'Maintenance')
         ORDER BY CAST(m.machine_number AS UNSIGNED) ASC
     ");
     $raw_machines = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -159,13 +160,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $stmt = $conn->prepare("
                 UPDATE meters SET
-                    machine_id = ?, operation_date = ?, meter_type = ?, 
-                    total_in = ?, total_out = ?, bills_in = ?, ticket_in = ?, ticket_out = ?, jp = ?, bets = ?, handpay = ?, 
-                    coins_in = ?, coins_out = ?, coins_drop = ?, 
+                    machine_id = ?, operation_date = ?, meter_type = ?,
+                    total_in = ?, total_out = ?, bills_in = ?, ticket_in = ?, ticket_out = ?, jp = ?, bets = ?, handpay = ?,
+                    coins_in = ?, coins_out = ?, coins_drop = ?,
                     notes = ?, is_initial_reading = ?, updated_by = ?, updated_at = NOW()
                 WHERE id = ?
             ");
-            
+
             $result = $stmt->execute([
                 $machine_id,
                 $operation_date,

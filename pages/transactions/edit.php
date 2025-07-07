@@ -22,17 +22,19 @@ $transaction_id = $_GET['id'];
 // Get current transaction data
 try {
     $stmt = $conn->prepare("
-    SELECT t.*, 
+    SELECT t.*,
            m.machine_number, m.model, mt.name as machine_type,
            b.name as brand_name,
            tt.name as transaction_type, tt.category,
-           u.username, u.name as user_name
+           u.username, u.name as user_name,
+           eu.username as edited_by_username, eu.name as edited_by_name
     FROM transactions t
     JOIN machines m ON t.machine_id = m.id
     LEFT JOIN brands b ON m.brand_id = b.id
 	LEFT JOIN machine_types mt ON m.type_id = mt.id
     JOIN transaction_types tt ON t.transaction_type_id = tt.id
     JOIN users u ON t.user_id = u.id
+    LEFT JOIN users eu ON t.edited_by = eu.id
     WHERE t.id = ?
 ");
     $stmt->execute([$transaction_id]);
@@ -61,9 +63,10 @@ try {
 // Get all machines for dropdown with brand information
 try {
     $machines_stmt = $conn->query("
-        SELECT m.id, m.machine_number, b.name as brand_name 
-        FROM machines m 
-        LEFT JOIN brands b ON m.brand_id = b.id 
+        SELECT m.id, m.machine_number, b.name as brand_name
+        FROM machines m
+        LEFT JOIN brands b ON m.brand_id = b.id
+        WHERE m.status IN ('Active', 'Maintenance')
         ORDER BY m.machine_number
     ");
     $machines = $machines_stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -116,7 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         updated_at = CURRENT_TIMESTAMP
                     WHERE id = ?
                 ");
-                
+
                 $result = $stmt->execute([
                     $machine_id,
                     $transaction_type_id,
@@ -140,7 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         updated_at = CURRENT_TIMESTAMP
                     WHERE id = ?
                 ");
-                
+
                 $result = $stmt->execute([
                     $machine_id,
                     $transaction_type_id,
@@ -252,14 +255,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Operation Date Section - Only for Admins -->
                     <?php if ($is_admin): ?>
                         <div class="row">
                             <div class="col">
                                 <div class="form-group">
                                     <label for="operation_date">Operation Date *</label>
-                                    <input type="date" id="operation_date" name="operation_date" class="form-control" data-original-date="<?php echo htmlspecialchars($transaction['operation_date'] ?? date('Y-m-d')); ?>" 
+                                    <input type="date" id="operation_date" name="operation_date" class="form-control" data-original-date="<?php echo htmlspecialchars($transaction['operation_date'] ?? date('Y-m-d')); ?>"
                                            value="<?php echo htmlspecialchars($transaction['operation_date'] ?? date('Y-m-d')); ?>" required>
                                     <small class="form-text">Casino operation day (admin only)</small>
                                 </div>
@@ -274,7 +277,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <div class="col">
                                 <div class="form-group">
                                     <label for="operation_date_display">Operation Date</label>
-                                    <input type="text" id="operation_date_display" class="form-control" 
+                                    <input type="text" id="operation_date_display" class="form-control"
                                            value="<?php echo format_date($transaction['operation_date'] ?? date('Y-m-d')); ?>" readonly>
                                     <small class="form-text">Casino operation day (admin only can modify)</small>
                                 </div>

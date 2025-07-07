@@ -37,9 +37,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $transaction['timestamp'] = sanitize_input($_POST['timestamp'] ?? date('Y-m-d H:i:s'));
     $transaction['operation_date'] = sanitize_input($_POST['operation_date'] ?? $operation_date);
     $transaction['notes'] = sanitize_input($_POST['notes'] ?? '');
-    
+
     // Validate required fields
-    if (empty($transaction['machine_id']) || empty($transaction['transaction_type_id']) || 
+    if (empty($transaction['machine_id']) || empty($transaction['transaction_type_id']) ||
         empty($transaction['amount']) || empty($transaction['timestamp']) || empty($transaction['operation_date'])) {
         set_flash_message('danger', "Please fill out all required fields.");
         header("Location: index.php?page=transactions&action=create");
@@ -58,39 +58,39 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 INSERT INTO transactions (machine_id, transaction_type_id, amount, timestamp, operation_date, user_id, notes)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             ");
-            
+
             $stmt->execute([
-                $transaction['machine_id'], 
-                $transaction['transaction_type_id'], 
-                $transaction['amount'], 
+                $transaction['machine_id'],
+                $transaction['transaction_type_id'],
+                $transaction['amount'],
                 $transaction['timestamp'],
                 $transaction['operation_date'],
                 $_SESSION['user_id'],
                 $transaction['notes'] ?: null
             ]);
-            
+
             // Get transaction type details for logging
             $type_stmt = $conn->prepare("SELECT name FROM transaction_types WHERE id = ?");
             $type_stmt->execute([$transaction['transaction_type_id']]);
             $type_name = $type_stmt->fetch()['name'] ?? 'Unknown';
-            
+
             // Get machine number for logging
             $machine_stmt = $conn->prepare("SELECT machine_number FROM machines WHERE id = ?");
             $machine_stmt->execute([$transaction['machine_id']]);
             $machine_number = $machine_stmt->fetch()['machine_number'] ?? 'Unknown';
-            
+
             // Log action
             log_action('create_transaction', "Created {$type_name} transaction for machine {$machine_number}: " . format_currency($transaction['amount']) . " (Operation Date: {$transaction['operation_date']})");
-            
+
             // Set success message
             set_flash_message('success', "Transaction created successfully for operation date: " . format_date($transaction['operation_date']));
             header("Location: index.php?page=transactions");
             exit;
-            
+
             // Clear only machine and amount for re-entry, keep operation date
             $transaction['machine_id'] = '';
             $transaction['amount'] = '';
-            
+
         } catch (PDOException $e) {
             set_flash_message('danger', "Database error: " . $e->getMessage());
             header("Location: index.php?page=transactions&action=create");
@@ -102,9 +102,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 // Get machines for dropdown with brand information
 try {
     $stmt = $conn->query("
-        SELECT m.id, m.machine_number, b.name as brand_name 
-        FROM machines m 
-        LEFT JOIN brands b ON m.brand_id = b.id 
+        SELECT m.id, m.machine_number, b.name as brand_name
+        FROM machines m
+        LEFT JOIN brands b ON m.brand_id = b.id
+        WHERE m.status IN ('Active', 'Maintenance')
         ORDER BY CAST(m.machine_number AS UNSIGNED)
     ");
     $machines = $stmt->fetchAll();
@@ -129,13 +130,13 @@ try {
             <h3>Add New Transaction</h3>
         </div>
         <div class="card-body">
-            
+
             <!-- Operation Day Notice -->
             <div class="alert alert-info">
                 <strong>📅 Current Operation Day:</strong> <?php echo format_date($operation_date); ?>
                 <br><small>This transaction will be recorded for the above operation day. Only administrators can change the operation day.</small>
             </div>
-            
+
             <form action="<?php echo $_SERVER['PHP_SELF'] ?>?page=transactions&action=create" method="POST" id="transactionCreateForm">
                 <!-- Transaction Details Section -->
                 <div class="form-section">
@@ -147,7 +148,7 @@ try {
                                 <select id="machine_id" name="machine_id" class="form-control" required>
                                     <option value="">Select Machine</option>
                                     <?php foreach ($machines as $machine): ?>
-                                        <option value="<?php echo $machine['id']; ?>" 
+                                        <option value="<?php echo $machine['id']; ?>"
                                             <?php echo $transaction['machine_id'] == $machine['id'] ? 'selected' : ''; ?>>
                                             <?php echo htmlspecialchars($machine['machine_number']); ?>
                                             <?php if ($machine['brand_name']): ?>
@@ -158,7 +159,7 @@ try {
                                 </select>
                             </div>
                         </div>
-                        
+
                         <div class="col">
                             <div class="form-group">
                                 <label for="transaction_type_id">Transaction Type *</label>
@@ -167,7 +168,7 @@ try {
                                     <optgroup label="OUT">
                                         <?php foreach ($transaction_types as $type): ?>
                                             <?php if ($type['category'] == 'OUT'): ?>
-                                                <option value="<?php echo $type['id']; ?>" 
+                                                <option value="<?php echo $type['id']; ?>"
                                                     <?php echo $transaction['transaction_type_id'] == $type['id'] ? 'selected' : ''; ?>>
                                                     <?php echo htmlspecialchars($type['name']); ?>
                                                 </option>
@@ -177,7 +178,7 @@ try {
                                     <optgroup label="DROP">
                                         <?php foreach ($transaction_types as $type): ?>
                                             <?php if ($type['category'] == 'DROP'): ?>
-                                                <option value="<?php echo $type['id']; ?>" 
+                                                <option value="<?php echo $type['id']; ?>"
                                                     <?php echo $transaction['transaction_type_id'] == $type['id'] ? 'selected' : ''; ?>>
                                                     <?php echo htmlspecialchars($type['name']); ?>
                                                 </option>
@@ -188,34 +189,34 @@ try {
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col">
                             <div class="form-group">
                                 <label for="amount">Amount *</label>
-                                <input type="number" id="amount" name="amount" class="form-control" 
-                                       value="<?php echo htmlspecialchars($transaction['amount']); ?>" 
+                                <input type="number" id="amount" name="amount" class="form-control"
+                                       value="<?php echo htmlspecialchars($transaction['amount']); ?>"
                                        step="0.01" min="0.01" required>
                             </div>
                         </div>
-                        
+
                         <div class="col">
                             <div class="form-group">
                                 <label for="timestamp">Date & Time *</label>
-                                <input type="datetime-local" id="timestamp" name="timestamp" class="form-control" 
-                                       value="<?php echo htmlspecialchars($transaction['timestamp'] ?? cairo_time('Y-m-d\TH:i')); ?>" 
+                                <input type="datetime-local" id="timestamp" name="timestamp" class="form-control"
+                                       value="<?php echo htmlspecialchars($transaction['timestamp'] ?? cairo_time('Y-m-d\TH:i')); ?>"
                                        required>
                                 <small class="form-text">Actual timestamp when transaction occurred</small>
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col">
                             <div class="form-group">
                                 <label for="operation_date">Operation Date *</label>
-                                <input type="date" id="operation_date" name="operation_date" class="form-control" 
-                                       value="<?php echo htmlspecialchars($transaction['operation_date']); ?>" 
+                                <input type="date" id="operation_date" name="operation_date" class="form-control"
+                                       value="<?php echo htmlspecialchars($transaction['operation_date']); ?>"
                                        required readonly>
                                 <small class="form-text">Casino operation day (set by administrator)</small>
                             </div>
@@ -225,7 +226,7 @@ try {
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Additional Information Section -->
                 <div class="form-section">
                     <h4>Additional Information</h4>
@@ -234,7 +235,7 @@ try {
                         <textarea id="notes" name="notes" class="form-control" rows="3" placeholder="Optional notes about this transaction..."><?php echo htmlspecialchars($transaction['notes']); ?></textarea>
                     </div>
                 </div>
-                
+
                 <!-- Form Actions -->
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Save Transaction</button>
