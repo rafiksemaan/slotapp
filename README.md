@@ -4,29 +4,36 @@ A comprehensive system for managing slot machines in casino environments, tracki
 
 ## Features
 
-- **User Management**: User authentication with three role levels (Administrator, Editor, Viewer).
-- **Slot Machine Management**: Comprehensive inventory management for slot machines, including brands, types, and groups.
-- **Transaction Tracking**: Detailed tracking system for various transaction types like Handpay, Ticket, Refill, Coins Drop, and Cash Drop.
-- **Daily & Weekly Performance Tracking**: Dedicated modules for recording and viewing daily and aggregated weekly performance data.
-- **Guest Tracking**: Functionality to upload and track guest data from Excel/CSV files, including drop, result, and visits.
-- **Reporting**:
-    - **General Report**: Overview of machine type statistics with drop, out, and result data.
-    - **Detailed Reports**: Comprehensive reports with filtering options for machine, brand, and groups.
-    - **Custom Report**: Flexible report generation with selectable columns and filters.
-- **Logging**:
-    - **Action Logs**: Records user actions within the system for audit trails.
-    - **Security Logs**: Logs security-related events and suspicious activities.
-- **Operation Day Management**: Administrators can set and manage the current operation day, affecting new transaction entries.
-- **Historical Data Import**: Ability to import historical transaction data from CSV files.
-- **Data Export**: Export reports and data to PDF and Excel formats.
-- **Intuitive Interface**: Dynamic filtering, sorting, and pagination for easy data navigation.
+-   **User Management**: User authentication with three role levels (Administrator, Editor, Viewer).
+-   **Slot Machine Management**: Comprehensive inventory management for slot machines, including brands, types, and groups.
+-   **Transaction Tracking**: Detailed tracking system for various transaction types like Handpay, Ticket, Refill, Coins Drop, and Cash Drop.
+    *   Improved transaction creation and editing forms, allowing selection of active and maintenance machines.
+    *   Records and displays the user who last edited a transaction.
+-   **Daily & Weekly Performance Tracking**: Dedicated modules for recording and viewing daily and aggregated weekly performance data.
+    *   Enhanced daily tracking summary with detailed breakdowns of Slots, Gambee, and Coins performance (Drop, Out, Result, and %) directly within the main statistics cards.
+-   **Meter Management**:
+    *   Manual meter entry for offline machines, now including inactive machines.
+    *   Comprehensive CSV upload for online machine meter data, supporting all meter fields and intelligent type detection.
+    *   Detailed meter entry views with variance and anomaly calculations.
+-   **Guest Tracking**: Functionality to upload and track guest data from Excel/CSV files, including drop, result, and visits.
+-   **Reporting**:
+    *   **General Report**: Overview of machine type statistics with drop, out, and result data.
+    *   **Detailed Reports**: Comprehensive reports with filtering options for machine, brand, and groups.
+    *   **Custom Report**: Flexible report generation with selectable columns and filters.
+-   **Logging**:
+    *   **Action Logs**: Records user actions within the system for audit trails.
+    *   **Security Logs**: Logs security-related events and suspicious activities.
+-   **Operation Day Management**: Administrators can set and manage the current operation day, affecting new transaction entries.
+-   **Historical Data Import**: Ability to import historical transaction data from CSV files.
+-   **Data Export**: Export reports and data to PDF and Excel formats.
+-   **Intuitive Interface**: Dynamic filtering, sorting, and pagination for easy data navigation.
 
 ## Requirements
 
-- PHP 8.0 or higher
-- MySQL 8.0 or higher
-- Web server (Apache/Nginx)
-- WAMP (Windows) or LAMPP (Linux) environment
+-   PHP 8.0 or higher
+-   MySQL 8.0 or higher
+-   Web server (Apache/Nginx)
+-   WAMP (Windows) or LAMPP (Linux) environment
 
 ## Installation
 
