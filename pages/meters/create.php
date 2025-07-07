@@ -226,9 +226,10 @@ try {
                         </div>
                     </div>
                     <div class="form-group">
-                        <input type="checkbox" id="is_initial_reading" name="is_initial_reading" class="form-check-input" <?php echo $meter['is_initial_reading'] ? 'checked' : ''; ?>>
-                        <label class="form-check-label" for="is_initial_reading">This is the initial meter reading for this machine</label>
-                    </div>
+						<input type="hidden" name="is_initial_reading" value="0">
+						<input type="checkbox" id="is_initial_reading" name="is_initial_reading" class="form-check-input" value="1" <?php echo $meter_data['is_initial_reading'] ? 'checked' : ''; ?>>
+						<label class="form-check-label" for="is_initial_reading">This is the initial meter reading for this machine</label>
+					</div>
                 </div>
 
                 <!-- Dynamic Meter Fields Section -->
