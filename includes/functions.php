@@ -163,30 +163,91 @@ function log_action($action, $details = '') {
 }
 
 /**
- * Enhanced sanitize input data with security measures
- * 
- * @param mixed $data Data to sanitize
- * @return mixed Sanitized data
+ * Escapes data for HTML output to prevent XSS.
+ * Should be used when displaying any user-provided or dynamic data in HTML.
+ *
+ * @param mixed $data Data to escape.
+ * @return mixed Escaped data.
  */
-function sanitize_input($data) {
+function escape_html_output($data) {
     if (is_array($data)) {
         foreach ($data as $key => $value) {
-            $data[$key] = sanitize_input($value);
+            $data[$key] = escape_html_output($value);
         }
     } else {
-        $data = trim($data);
-        $data = stripslashes($data);
+        // Only perform HTML escaping here.
+        // Input sanitization (trim, stripslashes, specific XSS pattern removal)
+        // should happen when receiving input, not when outputting.
         $data = htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
-        
-        // Additional security: Remove potential XSS patterns
-        $data = preg_replace('/javascript:/i', '', $data);
-        $data = preg_replace('/vbscript:/i', '', $data);
-        $data = preg_replace('/onload/i', '', $data);
-        $data = preg_replace('/onerror/i', '', $data);
-        $data = preg_replace('/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/mi', '', $data);
     }
-    
     return $data;
+}
+
+/**
+ * Safely retrieves and sanitizes input from $_GET or $_POST.
+ *
+ * @param int $source INPUT_GET or INPUT_POST.
+ * @param string $name The name of the input variable.
+ * @param string $type Expected data type ('string', 'int', 'float', 'email', 'url', 'ip', 'mac', 'alphanumeric', 'bool').
+ * @param mixed $default Default value if input is not found or invalid.
+ * @return mixed Sanitized and validated input, or default value.
+ */
+function get_input($source, $name, $type = 'string', $default = null) {
+    $filter = FILTER_UNSAFE_RAW;
+    $options = [];
+
+    switch ($type) {
+        case 'int':
+            $filter = FILTER_VALIDATE_INT;
+            break;
+        case 'float':
+            $filter = FILTER_VALIDATE_FLOAT;
+            break;
+        case 'email':
+            $filter = FILTER_VALIDATE_EMAIL;
+            break;
+        case 'url':
+            $filter = FILTER_VALIDATE_URL;
+            break;
+        case 'ip':
+            $filter = FILTER_VALIDATE_IP;
+            break;
+        case 'mac':
+            // Custom validation for MAC address
+            $value = filter_input($source, $name, FILTER_UNSAFE_RAW);
+            if ($value !== null && preg_match('/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/', $value)) {
+                return $value;
+            }
+            return $default;
+        case 'alphanumeric':
+            // Custom validation for alphanumeric (letters, numbers, underscore)
+            $value = filter_input($source, $name, FILTER_UNSAFE_RAW);
+            if ($value !== null && preg_match('/^[a-zA-Z0-9_]+$/', $value)) {
+                return $value;
+            }
+            return $default;
+        case 'bool':
+            $filter = FILTER_VALIDATE_BOOLEAN;
+            $options = FILTER_NULL_ON_FAILURE; // Returns null if not true/false/1/0/on/off/yes/no
+            break;
+        case 'string':
+        default:
+            $filter = FILTER_UNSAFE_RAW; // Raw string, then trim and strip slashes manually if needed
+            break;
+    }
+
+    $value = filter_input($source, $name, $filter, $options);
+
+    // For string types, apply trim and stripslashes after filter_input
+    if ($type === 'string' && is_string($value)) {
+        $value = trim($value);
+        // stripslashes is generally not needed unless magic_quotes_gpc is enabled (which is deprecated)
+        // If you encounter issues with backslashes, you might need to add:
+        // $value = stripslashes($value);
+    }
+
+    // Return default if validation failed or input was not set
+    return ($value === null || $value === false) ? $default : $value;
 }
 
 /**
