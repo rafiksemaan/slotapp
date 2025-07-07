@@ -4,13 +4,13 @@
  */
 
 // Check if ID is provided
-if (!isset($_GET['id'])) {
-    set_flash_message('danger', "Brand ID not provided.");
+$brand_id = get_input(INPUT_GET, 'id', 'int');
+if (empty($brand_id)) {
+    set_flash_message('danger', "Brand ID not provided or invalid.");
     header("Location: index.php?page=brands");
     exit;
 }
 
-$brand_id = $_GET['id'];
 
 try {
     // Check if brand exists
