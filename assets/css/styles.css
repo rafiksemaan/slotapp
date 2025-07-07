@@ -3,17 +3,17 @@
 /* Variables */
 :root {
     /* Color Palette */
-    --primary-color: #3a5f8a;
-    --secondary-color: #d0a040;
-    --accent-color: #e74c3c;
-    --dark-bg: #282c34;
-    --light-bg: #343a40;
-    --text-light: #e0e0e0;
-    --text-muted: #b0b0b0;
-    --success-color: #2ecc71;
-    --warning-color: #f39c12;
-    --danger-color: #e74c3c;
-    --border-color: #444444;
+    --primary-color: #3a5f8a; /* Dark Blue */
+    --secondary-color: #d0a040; /* Golden Yellow */
+    --accent-color: #e74c3c; /* Red */
+    --dark-bg: #1a1a1a; /* Very Dark Gray */
+    --light-bg: #282828; /* Dark Gray */
+    --text-light: #e0e0e0; /* Light Gray */
+    --text-muted: #b0b0b0; /* Muted Gray */
+    --success-color: #2ecc71; /* Emerald Green */
+    --warning-color: #f39c12; /* Orange */
+    --danger-color: #e74c3c; /* Alizarin Red */
+    --border-color: #444444; /* Medium Gray */
     
     /* Spacing */
     --spacing-xs: 0.25rem;
@@ -505,15 +505,10 @@ table {
 }
 
 th, td {
-    padding: 8px 12px; /* Made more compact */
+    padding: 5px 8px; /* Made more compact */
     text-align: center; /* Centered */
     border-bottom: 1px solid var(--border-color);
     border-right: 1px solid var(--border-color); /* Vertical border */
-}
-
-/* Right-align numerical columns */
-th.numeric, td.numeric {
-    text-align: right;
 }
 
 /* Remove right border from last column */
@@ -526,7 +521,6 @@ th {
     background-color: var(--primary-color);
     color: var(--secondary-color);
     font-weight: bold;
-    border-bottom: 2px solid var(--secondary-color); /* Stronger header border */
 }
 
 tr:hover {
@@ -595,17 +589,16 @@ tr:hover {
 
 
 .stat-card {
-    background-color: var(--light-bg); /* Default background */
+    background-color: var(--light-bg);
     border-radius: var(--border-radius);
     padding: var(--spacing-lg);
     box-shadow: var(--box-shadow);
     border-left: 4px solid var(--secondary-color);
-    transition: transform var(--transition-speed) ease-in-out, box-shadow var(--transition-speed) ease-in-out;
+    transition: transform var(--transition-speed);
 }
 
 .stat-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }
 
 .stat-title {
@@ -615,7 +608,7 @@ tr:hover {
 }
 
 .stat-value {
-    font-size: 2.25rem; /* Increased font size */
+    font-size: var(--font-xxl);
     font-weight: bold;
     margin-bottom: var(--spacing-xs);
     color: var(--text-light);
@@ -1503,14 +1496,14 @@ option:focus {
 
 /* Table Styles */
 .totals-row {
-    background: linear-gradient(135deg, var(--primary-color), #2c4a6b) !important; /* Darker shade for gradient */
+    background-color: var(--primary-color) !important;
     color: var(--text-light) !important;
     font-weight: bold;
 }
 
 .totals-row td {
     border-top: 2px solid var(--secondary-color);
-    padding: 1rem; /* Increased padding */
+    padding: 0.75rem;
 }
 
 .separated-columns td,
@@ -1820,11 +1813,9 @@ input[disabled] {
 /* For general positive/negative results */
 .positive {
     color: var(--success-color);
-    font-weight: bold; /* Added font-weight */
 }
 .negative {
     color: var(--danger-color);
-    font-weight: bold; /* Added font-weight */
 }
 
 /* For highlighting drop/out columns in tables */

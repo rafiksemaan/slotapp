@@ -1,50 +1,50 @@
 /* Professional PDF Export Styles */
         :root {
             /* Professional Light Color Palette */
-            --primary-blue: #2563eb;
-            --primary-blue-light: #3b82f6;
-            --primary-blue-dark: #1d4ed8;
+            --primary-blue: #2563eb; /* Blue-700 */
+            --primary-blue-light: #3b82f6; /* Blue-500 */
+            --primary-blue-dark: #1d4ed8; /* Blue-800 */
             
-            --secondary-gray: #64748b;
-            --secondary-gray-light: #94a3b8;
-            --secondary-gray-dark: #475569;
+            --secondary-gray: #64748b; /* Slate-500 */
+            --secondary-gray-light: #94a3b8; /* Slate-400 */
+            --secondary-gray-dark: #475569; /* Slate-700 */
             
-            --accent-green: #059669;
-            --accent-green-light: #10b981;
-            --accent-red: #dc2626;
-            --accent-red-light: #ef4444;
+            --accent-green: #059669; /* Emerald-600 */
+            --accent-green-light: #10b981; /* Emerald-500 */
+            --accent-red: #dc2626; /* Red-600 */
+            --accent-red-light: #ef4444; /* Red-500 */
             
-            --neutral-50: #f8fafc;
-            --neutral-100: #f1f5f9;
-            --neutral-200: #e2e8f0;
-            --neutral-300: #cbd5e1;
-            --neutral-400: #94a3b8;
-            --neutral-500: #64748b;
-            --neutral-600: #475569;
-            --neutral-700: #334155;
-            --neutral-800: #1e293b;
-            --neutral-900: #0f172a;
+            --neutral-50: #f8fafc; /* Slate-50 */
+            --neutral-100: #f1f5f9; /* Slate-100 */
+            --neutral-200: #e2e8f0; /* Slate-200 */
+            --neutral-300: #cbd5e1; /* Slate-300 */
+            --neutral-400: #94a3b8; /* Slate-400 */
+            --neutral-500: #64748b; /* Slate-500 */
+            --neutral-600: #475569; /* Slate-700 */
+            --neutral-700: #334155; /* Slate-800 */
+            --neutral-800: #1e293b; /* Slate-900 */
+            --neutral-900: #0f172a; /* Slate-950 */
             
             /* Semantic Colors */
-            --text-primary: #1e293b;
-            --text-secondary: #475569;
-            --text-muted: #64748b;
-            --text-light: #94a3b8;
+            --text-primary: #1e293b; /* Slate-900 */
+            --text-secondary: #475569; /* Slate-700 */
+            --text-muted: #64748b; /* Slate-500 */
+            --text-light: #94a3b8; /* Slate-400 */
             
-            --bg-primary: #ffffff;
-            --bg-secondary: #f8fafc;
-            --bg-accent: #f1f5f9;
+            --bg-primary: #ffffff; /* White */
+            --bg-secondary: #f8fafc; /* Slate-50 */
+            --bg-accent: #f1f5f9; /* Slate-100 */
             
-            --border-light: #e2e8f0;
-            --border-medium: #cbd5e1;
-            --border-dark: #94a3b8;
+            --border-light: #e2e8f0; /* Slate-200 */
+            --border-medium: #cbd5e1; /* Slate-300 */
+            --border-dark: #94a3b8; /* Slate-400 */
             
             /* Number Emphasis Colors */
-            --number-primary: #1e293b;
-            --number-positive: #059669;
-            --number-negative: #dc2626;
-            --number-neutral: #475569;
-            --number-highlight: #2563eb;
+            --number-primary: #1e293b; /* Slate-900 */
+            --number-positive: #059669; /* Emerald-600 */
+            --number-negative: #dc2626; /* Red-600 */
+            --number-neutral: #475569; /* Slate-700 */
+            --number-highlight: #2563eb; /* Blue-700 */
         }
 
         * {
@@ -196,7 +196,7 @@
             border-right: 1px solid var(--neutral-300);
 			background-color: var(--neutral-100);
             color: var(--text-primary);
-            padding: 8px 12px; /* Made more compact */
+            padding: 5px 4px; /* Made more compact */
             text-align: center;
             font-weight: 700;
             font-size: 9px;
@@ -206,14 +206,12 @@
             letter-spacing: 0.5px;
         }
 
-        /* Right-align number columns */
-        th.numeric, td.numeric {
-            text-align: right;
-        }
+        /* Right-align number columns 
+        th:nth-child(4) { text-align: right; } /* Amount */
 
         td {
             border-right: 1px solid var(--neutral-300);
-			padding: 8px 12px; /* Made more compact */
+			padding: 3px 4px; /* Made more compact */
             border-bottom: 1px solid var(--border-light);
             font-size: 8px;
             line-height: 1.2;
@@ -268,7 +266,7 @@
 
         .totals-row td {
             border-top: 3px solid var(--primary-blue-dark);
-            padding: 12px 16px; /* Increased padding */
+            padding: 8px 6px;
             font-size: 9px;
             font-weight: 700;
         }
@@ -357,7 +355,7 @@
             }
 
             .stat-box .stat-value {
-                font-size: 12px; /* Adjusted for print */
+                font-size: 10px;
             }
 
             /* Ensure number colors print correctly */
@@ -398,13 +396,13 @@
                 border-bottom: 2px solid var(--primary-blue) !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
-                padding: 8px 12px; /* Adjusted for print */
+                padding: 6px 4px;
                 font-size: 7px;
                 border-right: 1px solid var(--neutral-300) !important; /* Vertical border for print */
             }
 
             td {
-                padding: 8px 12px; /* Adjusted for print */
+                padding: 3px 4px;
                 font-size: 7px;
                 line-height: 1.1;
                 border-right: 1px solid var(--neutral-300) !important; /* Vertical border for print */
@@ -451,7 +449,7 @@
                 border-top: 3px solid var(--primary-blue-dark) !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
-                padding: 10px 14px; /* Adjusted for print */
+                padding: 6px 4px;
                 font-size: 7px;
             }
 
