@@ -87,7 +87,6 @@ try {
         FROM machines m
         LEFT JOIN brands b ON m.brand_id = b.id
         LEFT JOIN machine_types mt ON m.type_id = mt.id
-        WHERE m.status IN ('Active', 'Maintenance')
         ORDER BY CAST(m.machine_number AS UNSIGNED) ASC
     ");
     $raw_machines = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -166,7 +165,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     notes = ?, is_initial_reading = ?, updated_by = ?, updated_at = NOW()
                 WHERE id = ?
             ");
-
+            
             $result = $stmt->execute([
                 $machine_id,
                 $operation_date,
@@ -212,7 +211,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <form method="POST" class="meter-form" id="meterEditForm"
                 data-original-bills-in="<?php echo htmlspecialchars($prev_meter_data['bills_in']); ?>"
                 data-original-coins-drop="<?php echo htmlspecialchars($prev_meter_data['coins_drop']); ?>"
-                data-original-handpay="<?php echo htmlspecialchars($prev_meter_data['handpay']); ?>">
+                data-original-handpay="<?php echo htmlspecialchars($prev_meter_data['handpay']); ?>"
+                data-current-meter-type="<?php echo htmlspecialchars($meter_data['meter_type']); ?>"
+                data-current-system-comp="<?php echo htmlspecialchars($meter_data['system_comp']); ?>">
                 <!-- Basic Information Section -->
                 <div class="form-section">
                     <h4>Basic Information</h4>
@@ -367,6 +368,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 						</div>
 					</div>
 				</div>
+                <div id="onlineMachineMessage" style="display: none;" class="alert alert-info">
+                    This machine is configured as 'Online'. Meter data for online machines is typically uploaded via CSV.
+                    Manual entry is not available for online machines.
+                </div>
                 </div>
 
                 <!-- Additional Information Section -->
@@ -388,3 +393,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </div>
 <script type="module" src="assets/js/meters_edit.js"></script>
+

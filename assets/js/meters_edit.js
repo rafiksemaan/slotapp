@@ -75,16 +75,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const cashGambeeMeterFields = document.getElementById('cashGambeeMeterFields');
     const coinsMachineMeterFields = document.getElementById('coinsMachineMeterFields');
+    const onlineMachineMessage = document.getElementById('onlineMachineMessage');
 
     // Function to toggle visibility of meter fields
-    function toggleMeterForms() {
-        const selectedMachineOption = machineSelect.options[machineSelect.selectedIndex];
-        const systemComp = selectedMachineOption ? selectedMachineOption.dataset.systemComp : '';
-        const machineType = selectedMachineOption ? selectedMachineOption.dataset.machineType : '';
-
+    function toggleMeterForms(systemComp, machineType) {
         // Hide all dynamic sections initially
         cashGambeeMeterFields.style.display = 'none';
         coinsMachineMeterFields.style.display = 'none';
+        onlineMachineMessage.style.display = 'none';
 
         // Reset latest and variance displays
         document.getElementById('latest_bills_in').textContent = 'N/A';
@@ -105,8 +103,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 coinsMachineMeterFields.style.display = 'block';
 
                 // Populate latest readings for Coins machine
-                document.getElementById('latest_coins_drop').textContent = selectedMachineOption.dataset.latestCoinsDrop || 'N/A';
-                document.getElementById('latest_handpay_coins').textContent = selectedMachineOption.dataset.latestHandpay || 'N/A';
+                document.getElementById('latest_coins_drop').textContent = machineSelect.options[machineSelect.selectedIndex].dataset.latestCoinsDrop || 'N/A';
+                document.getElementById('latest_handpay_coins').textContent = machineSelect.options[machineSelect.selectedIndex].dataset.latestHandpay || 'N/A';
 
                 // Update variances for Coins machine
                 updateVarianceDisplay('coins_drop', 'latest_coins_drop', 'variance_coins_drop');
@@ -116,19 +114,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 cashGambeeMeterFields.style.display = 'block';
 
                 // Populate latest readings for Cash/Gambee machine
-                document.getElementById('latest_bills_in').textContent = selectedMachineOption.dataset.latestBillsIn || 'N/A';
-                document.getElementById('latest_handpay_cash_gambee').textContent = selectedMachineOption.dataset.latestHandpay || 'N/A';
+                document.getElementById('latest_bills_in').textContent = machineSelect.options[machineSelect.selectedIndex].dataset.latestBillsIn || 'N/A';
+                document.getElementById('latest_handpay_cash_gambee').textContent = machineSelect.options[machineSelect.selectedIndex].dataset.latestHandpay || 'N/A';
 
                 // Update variances for Cash/Gambee machine
                 updateVarianceDisplay('bills_in', 'latest_bills_in', 'variance_bills_in');
                 updateVarianceDisplay('handpay_cash_gambee', 'latest_handpay_cash_gambee', 'variance_handpay_cash_gambee');
             }
+        } else if (systemComp === 'online') {
+            onlineMachineMessage.style.display = 'block';
         }
     }
 
     // Attach event listeners
     if (machineSelect) {
-        machineSelect.addEventListener('change', toggleMeterForms);
+        machineSelect.addEventListener('change', function() {
+            const selectedOption = machineSelect.options[machineSelect.selectedIndex];
+            const systemComp = selectedOption.dataset.systemComp;
+            const machineType = selectedOption.dataset.machineType;
+            toggleMeterForms(systemComp, machineType);
+        });
     }
 
     // Attach input event listeners for real-time variance calculation
@@ -138,7 +143,9 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('handpay_coins')?.addEventListener('input', () => updateVarianceDisplay('handpay_coins', 'latest_handpay_coins', 'variance_handpay_coins'));
 
     // Initial call to set correct form state on page load
-    toggleMeterForms();
+    const initialSystemComp = meterEditForm.dataset.currentSystemComp;
+    const initialMeterType = meterEditForm.dataset.currentMeterType;
+    toggleMeterForms(initialSystemComp, initialMeterType);
 
     // On initial load, set the "Latest" values from the form's data attributes
     // and calculate initial variances for the pre-selected machine.
@@ -171,3 +178,4 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
