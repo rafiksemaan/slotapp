@@ -82,3 +82,4 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
 </div>
 <script type="module" src="assets/js/brands_create.js"></script>
+
