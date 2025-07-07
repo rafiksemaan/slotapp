@@ -119,10 +119,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             log_action('create_meter', "Created meter entry for machine ID: {$meter['machine_id']}, Type: {$meter_type}");
             
             set_flash_message('success', "Meter entry created successfully!");
-            
-            // Clear machine_id to deselect the machine in the dropdown
-            $meter['machine_id'] = '';
-            // The page will naturally re-render with the updated $meter array and flash message.
+            header("Location: index.php?page=meters"); // Redirect after success
+            exit;
             
         } catch (PDOException $e) {
             // Check for duplicate entry error (SQLSTATE 23000 is for integrity constraint violation)
@@ -131,7 +129,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             } else {
                 set_flash_message('danger', "Database error: " . $e->getMessage());
             }
-            // No redirect here, allow form to re-render with error
+            header("Location: index.php?page=meters"); // Redirect after error
+            exit;
         }
     }
 }
