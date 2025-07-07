@@ -181,7 +181,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $coins_out,
                 $coins_drop,
                 $notes ?: null,
-                $is_initial_reading, // New field
+                (int)$is_initial_reading, // Cast to int
                 $_SESSION['user_id'],
                 $meter_id
             ]);
@@ -394,4 +394,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </div>
 <script type="module" src="assets/js/meters_edit.js"></script>
-
