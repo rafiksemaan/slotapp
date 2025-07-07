@@ -4,8 +4,8 @@
  */
 
 // Get sorting parameters
-$sort_column = get_input(INPUT_GET, 'sort', 'string', 'name');
-$sort_order = get_input(INPUT_GET, 'order', 'string', 'ASC');
+$sort_column = isset($_GET['sort']) ? $_GET['sort'] : 'name';
+$sort_order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
 
 // Validate sort column
 $allowed_columns = ['name', 'machine_count'];
@@ -39,7 +39,7 @@ try {
     $stmt = $conn->query($query);
     $brands = $stmt->fetchAll();
 } catch (PDOException $e) {
-    echo "<div class='alert alert-danger'>Database error: " . escape_html_output($e->getMessage()) . "</div>";
+    echo "Database error: " . $e->getMessage();
     $brands = [];
 }
 ?>
@@ -108,4 +108,3 @@ try {
         </div>
     </div>
 </div>
-
