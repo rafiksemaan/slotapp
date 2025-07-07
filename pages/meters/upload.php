@@ -76,7 +76,7 @@ function processMeterCSVFile($file, $operation_date, $conn) {
                 fseek($handle, 0); // No BOM, rewind to the beginning
             }
             
-            while (($row = fgetcsv($handle, 1000, ",")) !== FALSE) { // Changed delimiter to tab
+            while (($row = fgetcsv($handle, 1000, ",")) !== FALSE) {
                 $data[] = $row;
             }
             fclose($handle);
@@ -87,41 +87,47 @@ function processMeterCSVFile($file, $operation_date, $conn) {
         }
         
         // Expected headers for online machines
-        $expected_headers = ['machine_id', 'operation_date', 'total_in', 'total_out', 'bills_in', 'ticket_in', 'ticket_out', 'jp', 'bets', 'handpay'];
+        // Updated to include all possible meter fields.
+        $expected_headers = ['machine_id', 'operation_date', 'total_in', 'total_out', 'bills_in', 'ticket_in', 'ticket_out', 'jp', 'bets', 'handpay', 'coins_in', 'coins_out', 'coins_drop'];
         $headers = array_map('strtolower', array_map('trim', $data[0]));
         
-        $missing_headers = array_diff($expected_headers, $headers);
-        if (!empty($missing_headers)) {
-            return ['success' => false, 'error' => 'Missing required columns: ' . implode(', ', $missing_headers)];
+        // Create header mapping
+        $header_map = [];
+        foreach ($headers as $index => $header_name) {
+            $header_map[$header_name] = $index;
+        }
+
+        // Flexible Header Validation: Only machine_id and operation_date are strictly required.
+        if (!isset($header_map['machine_id']) || !isset($header_map['operation_date'])) {
+            return ['success' => false, 'error' => 'Missing required columns: machine_id and operation_date.'];
         }
         
-        // Create header mapping
-        $header_map = array_flip($headers);
-        
-        // Fetch machine mappings (machine_number => id and system_comp) once
+        // Fetch machine mappings (machine_number => id, system_comp, machine_type) for ALL machines
         $machine_map = [];
-        $stmt = $conn->query("SELECT machine_number, id, system_comp FROM machines");
+        $stmt = $conn->query("SELECT m.machine_number, m.id, m.system_comp, mt.name AS machine_type FROM machines m JOIN machine_types mt ON m.type_id = mt.id");
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $machine_map[$row['machine_number']] = ['id' => $row['id'], 'system_comp' => $row['system_comp']];
+            $machine_map[$row['machine_number']] = ['id' => $row['id'], 'system_comp' => $row['system_comp'], 'machine_type' => $row['machine_type']];
         }
 
         $processed_count = 0;
         $errors = [];
         
         // Prepare insert statement for meters table
+        // This statement now includes all possible meter columns.
         $insert_stmt = $conn->prepare("
             INSERT INTO meters (
-                machine_id, operation_date, total_in, total_out, bills_in, 
-                ticket_in, ticket_out, jp, bets, handpay,
-                meter_type, created_by, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'online', ?, NOW())
+                machine_id, operation_date, meter_type,
+                total_in, total_out, bills_in, ticket_in, ticket_out, jp, bets, handpay,
+                coins_in, coins_out, coins_drop,
+                created_by, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
         ");
         
         for ($i = 1; $i < count($data); $i++) {
             $row = $data[$i];
             
             // Skip empty or incomplete rows
-            if (empty($row) || count($row) < count($expected_headers)) {
+            if (empty($row) || count($row) < 2) { // Minimum 2 columns (machine_id, operation_date)
                 $errors[] = "Row " . ($i + 1) . ": Skipping empty or incomplete row.";
                 continue;
             }
@@ -129,40 +135,67 @@ function processMeterCSVFile($file, $operation_date, $conn) {
             $machine_number_from_csv = trim($row[$header_map['machine_id']] ?? '');
             
             if (!isset($machine_map[$machine_number_from_csv])) {
-                $errors[] = "Row " . ($i + 1) . ": Unknown machine number '{$machine_number_from_csv}'. Skipping entry.";
+                $errors[] = "Row " . ($i + 1) . ": Unknown machine number '" . $machine_number_from_csv . "'. Skipping entry.";
                 continue;
             }
 
             $machine_info = $machine_map[$machine_number_from_csv];
             $db_machine_id = $machine_info['id'];
             $system_comp = $machine_info['system_comp'];
-
-            // Only process if the machine is 'online'
-            if ($system_comp !== 'online') {
-                $errors[] = "Row " . ($i + 1) . ": Machine '{$machine_number_from_csv}' is not an online machine. Skipping entry.";
-                continue;
-            }
+            $machine_type_name = $machine_info['machine_type'];
 
             $row_operation_date = trim($row[$header_map['operation_date']] ?? '');
             if (!DateTime::createFromFormat('Y-m-d', $row_operation_date)) {
-                $errors[] = "Row " . ($i + 1) . ": Invalid operation_date format '{$row_operation_date}'. Expected YYYY-MM-DD. Skipping entry.";
+                $errors[] = "Row " . ($i + 1) . ": Invalid operation_date format '" . $row_operation_date . "'. Expected YYYY-MM-DD. Skipping entry.";
                 continue;
             }
 
-            // Extract and validate numeric fields
-            $total_in = intval($row[$header_map['total_in']] ?? 0);
-            $total_out = intval($row[$header_map['total_out']] ?? 0);
-            $bills_in = intval($row[$header_map['bills_in']] ?? 0);
-            $ticket_in = intval($row[$header_map['ticket_in']] ?? 0);
-            $ticket_out = intval($row[$header_map['ticket_out']] ?? 0);
-            $jp = intval($row[$header_map['jp']] ?? 0);
-            $bets = intval($row[$header_map['bets']] ?? 0);
-            $handpay = intval($row[$header_map['handpay']] ?? 0);
+            // Determine meter_type for database based on machine properties
+            $meter_type = '';
+            if ($system_comp === 'online') {
+                $meter_type = 'online';
+            } elseif ($system_comp === 'offline') {
+                if ($machine_type_name === 'COINS') {
+                    $meter_type = 'coins';
+                } else { // CASH or GAMBEE (offline)
+                    $meter_type = 'offline';
+                }
+            } else {
+                $errors[] = "Row " . ($i + 1) . ": Machine '" . $machine_number_from_csv . "' has an unsupported system compatibility '" . $system_comp . "'. Skipping entry.";
+                continue;
+            }
+
+            // Initialize all meter fields to null
+            $total_in = $total_out = $bills_in = $ticket_in = $ticket_out = $jp = $bets = $handpay = $coins_in = $coins_out = $coins_drop = null;
+
+            // Conditionally assign values based on meter_type and header presence
+            if ($meter_type === 'online' || $meter_type === 'offline') {
+                // These fields are common for online and offline (cash/gambee) machines
+                $total_in = isset($header_map['total_in']) ? (int)($row[$header_map['total_in']] ?? 0) : null;
+                $total_out = isset($header_map['total_out']) ? (int)($row[$header_map['total_out']] ?? 0) : null;
+                $bills_in = isset($header_map['bills_in']) ? (int)($row[$header_map['bills_in']] ?? 0) : null;
+                $handpay = isset($header_map['handpay']) ? (int)($row[$header_map['handpay']] ?? 0) : null;
+                $jp = isset($header_map['jp']) ? (int)($row[$header_map['jp']] ?? 0) : null;
+                $bets = isset($header_map['bets']) ? (int)($row[$header_map['bets']] ?? 0) : null;
+                
+                // Ticket fields are typically for online, but included in comprehensive headers
+                $ticket_in = isset($header_map['ticket_in']) ? (int)($row[$header_map['ticket_in']] ?? 0) : null;
+                $ticket_out = isset($header_map['ticket_out']) ? (int)($row[$header_map['ticket_out']] ?? 0) : null;
+
+            } elseif ($meter_type === 'coins') {
+                // These fields are specific to coins machines
+                $coins_in = isset($header_map['coins_in']) ? (int)($row[$header_map['coins_in']] ?? 0) : null;
+                $coins_out = isset($header_map['coins_out']) ? (int)($row[$header_map['coins_out']] ?? 0) : null;
+                $coins_drop = isset($header_map['coins_drop']) ? (int)($row[$header_map['coins_drop']] ?? 0) : null;
+                $bets = isset($header_map['bets']) ? (int)($row[$header_map['bets']] ?? 0) : null;
+                $handpay = isset($header_map['handpay']) ? (int)($row[$header_map['handpay']] ?? 0) : null;
+            }
 
             // Execute insert statement
             $insert_stmt->execute([
                 $db_machine_id,
                 $row_operation_date,
+                $meter_type,
                 $total_in,
                 $total_out,
                 $bills_in,
@@ -171,6 +204,9 @@ function processMeterCSVFile($file, $operation_date, $conn) {
                 $jp,
                 $bets,
                 $handpay,
+                $coins_in,
+                $coins_out,
+                $coins_drop,
                 $_SESSION['user_id']
             ]);
             
@@ -288,12 +324,11 @@ function processMeterCSVFile($file, $operation_date, $conn) {
                 </div>
                 <div class="card-body">
                     <pre class="bg-gray-100 p-3 rounded">machine_id,operation_date,total_in,total_out,bills_in,ticket_in,ticket_out,jp,bets,handpay
-M001,2023-01-01,1500.75,1200.50,1000.00,50.25,20.00,0.00,10000.00,0.00
-M002,2023-01-01,2200.00,1800.00,1500.00,75.00,30.00,500.00,15000.00,100.00
-M003,2023-01-01,800.50,700.25,600.00,25.00,10.00,0.00,5000.00,0.00</pre>
+M001,2023-01-01,1500,1200,1000,50,20,0,10000,0
+M002,2023-01-01,2200,1800,1500,75,30,500,15000,100
+M003,2023-01-01,800,700,600,25,10,0,5000,0</pre>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
