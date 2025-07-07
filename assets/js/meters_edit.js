@@ -76,7 +76,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const selectedMachineOption = machineSelect.options[machineSelect.selectedIndex];
     const initialSystemComp = selectedMachineOption.dataset.systemComp;
     const initialMeterType = selectedMachineOption.dataset.machineType;
-    toggleMeterForms(initialSystemComp, initialMeterType);
+	const initialMachineType = meterEditForm.dataset.currentMachineType;
+    toggleMeterForms(initialSystemComp, initialMachineType);
 
     // On initial load, set the "Latest" values from the form's data attributes
     // and calculate initial variances for the pre-selected machine.
