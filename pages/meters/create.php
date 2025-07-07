@@ -111,7 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $coins_out,
                 $coins_drop,
                 $meter['notes'] ?: null,
-                $meter['is_initial_reading'], // New field
+                (int)$meter['is_initial_reading'],
                 $_SESSION['user_id']
             ]);
             
