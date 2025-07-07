@@ -55,3 +55,4 @@ switch ($action) {
         include 'machine_types/list.php';
         break;
 }
+?>
