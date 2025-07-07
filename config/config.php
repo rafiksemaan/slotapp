@@ -160,7 +160,7 @@ try {
                     <li>Verify phpMyAdmin is accessible</li>
                 </ul>
                 
-                <p><strong>MySQL Version Detected:</strong> <?php echo htmlspecialchars($mysql_version ?? 'Unable to detect'); ?></p>
+                <p><strong>MySQL Version Detected:</strong> <?php echo escape_html_output($mysql_version ?? 'Unable to detect'); ?></p>
                 
                 <p style="margin-top: 1rem;">
                     <a href="?debug=true" style="color: #3498db;">🐛 Show Debug Information</a> |
@@ -197,3 +197,4 @@ $machine_types = ['CASH', 'COINS', 'GAMBEE'];
 // Define machine statuses
 $machine_statuses = ['Active', 'Inactive', 'Maintenance', 'Reserved'];
 ?>
+
