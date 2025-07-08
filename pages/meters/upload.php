@@ -3,17 +3,163 @@
  * Upload Meter Data for Online Machines
  */
 
-// Include necessary files directly for the AJAX endpoint and for rendering the form.
-// These must be at the top, outside any conditional blocks, for the HTML part to work.
-require_once __DIR__ . '/../../config/config.php';
-require_once __DIR__ . '/../../includes/functions.php';
-
-// Start output buffering and set JSON header immediately for POST requests.
+// Start output buffering and set JSON header immediately for POST requests
 // This block executes first, before any HTML output can occur for POST requests.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ob_start(); // Start output buffering
     header('Content-Type: application/json'); // Set JSON header
+    // Include necessary files directly for the AJAX endpoint
+    require_once '../../config/config.php';
+    require_once '../../includes/functions.php';
+}
 
+/**
+ * Process received meter data (from XLSX/CSV)
+ * This function now expects an array of associative arrays (JSON objects)
+ */
+function processMeterData($meter_data, $operation_date, $original_filename, $conn) {
+    try {
+        // Start transaction
+        $conn->beginTransaction();
+
+        // Fetch machine mappings (machine_number => id, system_comp, machine_type) for ALL machines
+        $machine_map = [];
+        $stmt = $conn->query("SELECT m.machine_number, m.id, m.system_comp, mt.name AS machine_type FROM machines m JOIN machine_types mt ON m.type_id = mt.id");
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $machine_map[$row['machine_number']] = ['id' => $row['id'], 'system_comp' => $row['system_comp'], 'machine_type' => $row['machine_type']];
+        }
+
+        $processed_count = 0;
+        $errors = [];
+
+        // Prepare insert statement for meters table
+        $insert_stmt = $conn->prepare("
+            INSERT INTO meters (
+                machine_id, operation_date, meter_type,
+                total_in, total_out, bills_in, ticket_in, ticket_out, jp, bets, handpay,
+                coins_in, coins_out, coins_drop,
+                created_by, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+        ");
+
+        foreach ($meter_data as $i => $row_data) {
+            // Convert all keys to lowercase for consistent access
+            $row_data_lower = array_change_key_case($row_data, CASE_LOWER);
+
+            $machine_number_from_file = trim($row_data_lower['machine'] ?? $row_data_lower['machine_id'] ?? ''); // Assuming 'machine' or 'machine_id' column in XLSX
+            $row_operation_date_str = trim($row_data_lower['operation date'] ?? $row_data_lower['operation_date'] ?? $operation_date); // Assuming 'operation date' or 'operation_date' or use default
+
+            if (empty($machine_number_from_file)) {
+                $errors[] = "Row " . ($i + 2) . ": Missing machine number. Skipping entry."; // +2 for 1-based index and header row
+                continue;
+            }
+
+            if (!isset($machine_map[$machine_number_from_file])) {
+                $errors[] = "Row " . ($i + 2) . ": Unknown machine number '" . $machine_number_from_file . "'. Skipping entry.";
+                continue;
+            }
+
+            $machine_info = $machine_map[$machine_number_from_file];
+            $db_machine_id = $machine_info['id'];
+            $system_comp = $machine_info['system_comp'];
+            $machine_type_name = $machine_info['machine_type'];
+
+            // Validate operation_date format
+            if (!DateTime::createFromFormat('Y-m-d', $row_operation_date_str)) {
+                $errors[] = "Row " . ($i + 2) . ": Invalid operation_date format '" . $row_operation_date_str . "'. Expected YYYY-MM-DD. Skipping entry.";
+                continue;
+            }
+
+            // Determine meter_type for database based on machine properties
+            $meter_type = '';
+            if ($system_comp === 'online') {
+                $meter_type = 'online';
+            } elseif ($system_comp === 'offline') {
+                if ($machine_type_name === 'COINS') {
+                    $meter_type = 'coins';
+                } else { // CASH or GAMBEE (offline)
+                    $meter_type = 'offline';
+                }
+            } else {
+                $errors[] = "Row " . ($i + 2) . ": Machine '" . $machine_number_from_file . "' has an unsupported system compatibility '" . $system_comp . "'. Skipping entry.";
+                continue;
+            }
+
+            // Initialize all meter fields to null
+            $total_in = $total_out = $bills_in = $ticket_in = $ticket_out = $jp = $bets = $handpay = $coins_in = $coins_out = $coins_drop = null;
+
+            // Helper function to get numeric value, handling commas and empty strings
+            $get_numeric_value = function($key) use ($row_data_lower) {
+                $value = $row_data_lower[$key] ?? null;
+                if (is_string($value)) {
+                    $value = str_replace(',', '', $value); // Remove commas
+                }
+                return is_numeric($value) ? (float)$value : null;
+            };
+
+            // Populate fields based on determined meter_type and available columns
+            if ($meter_type === 'online' || $meter_type === 'offline') {
+                $total_in = $get_numeric_value('total in');
+                $total_out = $get_numeric_value('total out');
+                $bills_in = $get_numeric_value('bills in');
+                $handpay = $get_numeric_value('hand pay'); // Assuming 'hand pay' column
+                $jp = $get_numeric_value('jp');
+                $bets = $get_numeric_value('bets');
+                $ticket_in = $get_numeric_value('ticket in');
+                $ticket_out = $get_numeric_value('ticket out');
+            }
+
+            if ($meter_type === 'coins') {
+                $coins_in = $get_numeric_value('coins in');
+                $coins_out = $get_numeric_value('coins out');
+                $coins_drop = $get_numeric_value('coins drop');
+                $bets = $get_numeric_value('bets');
+                $handpay = $get_numeric_value('hand pay');
+            }
+
+            // Execute insert statement
+            $insert_stmt->execute([
+                $db_machine_id,
+                $row_operation_date_str,
+                $meter_type,
+                $total_in,
+                $total_out,
+                $bills_in,
+                $ticket_in,
+                $ticket_out,
+                $jp,
+                $bets,
+                $handpay,
+                $coins_in,
+                $coins_out,
+                $coins_drop,
+                $_SESSION['user_id'] ?? null // Use null if user_id is not set
+            ]);
+
+            $processed_count++;
+        }
+
+        // Commit transaction
+        $conn->commit();
+
+        return [
+            'success' => true,
+            'stats' => [
+                'total_records' => $processed_count,
+                'upload_date' => $operation_date,
+                'filename' => $original_filename,
+                'errors' => $errors
+            ]
+        ];
+
+    } catch (Exception $e) {
+        $conn->rollback();
+        return ['success' => false, 'error' => $e->getMessage(), 'errors' => [$e->getMessage()]];
+    }
+}
+
+// Handle POST request for file upload processing (AJAX endpoint logic)
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $response = ['success' => false, 'message' => 'An unknown error occurred.', 'errors' => []];
 
     try {
