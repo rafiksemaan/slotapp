@@ -79,10 +79,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function sendDataToBackend(uploadDate, filename, meterData) {
-        fetch('index.php?page=meters&action=upload', {
+        fetch('pages/meters/upload.php', { // <--- Changed URL here
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest' // <--- Added this header
             },
             body: JSON.stringify({
                 upload_date: uploadDate,
