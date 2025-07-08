@@ -39,8 +39,7 @@ if (ENABLE_SECURITY_HEADERS && !headers_sent()) {
     header('Referrer-Policy: strict-origin-when-cross-origin');
     
     // Content Security Policy
-	header("Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' https:;");
-
+	header("Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' https:;");
 
     
     // Force HTTPS in production
