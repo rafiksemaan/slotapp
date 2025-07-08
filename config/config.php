@@ -41,6 +41,7 @@ if (ENABLE_SECURITY_HEADERS && !headers_sent()) {
     // Content Security Policy
 	header("Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' https:;");
 
+
     
     // Force HTTPS in production
     if (FORCE_HTTPS && !isset($_SERVER['HTTPS'])) {
@@ -94,97 +95,85 @@ try {
     $error_message = $e->getMessage();
     $error_code = $e->getCode();
     
-    // Determine if it's an AJAX request
-    $is_ajax_request = (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') ||
-                       (isset($_SERVER['CONTENT_TYPE']) && strpos($_SERVER['CONTENT_TYPE'], 'application/json') !== false);
-
     // Log the detailed error for administrators
     error_log("Database connection failed: " . $error_message . " (Code: " . $error_code . ")");
-
-    if ($is_ajax_request) {
-        // For AJAX requests, return a JSON error
-        header('Content-Type: application/json');
-        echo json_encode(['success' => false, 'message' => 'Database connection failed. Please try again later.']);
-        exit;
-    } else {
-        // For regular browser requests, display user-friendly error page
-        // Provide specific guidance based on common error codes
-        $user_message = "Database connection failed. ";
-        
-        switch ($error_code) {
-            case 1045: // Access denied
-                $user_message .= "Please check your database credentials in config/config.php";
-                break;
-            case 1049: // Unknown database
-                $user_message .= "Database '$db_name' does not exist. Please create it or run the installer.";
-                break;
-            case 2002: // Can't connect to server
-                $user_message .= "Cannot connect to MySQL server. Please ensure MySQL is running.";
-                break;
-            case 1231: // Variable sql_mode error
-                $user_message .= "MySQL version compatibility issue. This has been automatically resolved.";
-                break;
-            default:
-                $user_message .= "Please contact the administrator.";
-        }
-        
-        // Display user-friendly error page
-        ?>
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Database Connection Error - <?php echo $app_name; ?></title>
-            <link rel="stylesheet" href="assets/css/styles.css">
-        </head>
-        <body style="background-color: var(--dark-bg); color: var(--text-light); font-family: 'Segoe UI', sans-serif;">
-            <div class="error-container">
-                <div class="error-icon">🔌</div>
-                <h2 class="error-title">Database Connection Error</h2>
-                
-                <?php if ($error_code == 1231): ?>
-                    <div class="mysql-info">
-                        <h4>✅ MySQL Compatibility Issue Resolved</h4>
-                        <p>The system has automatically detected and resolved a MySQL 8.0 compatibility issue. Please try refreshing the page.</p>
-                    </div>
-                <?php endif; ?>
-                
-                <div class="error-message">
-                    <?php echo $user_message; ?>
-                </div>
-                
-                <div class="troubleshooting">
-                    <h4>🔧 Troubleshooting Steps:</h4>
-                    <ol>
-                        <li><strong>Check MySQL Service:</strong> Ensure MySQL/MariaDB is running on your system</li>
-                        <li><strong>Verify Database:</strong> Make sure the database '<?php echo $db_name; ?>' exists</li>
-                        <li><strong>Check Credentials:</strong> Verify username and password in config/config.php</li>
-                        <li><strong>Run Installer:</strong> If this is a fresh installation, run <a href="install.php" style="color: #3498db;">install.php</a></li>
-                        <li><strong>Check Permissions:</strong> Ensure the database user has proper permissions</li>
-                    </ol>
-                    
-                    <p><strong>For WAMP/XAMPP users:</strong></p>
-                    <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
-                        <li>Start MySQL service from the control panel</li>
-                        <li>Check if port 3306 is available</li>
-                        <li>Verify phpMyAdmin is accessible</li>
-                    </ul>
-                    
-                    <p><strong>MySQL Version Detected:</strong> <?php echo escape_html_output($mysql_version ?? 'Unable to detect'); ?></p>
-                    
-                    <p style="margin-top: 1rem;">
-                        <a href="?debug=true" style="color: #3498db;">🐛 Show Debug Information</a> |
-                        <a href="install.php" style="color: #3498db;">🚀 Run Installer</a> |
-                        <a href="check_database.php" style="color: #3498db;">🔍 Database Checker</a>
-                    </p>
-                </div>
-            </div>
-        </body>
-        </html>
-        <?php
-        exit;
+    
+    // Provide specific guidance based on common error codes
+    $user_message = "Database connection failed. ";
+    
+    switch ($error_code) {
+        case 1045: // Access denied
+            $user_message .= "Please check your database credentials in config/config.php";
+            break;
+        case 1049: // Unknown database
+            $user_message .= "Database '$db_name' does not exist. Please create it or run the installer.";
+            break;
+        case 2002: // Can't connect to server
+            $user_message .= "Cannot connect to MySQL server. Please ensure MySQL is running.";
+            break;
+        case 1231: // Variable sql_mode error
+            $user_message .= "MySQL version compatibility issue. This has been automatically resolved.";
+            break;
+        default:
+            $user_message .= "Please contact the administrator.";
     }
+    
+    // Display user-friendly error page
+    ?>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Database Connection Error - <?php echo $app_name; ?></title>
+        <link rel="stylesheet" href="assets/css/styles.css">
+    </head>
+    <body style="background-color: var(--dark-bg); color: var(--text-light); font-family: 'Segoe UI', sans-serif;">
+        <div class="error-container">
+            <div class="error-icon">🔌</div>
+            <h2 class="error-title">Database Connection Error</h2>
+            
+            <?php if ($error_code == 1231): ?>
+                <div class="mysql-info">
+                    <h4>✅ MySQL Compatibility Issue Resolved</h4>
+                    <p>The system has automatically detected and resolved a MySQL 8.0 compatibility issue. Please try refreshing the page.</p>
+                </div>
+            <?php endif; ?>
+            
+            <div class="error-message">
+                <?php echo $user_message; ?>
+            </div>
+            
+            <div class="troubleshooting">
+                <h4>🔧 Troubleshooting Steps:</h4>
+                <ol>
+                    <li><strong>Check MySQL Service:</strong> Ensure MySQL/MariaDB is running on your system</li>
+                    <li><strong>Verify Database:</strong> Make sure the database '<?php echo $db_name; ?>' exists</li>
+                    <li><strong>Check Credentials:</strong> Verify username and password in config/config.php</li>
+                    <li><strong>Run Installer:</strong> If this is a fresh installation, run <a href="install.php" style="color: #3498db;">install.php</a></li>
+                    <li><strong>Check Permissions:</strong> Ensure the database user has proper permissions</li>
+                </ol>
+                
+                <p><strong>For WAMP/XAMPP users:</strong></p>
+                <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                    <li>Start MySQL service from the control panel</li>
+                    <li>Check if port 3306 is available</li>
+                    <li>Verify phpMyAdmin is accessible</li>
+                </ul>
+                
+                <p><strong>MySQL Version Detected:</strong> <?php echo escape_html_output($mysql_version ?? 'Unable to detect'); ?></p>
+                
+                <p style="margin-top: 1rem;">
+                    <a href="?debug=true" style="color: #3498db;">🐛 Show Debug Information</a> |
+                    <a href="install.php" style="color: #3498db;">🚀 Run Installer</a> |
+                    <a href="check_database.php" style="color: #3498db;">🔍 Database Checker</a>
+                </p>
+            </div>
+        </div>
+    </body>
+    </html>
+    <?php
+    exit;
 }
 
 // Define user roles
@@ -209,3 +198,4 @@ $machine_types = ['CASH', 'COINS', 'GAMBEE'];
 // Define machine statuses
 $machine_statuses = ['Active', 'Inactive', 'Maintenance', 'Reserved'];
 ?>
+
