@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function sendDataToBackend(uploadDate, filename, meterData) {
-        fetch('pages/meters/upload.php', { // <--- Changed URL here
+        fetch('pages/meters/process_upload.php', { // <--- Changed URL here to the new processing file
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
