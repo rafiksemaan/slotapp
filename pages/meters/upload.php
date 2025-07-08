@@ -309,4 +309,4 @@ M003,2023-01-01,800,700,600,25,10,0,5000,0</pre>
         </div>
     </div>
 </div>
-<script src="assets/js/meters_upload.js" type="module"></script>
+<script src="assets/js/meters_upload.js"></script>
