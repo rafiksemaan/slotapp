@@ -3,6 +3,10 @@
  * Upload Meter Data for Online Machines
  */
 
+// Include necessary files (always needed)
+require_once '../../config/config.php';
+require_once '../../includes/functions.php';
+
 /**
  * Process received meter data (from XLSX/CSV)
  * This function now expects an array of associative arrays (JSON objects)
