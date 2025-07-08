@@ -3,6 +3,12 @@
  * Upload Meter Data for Online Machines
  */
 
+// Start output buffering and set JSON header immediately for POST requests
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    ob_start(); // Start output buffering
+    header('Content-Type: application/json'); // Set JSON header
+}
+
 /**
  * Process received meter data (from XLSX/CSV)
  * This function now expects an array of associative arrays (JSON objects)
@@ -36,8 +42,8 @@ function processMeterData($meter_data, $operation_date, $original_filename, $con
             // Convert all keys to lowercase for consistent access
             $row_data_lower = array_change_key_case($row_data, CASE_LOWER);
 
-            $machine_number_from_file = trim($row_data_lower['machine'] ?? ''); // Assuming 'machine' column in XLSX, or 'machine_id'
-            $row_operation_date_str = trim($row_data_lower['operation date'] ?? $operation_date); // Assuming 'operation date' or use default
+            $machine_number_from_file = trim($row_data_lower['machine'] ?? $row_data_lower['machine_id'] ?? ''); // Assuming 'machine' or 'machine_id' column in XLSX
+            $row_operation_date_str = trim($row_data_lower['operation date'] ?? $row_data_lower['operation_date'] ?? $operation_date); // Assuming 'operation date' or 'operation_date' or use default
 
             if (empty($machine_number_from_file)) {
                 $errors[] = "Row " . ($i + 2) . ": Missing machine number. Skipping entry."; // +2 for 1-based index and header row
@@ -150,12 +156,6 @@ function processMeterData($meter_data, $operation_date, $original_filename, $con
 
 // Handle POST request for file upload processing
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Start output buffering to catch any unexpected output before JSON response
-    ob_start();
-
-    // Set JSON header for the response
-    header('Content-Type: application/json');
-
     $response = ['success' => false, 'message' => 'An unknown error occurred.', 'errors' => []];
 
     try {
@@ -200,7 +200,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Clear any buffered output and send the JSON response
-    ob_clean();
+    ob_end_clean(); // Use ob_end_clean() here to ensure all output is cleared
     echo json_encode($response);
     exit;
 }
@@ -222,7 +222,6 @@ if (isset($_SESSION['flash_messages'])) {
     }
     unset($_SESSION['flash_messages']); // Clear messages after displaying
 }
-
 ?>
 
 <div class="meter-upload-page fade-in">
