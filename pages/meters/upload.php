@@ -3,10 +3,67 @@
  * Upload Meter Data for Online Machines
  */
 
-// Include necessary files for rendering the form.
+// Include necessary files directly for the AJAX endpoint and for rendering the form.
+// These must be at the top, outside any conditional blocks, for the HTML part to work.
 require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/../../includes/functions.php';
 
+// Start output buffering and set JSON header immediately for POST requests.
+// This block executes first, before any HTML output can occur for POST requests.
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    ob_start(); // Start output buffering
+    header('Content-Type: application/json'); // Set JSON header
+
+    $response = ['success' => false, 'message' => 'An unknown error occurred.', 'errors' => []];
+
+    try {
+        // Read the raw POST data
+        $json_data = file_get_contents('php://input');
+        $request_data = json_decode($json_data, true); // Decode as associative array
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new Exception('Invalid JSON data received: ' . json_last_error_msg());
+        }
+
+        $upload_date = $request_data['upload_date'] ?? date('Y-m-d');
+        $filename = $request_data['filename'] ?? 'uploaded_meter_data.xlsx';
+        $meter_data = $request_data['meter_data'] ?? [];
+
+        if (empty($meter_data)) {
+            throw new Exception('No meter data found in the uploaded file.');
+        }
+
+        // Process the received data
+        $upload_result = processMeterData($meter_data, $upload_date, $filename, $conn);
+
+        if ($upload_result['success']) {
+            $upload_stats = $upload_result['stats'];
+            $response['success'] = true;
+            $response['message'] = "Excel file uploaded and processed successfully! Imported {$upload_stats['total_records']} entries.";
+            $response['stats'] = $upload_stats;
+            if (!empty($upload_stats['errors'])) {
+                $response['message'] .= " Some entries were skipped.";
+                $response['errors'] = $upload_stats['errors'];
+            }
+            // Log action
+            log_action('upload_meter_data', "Uploaded meter data for date: $upload_date, Records: {$upload_stats['total_records']}");
+        } else {
+            $response['message'] = $upload_result['error'];
+            $response['errors'] = $upload_result['errors'] ?? [];
+        }
+
+    } catch (Exception $e) {
+        $response['message'] = "Error processing file: " . $e->getMessage();
+        $response['errors'][] = $e->getMessage();
+    } finally {
+        // Clear any buffered output and send the JSON response
+        ob_end_clean(); // Ensure all output is cleared
+        echo json_encode($response);
+        exit;
+    }
+}
+
+// If it's not a POST request, continue to render the HTML form below
 // Initial variable declarations for GET request
 $message = '';
 $error = '';
