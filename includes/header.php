@@ -39,7 +39,7 @@ ob_start();
 //	define('ICON_PATH', 'assets/icons'); // Make sure this matches your actual folder name
 	?>
     <!-- Add SheetJS library for XLSX parsing -->
-    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js" defer></script>
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
 </head>
 
 <body>
