@@ -35,13 +35,11 @@ switch ($action) {
         break;
         
     case 'upload':
-        // For GET requests, display the upload form.
-        // POST requests are now handled directly by pages/meters/upload.php
         if (!$can_edit) {
             include 'access_denied.php';
             exit;
         }
-        include 'meters/upload.php'; // This will now only render the HTML form
+        include 'meters/upload.php';
         break;
         
     case 'edit':

@@ -4,13 +4,9 @@
  */
 
 // Start output buffering and set JSON header immediately for POST requests
-// This block executes first, before any HTML output can occur for POST requests.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ob_start(); // Start output buffering
     header('Content-Type: application/json'); // Set JSON header
-    // Include necessary files directly for the AJAX endpoint
-    require_once '../../config/config.php';
-    require_once '../../includes/functions.php';
 }
 
 /**
@@ -158,7 +154,7 @@ function processMeterData($meter_data, $operation_date, $original_filename, $con
     }
 }
 
-// Handle POST request for file upload processing (AJAX endpoint logic)
+// Handle POST request for file upload processing
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $response = ['success' => false, 'message' => 'An unknown error occurred.', 'errors' => []];
 
@@ -201,12 +197,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } catch (Exception $e) {
         $response['message'] = "Error processing file: " . $e->getMessage();
         $response['errors'][] = $e->getMessage();
-    } finally {
-        // Clear any buffered output and send the JSON response
-        ob_end_clean(); // Ensure all output is cleared
-        echo json_encode($response);
-        exit;
     }
+
+    // Clear any buffered output and send the JSON response
+    ob_end_clean(); // Use ob_end_clean() here to ensure all output is cleared
+    echo json_encode($response);
+    exit;
 }
 
 // If it's not a POST request, continue to render the HTML form below
@@ -312,3 +308,4 @@ M003,2023-01-01,800,700,600,25,10,0,5000,0</pre>
         </div>
     </div>
 </div>
+<script src="assets/js/meters_upload.js" type="module"></script>
